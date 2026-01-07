@@ -1,0 +1,24 @@
+name: Build & Release Workflow
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'docs/**'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build-and-release:
+    name: Build and release
+    uses: Flower7C3/minecraft-addon-workflows/.github/workflows/build-and-release.yml@main
+    with:
+      project_name: "Warp Places"
+      has_test_workflow: true
+      total_blocks: true
+    secrets: inherit
