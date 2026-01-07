@@ -1,0 +1,38 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Warps!",
+    "description": "Create Warps and let others to teleport there!",
+    "uuid": "61935019-dd7e-4ccc-b0eb-518fe893f290",
+    "version": [
+      3,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      17,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "description": "Resources",
+      "type": "resources",
+      "uuid": "ddb15084-06bb-4b62-b383-e744b8cd9fd3",
+      "version": [
+        3,
+        0,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "Flower7C3",
+      "Hajsori"
+    ],
+    "url": "https://github.com/Flower7C3/warp-points-minecraft-bedrock-addon",
+    "license": "MIT"
+  }
+}

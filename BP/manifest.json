@@ -1,0 +1,78 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Warps!",
+    "description": "Create Warps and let others to teleport there!",
+    "uuid": "df6237c4-104f-49f0-a381-f7433a075fbd",
+    "version": [
+      3,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      17,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "03bfefb7-04a1-458e-847b-5037044dfcba",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "7eaaba7a-0c36-4786-9c99-72db468742e4",
+      "version": [
+        1,
+        0,
+        0
+      ],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.1.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    },
+    {
+      "uuid": "61935019-dd7e-4ccc-b0eb-518fe893f290",
+      "version": [
+        3,
+        0,
+        0
+      ]
+    }
+  ],
+  "subpacks": [
+    {
+      "folder_name": "recipe_true",
+      "name": "§r§7Craftable §dWarp Menu§8: §aTrue§r",
+      "memory_tier": 0
+    },
+    {
+      "folder_name": "recipe_false",
+      "name": "§r§7Craftable §dWarp Menu§8: §cFalse§r",
+      "memory_tier": 1
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "Flower7C3",
+      "Hajsori"
+    ],
+    "url": "https://github.com/Flower7C3/warp-points-minecraft-bedrock-addon",
+    "license": "MIT"
+  }
+}

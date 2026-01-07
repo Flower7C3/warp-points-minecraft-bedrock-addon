@@ -1,0 +1,38 @@
+{
+  "format_version": "1.12",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "warps:warp_menu"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "priority": 100,
+    "pattern": [
+      "PCP",
+      "ERE",
+      "CFC"
+    ],
+    "key": {
+      "P": {
+        "item": "minecraft:popped_chorus_fruit"
+      },
+      "C": {
+        "item": "minecraft:chorus_fruit"
+      },
+      "E": {
+        "item": "minecraft:ender_eye"
+      },
+      "R": {
+        "item": "minecraft:ender_pearl"
+      },
+      "F": {
+        "item": "minecraft:chorus_flower"
+      }
+    },
+    "result": {
+      "item": "warps:warp_menu",
+      "count": 1
+    }
+  }
+}
