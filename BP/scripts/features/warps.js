@@ -13,7 +13,7 @@ export const Warps = () => {
 
     // Lista dostępnych obrazków dla warps
     const WARP_ICONS = [
-        {name: "Poi", translationKey: "warps:icon.Poi", path: "textures/icons/Poi.png"},
+        {name: "Poi", translationKey: "warps:icon.Poi", path: "textures/icons/Map_Poi.png"},
         {name: "Heart", translationKey: "warps:icon.Heart", path: "textures/icons/Heart_Full.png"},
         {
             name: "Plains_Village",
@@ -155,7 +155,7 @@ export const Warps = () => {
             dimension.runCommand(`tp "${player.name}" ${warp.x} ${warp.y} ${warp.z}`);
             player.dimension.playSound("mob.shulker.teleport", {x: warp.x, y: warp.y, z: warp.z});
         } catch (error) {
-            console.error(`[WARPS!] Error teleporting to warp ${warpName}:`, error);
+            console.error(`[WARPS!] Error teleporting to warp ${warp.name}:`, error);
             player.sendMessage({
                 translate: "warps:teleport.error",
                 with: [warp.name]
@@ -249,88 +249,102 @@ export const Warps = () => {
         })
     }
 
-    const addWarpItemMenu = (player, location, {name = "", iconName = "", addX = 0, addY = 0, addZ = 0}) => {
-        const xCoord = Math.round(location.x + addX);
-        const yCoord = Math.round(location.y + addY);
-        const zCoord = Math.round(location.z + addZ);
-        const dimensionId = getPlayerDimension(player);
+    const addWarpItemMenu = (player, {warpName = "", iconName = "", targetLocation, warpDimensionId}) => {
+        // Jeśli ikona jest już wybrana (np. po błędzie), pominij krok 1/2
+        if (iconName) {
+            const selectedIconIndex = selectFieldFromIcon('index', 'name', iconName);
+            if (selectedIconIndex >= 0 && selectedIconIndex < WARP_ICONS.length) {
+                showWarpFormStep2(player, warpName, selectedIconIndex, targetLocation, warpDimensionId);
+                return;
+            }
+        }
 
-        // Przygotuj listę opcji dla dropdown z obrazkami (używając tłumaczeń)
-        const iconOptions = WARP_ICONS.map(icon => ({
-            rawtext: [{translate: icon.translationKey}]
-        }));
+        // Najpierw pokaż formularz wyboru ikony z widocznymi ikonami (krok 1/2)
+        const iconForm = new MinecraftUi.ActionFormData()
+            .title({rawtext: [{translate: "warps:add.step1.title"}]})
+            .body({rawtext: [{translate: "warps:add.select_icon"}]});
 
+        // Dodaj przyciski z ikonami
+        WARP_ICONS.forEach((icon, index) => {
+            iconForm.button({
+                rawtext: [{translate: icon.translationKey}]
+            }, icon.path);
+        });
+
+        iconForm.show(player).then((iconRes) => {
+            if (iconRes.canceled || iconRes.selection === undefined || iconRes.selection >= WARP_ICONS.length) {
+                return;
+            }
+
+            const selectedIconIndex = iconRes.selection;
+            showWarpFormStep2(player, warpName, selectedIconIndex, targetLocation, warpDimensionId);
+        });
+    }
+
+    const showWarpFormStep2 = (player, warpName, iconIndex, targetLocation, warpDimensionId) => {
+        // Pokaż formularz z pozostałymi polami (krok 2/2)
         new MinecraftUi.ModalFormData()
-            .title({rawtext: [{translate: "warps:add.title"}]})
-            .textField({rawtext: [{translate: "warps:add.field.name"}]}, {
-                    rawtext: [{translate: "warps:add.field.name.placeholder"}]
-                }, {defaultValue: name}
-            )
-            .dropdown({rawtext: [{translate: "warps:add.field.icon"}]}, iconOptions, {defaultValueIndex: selectFieldFromIcon('index', 'name', iconName)})
-            .textField({rawtext: [{translate: "warps:add.field.x"}]}, {
-                rawtext: [{translate: "warps:add.field.x.placeholder", with: [xCoord.toString()]}]
-            }, {defaultValue: xCoord.toString()})
-            .textField({rawtext: [{translate: "warps:add.field.y"}]}, {
-                rawtext: [{translate: "warps:add.field.y.placeholder", with: [yCoord.toString()]}]
-            }, {defaultValue: yCoord.toString()})
-            .textField({rawtext: [{translate: "warps:add.field.z"}]}, {
-                rawtext: [{translate: "warps:add.field.z.placeholder", with: [zCoord.toString()]}]
-            }, {defaultValue: zCoord.toString()})
-            .textField({rawtext: [{translate: "warps:add.field.dimension"}]}, {
-                rawtext: [{translate: "warps:add.field.dimension.placeholder", with: [dimensionId]}]
-            }, {defaultValue: dimensionId})
+            .title({rawtext: [{translate: "warps:add.step2.title"}]})
+            .textField({rawtext: [{translate: "warps:add.field.name.label"}]}, {rawtext: [{translate: "warps:add.field.name.placeholder"}]}, {defaultValue: warpName})
+            .textField({rawtext: [{translate: "warps:add.field.x.label"}]}, {rawtext: [{translate: "warps:add.field.x.placeholder"}]}, {defaultValue: targetLocation.x.toString()})
+            .textField({rawtext: [{translate: "warps:add.field.y.label"}]}, {rawtext: [{translate: "warps:add.field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
+            .textField({rawtext: [{translate: "warps:add.field.z.label"}]}, {rawtext: [{translate: "warps:add.field.z.placeholder"}]}, {defaultValue: targetLocation.z.toString()})
+            .submitButton({rawtext: [{translate: "warps:add.submit"}]})
             .show(player).then((res) => {
             if (res.canceled) {
                 return;
             }
 
-            // Indeksy formValues: [0]=name, [1]=icon, [2]=x, [3]=y, [4]=z, [5]=dimension
-            if (!res.formValues[0] || !res.formValues[2] || !res.formValues[3] || !res.formValues[4] || !res.formValues[5]) {
-                return player.sendMessage({translate: "warps:add.fill_required"});
+            // Indeksy formValues: [0]=name, [1]=x, [2]=y, [3]=z
+            if (!res.formValues[0] || !res.formValues[1] || !res.formValues[2] || !res.formValues[3]) {
+                player.sendMessage({translate: "warps:add.fill_required"});
+                // Ponownie pokaż formularz z wypełnionymi danymi
+                showWarpFormStep2(player, warpName, iconIndex, targetLocation, warpDimensionId);
+                return;
             }
 
-            const warpName = res.formValues[0].replace('"', "'");
-            const iconIndex = res.formValues[1] !== undefined ? res.formValues[1] : "";
-            const warpX = parseFloat(res.formValues[2]);
-            const warpY = parseFloat(res.formValues[3]);
-            const warpZ = parseFloat(res.formValues[4]);
-            const warpDimension = res.formValues[5].toLowerCase();
-            addWarpItem(player, warpName, iconIndex, warpX, warpY, warpZ, warpDimension);
-        })
+            warpName = res.formValues[0].replace('"', "'");
+            targetLocation.x = parseFloat(res.formValues[1]);
+            targetLocation.y = parseFloat(res.formValues[2]);
+            targetLocation.z = parseFloat(res.formValues[3]);
+            addWarpItem(player, warpName, iconIndex, targetLocation, warpDimensionId);
+        });
     }
 
-    const addWarpItem = (player, warpName, iconIndex, warpX, warpY, warpZ, warpDimension) => {
+    const addWarpItem = (player, warpName, iconIndex, targetLocation, warpDimensionId) => {
 
         const selectedIcon = WARP_ICONS[iconIndex] || WARP_ICONS[0];
 
-        if (isNaN(warpX) || isNaN(warpY) || isNaN(warpZ)) {
-            return player.sendMessage({translate: "warps:add.coords_must_be_number"});
-        }
-
-        if (warpDimension.toLowerCase() !== "overworld" && warpDimension.toLowerCase() !== "nether" && warpDimension.toLowerCase() !== "the_end") {
-            return player.sendMessage({translate: "warps:add.dimension_invalid"});
+        if (isNaN(targetLocation.x) || isNaN(targetLocation.y) || isNaN(targetLocation.z)) {
+            player.sendMessage({translate: "warps:add.coords_must_be_number"});
+            // Ponownie pokaż formularz z wypełnionymi danymi (krok 2/2, pomijając wybór ikony)
+            showWarpFormStep2(player, warpName, iconIndex, targetLocation, warpDimensionId);
+            return;
         }
 
         const warps = loadWarps();
 
-        warpX = Math.round(warpX);
-        warpY = Math.round(warpY);
-        warpZ = Math.round(warpZ);
+        targetLocation.x = Math.round(targetLocation.x);
+        targetLocation.y = Math.round(targetLocation.y);
+        targetLocation.z = Math.round(targetLocation.z);
 
         // Check if warp with same name already exists
         if (warps.some(w => w.name === warpName)) {
-            return player.sendMessage({
+            player.sendMessage({
                 translate: "warps:add.duplicate_name",
                 with: [warpName]
             });
+            // Ponownie pokaż formularz z wypełnionymi danymi (krok 2/2, pomijając wybór ikony)
+            showWarpFormStep2(player, warpName, iconIndex, targetLocation, warpDimensionId);
+            return;
         }
 
         const newWarp = {
             name: warpName,
-            x: warpX,
-            y: warpY,
-            z: warpZ,
-            dimension: warpDimension,
+            x: targetLocation.x,
+            y: targetLocation.y,
+            z: targetLocation.z,
+            dimension: warpDimensionId,
             icon: selectedIcon.path
         };
 
@@ -338,10 +352,10 @@ export const Warps = () => {
         saveWarps(warps);
 
         player.dimension.playSound("beacon.activate", player.location);
-        player.dimension.runCommand(`particle minecraft:endrod ${warpX} ${warpY} ${warpZ}`);
+        player.dimension.runCommand(`particle minecraft:endrod ${targetLocation.x} ${targetLocation.y} ${targetLocation.z}`);
         player.sendMessage({
             translate: "warps:add.success",
-            with: [warpName, warpX.toString(), warpY.toString(), warpZ.toString()]
+            with: [warpName, targetLocation.x.toString(), targetLocation.y.toString(), targetLocation.z.toString()]
         });
     }
 
@@ -450,7 +464,7 @@ export const Warps = () => {
         Minecraft.system.beforeEvents.startup.subscribe((event) => {
             console.info("[WARPS!] Loaded Script")
 
-            event.customCommandRegistry.registerEnum("warps:icons", WARP_ICONS.map(icon => icon.name))
+            event.customCommandRegistry.registerEnum("warps:icon", WARP_ICONS.map(icon => icon.name))
 
             event.customCommandRegistry.registerCommand(
                 {
@@ -488,7 +502,7 @@ export const Warps = () => {
                         name: "warps:name",
                     }, {
                         type: CustomCommandParamType.Enum,
-                        name: "warps:icons",
+                        name: "warps:icon",
                     }, {
                         type: CustomCommandParamType.Location,
                         name: "warps:location",
@@ -501,11 +515,17 @@ export const Warps = () => {
 
                         // Jeśli location jest podane, użyj go, w przeciwnym razie użyj lokalizacji gracza
                         const targetLocation = location || player.location;
+                        const warpDimensionId = getPlayerDimension(player);
                         if (warpName && iconName && targetLocation) {
                             const iconIndex = selectFieldFromIcon('index', 'name', iconName);
-                            addWarpItem(player, warpName, iconIndex, targetLocation.x, targetLocation.y, targetLocation.z, getPlayerDimension(player));
+                            addWarpItem(player, warpName, iconIndex, targetLocation, warpDimensionId);
                         } else {
-                            addWarpItemMenu(player, targetLocation, {name: warpName, iconName: iconName})
+                            addWarpItemMenu(player, {
+                                warpName: warpName,
+                                iconName: iconName,
+                                targetLocation: targetLocation,
+                                warpDimensionId: warpDimensionId
+                            });
                         }
                     })
                 }
@@ -551,33 +571,37 @@ export const Warps = () => {
                     if (block.typeId === "air") return;
 
                     // Określ kierunek kliknięcia i dodaj 1 blok w tym kierunku
-                    let addX = 0, addY = 0, addZ = 0;
+                    const blockLoc = block.location;
+                    let targetLocation = {x: blockLoc.x, y: blockLoc.y, z: blockLoc.z};
 
                     switch (event.blockFace) {
                         case Minecraft.Direction.Up:
-                            addY = 1; // Dodaj 1 blok w górę (nad blokiem)
+                            targetLocation.y += 1; // Dodaj 1 blok w górę (nad blokiem)
                             break;
                         case Minecraft.Direction.Down:
-                            addY = -1; // Dodaj 1 blok w dół (pod blokiem)
+                            targetLocation.y -= 1; // Dodaj 1 blok w dół (pod blokiem)
                             break;
                         case Minecraft.Direction.North:
-                            addZ = -1; // Dodaj 1 blok na północ (obok bloku)
+                            targetLocation.z -= 1; // Dodaj 1 blok na północ (obok bloku)
                             break;
                         case Minecraft.Direction.South:
-                            addZ = 1; // Dodaj 1 blok na południe (obok bloku)
+                            targetLocation.z += 1; // Dodaj 1 blok na południe (obok bloku)
                             break;
                         case Minecraft.Direction.East:
-                            addX = 1; // Dodaj 1 blok na wschód (obok bloku)
+                            targetLocation.x += 1; // Dodaj 1 blok na wschód (obok bloku)
                             break;
                         case Minecraft.Direction.West:
-                            addX = -1; // Dodaj 1 blok na zachód (obok bloku)
+                            targetLocation.x -= 1; // Dodaj 1 blok na zachód (obok bloku)
                             break;
                         default:
-                            addY = 1; // Domyślnie nad blokiem
+                            targetLocation.y += 1; // Domyślnie nad blokiem
                             break;
                     }
 
-                    addWarpItemMenu(player, block.location, {addX: addX, addY: addY, addZ: addZ})
+                    addWarpItemMenu(player, {
+                        targetLocation: targetLocation,
+                        warpDimensionId: getPlayerDimension(player)
+                    })
                 },
                 onUse: (event) => {
                     const player = event.source;
