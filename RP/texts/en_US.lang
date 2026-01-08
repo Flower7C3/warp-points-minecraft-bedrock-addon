@@ -1,5 +1,14 @@
 warps:menu.title=§r§l§dTeleport to...§r
+warps:menu.step1.body=Select how to filter warps:
+warps:menu.step1.select_category=Or select by category:
+warps:menu.step1.filter_all=All Warps
+warps:menu.step1.filter_category=%1$s
+warps:menu.step2.sort_change_to_distance=§r§l§3Sort: Alphabetically → By Distance§r
+warps:menu.step2.sort_change_to_alphabetical=§r§l§3Sort: By Distance → Alphabetically§r
+warps:menu.step2.select_all=Select Warp point:
+warps:menu.step2.select_category=Select Warp point using %1$s category:
 warps:menu.no_warps=§r§8[§dWarps!§8] §cThere are no Warps!§r
+warps:menu.no_warps_in_category=§r§8[§dWarps!§8] §cThere are no Warps in this category!§r
 warps:menu.button_format=§r§l%1$s§r §o%6$s meters\n§f(%2$s,%3$s,%4$s)§r
 warps:remove.button_format=§r§l%s§r §f(%s,%s,%s)§r %s
 
@@ -27,7 +36,7 @@ warps:add.coords_must_be_number=§r§8[§dWarps!§8] §7The Coordinates must be 
 warps:add.duplicate_name=§r§8[§dWarps!§8] §cA warp with name §l%s§r§c already exists!§r
 warps:add.success=§r§8[§dWarps!§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
 
-warps:remove.title=§r§l§4Delete §dWarp§r
+warps:remove.title=§r§l§4Delete Warp§r
 warps:remove.confirm.title=§r§4Are you sure that you want to delete this Warp for ever?§r
 warps:remove.confirm.body=§r§8Name: §f%1$s\n§8Category: §f%6$s / %7$s§r\n§8Coordinates: §f(%2$s,%3$s,%4$s)§r\n§8Dimension: §f%5$s
 warps:remove.confirm.yes=§r§cYes, delete permanently§r

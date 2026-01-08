@@ -211,50 +211,141 @@ export const Warps = () => {
         }
     }
 
-
-    const showWarpsListMenuSortedByDistance = (player) => {
-        let actionForm = new MinecraftUi.ActionFormData()
-            .title({rawtext: [{translate: "warps:menu.title"}]})
-
+    const showWarpsListMenu = (player) => {
         const warps = getValidWarps();
 
         if (warps.length === 0) {
             return player.sendMessage({translate: "warps:menu.no_warps"});
         }
 
-        // Pobierz lokalizację gracza
+        const filterForm = new MinecraftUi.ActionFormData()
+            .title({rawtext: [{translate: "warps:menu.title"}]})
+            .body({rawtext: [{translate: "warps:menu.step1.body"}]});
+
+        // Opcja: Wszystkie warpy
+        filterForm.button({
+            rawtext: [{translate: "warps:menu.step1.filter_all"}]
+        });
+
+        filterForm.label({rawtext: [{translate: "warps:menu.step1.select_category"}]});
+
+        // Filtruj kategorie — pokazuj tylko te, które mają warpy
+        const allCategories = getCategories();
+        const categoriesWithWarps = allCategories.filter(category => {
+            return warps.some(warp => {
+                const icon = findIconByName(warp.icon);
+                return icon && icon.category === category;
+            });
+        });
+
+        // Opcje dla każdej kategorii z warpsami
+        categoriesWithWarps.forEach(category => {
+            const categoryIcon = WARP_ICONS.find(icon => icon && icon.category === category);
+            filterForm.button({
+                rawtext: [{
+                    translate: "warps:menu.step1.filter_category",
+                    with: {
+                        rawtext: [{translate: `warps:category.${category}`}]
+                    }
+                }]
+            }, categoryIcon ? categoryIcon.path : "");
+        });
+
+        filterForm.show(player).then((filterRes) => {
+            if (filterRes.canceled) {
+                return;
+            }
+
+            let filteredWarps = warps;
+            let selectedCategory = null;
+
+            if (filterRes.selection === 0) {
+                // Wszystkie warpy
+                filteredWarps = warps;
+            } else {
+                // Wybrana kategoria
+                const categoryIndex = filterRes.selection - 1;
+                if (categoryIndex >= 0 && categoryIndex < categoriesWithWarps.length) {
+                    selectedCategory = categoriesWithWarps[categoryIndex];
+                    filteredWarps = warps.filter(warp => {
+                        const icon = findIconByName(warp.icon);
+                        return icon && icon.category === selectedCategory;
+                    });
+                }
+            }
+
+            if (filteredWarps.length === 0) {
+                return player.sendMessage({translate: "warps:menu.no_warps_in_category"});
+            }
+
+            // Od razu pokaż listę posortowaną wg dystansu
+            showWarpsListMenuWithOptions(player, filteredWarps, 'distance', selectedCategory);
+        });
+    }
+
+    const showWarpsListMenuWithOptions = (player, warps, sortBy, selectedCategory = null) => {
+
+        const actionForm = new MinecraftUi.ActionFormData()
+            .title({rawtext: [{translate: "warps:menu.title"}]})
+
+        // Przycisk do zmiany sortowania na pierwszej pozycji
+        const sortButtonText = sortBy === 'distance'
+            ? {rawtext: [{translate: "warps:menu.step2.sort_change_to_alphabetical"}]}
+            : {rawtext: [{translate: "warps:menu.step2.sort_change_to_distance"}]};
+
+        actionForm.button(sortButtonText)
+
+        const actionFormLabel = selectedCategory
+            ? {
+                rawtext: [{
+                    translate: "warps:menu.step2.select_category",
+                    with: {
+                        rawtext: [{translate: `warps:category.${selectedCategory}`}]
+                    }
+                }]
+            }
+            : {
+                rawtext: [{translate: "warps:menu.step2.select_all"}]
+            };
+        actionForm.label(actionFormLabel)
+
+        let sortedWarps = [...warps];
+
+        if (sortBy === 'distance') {
+            // Sortuj wg dystansu
+            const playerLocation = player.location;
+            const playerDimension = getPlayerDimension(player);
+
+            sortedWarps.sort((a, b) => {
+                const aSameDimension = a.dimension === playerDimension;
+                const bSameDimension = b.dimension === playerDimension;
+
+                if (aSameDimension && !bSameDimension) return -1;
+                if (!aSameDimension && bSameDimension) return 1;
+
+                if (aSameDimension && bSameDimension) {
+                    const distA = calculateDistance(
+                        playerLocation.x, playerLocation.y, playerLocation.z,
+                        a.x, a.y, a.z
+                    );
+                    const distB = calculateDistance(
+                        playerLocation.x, playerLocation.y, playerLocation.z,
+                        b.x, b.y, b.z
+                    );
+                    return distA - distB;
+                }
+
+                return 0;
+            });
+        } else {
+            // Sortuj alfabetycznie
+            sortedWarps.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
         const playerLocation = player.location;
         const playerDimension = getPlayerDimension(player);
 
-        // Posortuj warpy według odległości od gracza
-        const sortedWarps = [...warps].sort((a, b) => {
-            // Jeśli warpy są w różnych wymiarach, traktuj je inaczej
-            const aSameDimension = a.dimension === playerDimension;
-            const bSameDimension = b.dimension === playerDimension;
-
-            // Warpy w tym samym wymiarze co gracz są bliżej
-            if (aSameDimension && !bSameDimension) return -1;
-            if (!aSameDimension && bSameDimension) return 1;
-
-            // Jeśli oba są w tym samym wymiarze, oblicz odległość
-            if (aSameDimension && bSameDimension) {
-                const distA = calculateDistance(
-                    playerLocation.x, playerLocation.y, playerLocation.z,
-                    a.x, a.y, a.z
-                );
-                const distB = calculateDistance(
-                    playerLocation.x, playerLocation.y, playerLocation.z,
-                    b.x, b.y, b.z
-                );
-                return distA - distB;
-            }
-
-            // Jeśli oba są w innych wymiarach, zachowaj oryginalną kolejność
-            return 0;
-        });
-
         sortedWarps.forEach(warp => {
-            // Oblicz odległość
             let distance = 0;
             const warpSameDimension = warp.dimension === playerDimension;
             if (warpSameDimension) {
@@ -264,11 +355,11 @@ export const Warps = () => {
                 );
             }
 
-            // Formatuj odległość (zaokrąglij do 1 miejsca po przecinku)
             const distanceText = warpSameDimension
                 ? Math.round(distance).toString()
                 : "?";
 
+            const icon = findIconByName(warp.icon);
             actionForm.button({
                 rawtext: [{
                     translate: "warps:menu.button_format",
@@ -283,18 +374,28 @@ export const Warps = () => {
                         ]
                     }
                 }]
-            }, (warp.icon ? (WARP_ICONS.find(icon => icon && icon.name === warp.icon) || {}).path || "" : (WARP_ICONS.find(icon => icon && icon.path) || {}).path || ""))
-        })
+            }, icon ? icon.path : "");
+        });
 
-        actionForm
-            .show(player).then((res) => {
-            if (res.canceled || res.selection >= sortedWarps.length) {
+        actionForm.show(player).then((res) => {
+            if (res.canceled) {
                 return;
             }
 
-            const selectedWarp = sortedWarps[res.selection];
-            teleportToWarp(player, selectedWarp)
-        })
+            // Jeśli wybrano przycisk zmiany sortowania (indeks 0)
+            if (res.selection === 0) {
+                const newSortBy = sortBy === 'distance' ? 'alphabetical' : 'distance';
+                showWarpsListMenuWithOptions(player, warps, newSortBy, selectedCategory);
+                return;
+            }
+
+            // Jeśli wybrano warp (indeks > 0, ale trzeba odjąć 1 bo pierwszy to przycisk sortowania)
+            const warpIndex = res.selection - 1;
+            if (warpIndex >= 0 && warpIndex < sortedWarps.length) {
+                const selectedWarp = sortedWarps[warpIndex];
+                teleportToWarp(player, selectedWarp);
+            }
+        });
     }
 
     const showAddWarpFormStep1 = (player, {
@@ -582,7 +683,7 @@ export const Warps = () => {
                         if (warpName !== "") {
                             teleportToWarpByName(player, warpName)
                         } else {
-                            showWarpsListMenuSortedByDistance(player)
+                            showWarpsListMenu(player)
                         }
                     });
                     return {
@@ -664,7 +765,7 @@ export const Warps = () => {
                     useLock.set(player.id, true);
                     system.runTimeout(() => useLock.delete(player.id), 1);
                     if (!player.isSneaking) {
-                        showWarpsListMenuSortedByDistance(player);
+                        showWarpsListMenu(player);
                         return;
                     }
                     if (block.typeId === "air") return;
@@ -709,7 +810,7 @@ export const Warps = () => {
                     system.runTimeout(() => {
                         if (useLock.has(player.id)) return;
                         if (player.isSneaking) return;
-                        showWarpsListMenuSortedByDistance(player);
+                        showWarpsListMenu(player);
                     }, 1);
                 },
             })

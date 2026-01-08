@@ -1,5 +1,14 @@
 warps:menu.title=§r§l§dTeleportuj się do...§r
+warps:menu.step1.body=Wybierz, jak filtrować warpy:
+warps:menu.step1.select_category=Lub wybierz kategorię:
+warps:menu.step1.filter_all=Wszystkie Warpy
+warps:menu.step1.filter_category=%1$s
+warps:menu.step2.sort_change_to_distance=§r§l§3Sortuj: Alfabetycznie → Według Dystansu§r
+warps:menu.step2.sort_change_to_alphabetical=§r§l§3Sortuj: Według Dystansu → Alfabetycznie§r
+warps:menu.step2.select_all=Wybierz punkt Warpu:
+warps:menu.step2.select_category=Wybierz punkt Warpu z kategorii %1$s:
 warps:menu.no_warps=§r§8[§dWarps!§8] §cNie ma żadnych Warp§w!§r
+warps:menu.no_warps_in_category=§r§8[§dWarps!§8] §cNie ma żadnych Warp§w w tej kategorii!§r
 warps:menu.button_format=§r§l%1$s§r §o%6$s metrów§r\n%5$s§r §f%2$s,%3$s,%4$s§r
 warps:remove.button_format=§r§l%s§r §f(%s,%s,%s)§r %s
 
@@ -28,7 +37,7 @@ warps:add.coords_must_be_number=§r§8[§dWarps!§8] §7Współrzędne muszą by
 warps:add.duplicate_name=§r§8[§dWarps!§8] §cWarp o nazwie §l%s§r§c już istnieje!§r
 warps:add.success=§r§8[§dWarps!§8] §7Dodano Warp §l%s§r§7 na pozycji §f(%s,%s,%s)§r§7!§r
 
-warps:remove.title=§r§l§4Usuń §dWarp§r
+warps:remove.title=§r§l§4Usuń Warp§r
 warps:remove.confirm.title=§r§4Czy na pewno chcesz usunąć ten Warp na zawsze?§r
 warps:remove.confirm.body=§r§8Nazwa: §f%1$s\n§8Kategoria: §f%6$s / %7$s§r\n§8Wspórzędne: §f(%2$s,%3$s,%4$s)§r\n§8Wymiar: §f%5$s
 warps:remove.confirm.yes=§r§cTak, usuń na zawsze§r
@@ -106,7 +115,6 @@ warps:icon.Respawn Anchor=Kotwica Odrodzenia
 warps:icon.Lodestone=Magnetyt
 warps:icon.Spawner=Spawner
 
-# === KATEGORIE ===
 # === KATEGORIE ===
 warps:category.special=Lokacje Specjalne
 warps:category.places=Miejsca
