@@ -15,12 +15,36 @@ export const Warps = () => {
     const WARP_ICONS = [
         {name: "Poi", translationKey: "warps:icon.Poi", path: "textures/icons/Poi.png"},
         {name: "Heart", translationKey: "warps:icon.Heart", path: "textures/icons/Heart_Full.png"},
-        {name: "Plains_Village", translationKey: "warps:icon.Plains Village", path: "textures/icons/Map_Plains_Village.png"},
-        {name: "Savanna_Village", translationKey: "warps:icon.Savanna Village", path: "textures/icons/Map_Savanna_Village.png"},
-        {name: "Snowy_Village", translationKey: "warps:icon.Snowy Village", path: "textures/icons/Map_Snowy_Village.png"},
-        {name: "Taiga_Village", translationKey: "warps:icon.Taiga Village", path: "textures/icons/Map_Taiga_Village.png"},
-        {name: "Ocean_Monument", translationKey: "warps:icon.Ocean Monument", path: "textures/icons/Map_Ocean_Monument.png"},
-        {name: "Woodland_Mansion", translationKey: "warps:icon.Woodland Mansion", path: "textures/icons/Map_Woodland_Mansion.png"},
+        {
+            name: "Plains_Village",
+            translationKey: "warps:icon.Plains Village",
+            path: "textures/icons/Map_Plains_Village.png"
+        },
+        {
+            name: "Savanna_Village",
+            translationKey: "warps:icon.Savanna Village",
+            path: "textures/icons/Map_Savanna_Village.png"
+        },
+        {
+            name: "Snowy_Village",
+            translationKey: "warps:icon.Snowy Village",
+            path: "textures/icons/Map_Snowy_Village.png"
+        },
+        {
+            name: "Taiga_Village",
+            translationKey: "warps:icon.Taiga Village",
+            path: "textures/icons/Map_Taiga_Village.png"
+        },
+        {
+            name: "Ocean_Monument",
+            translationKey: "warps:icon.Ocean Monument",
+            path: "textures/icons/Map_Ocean_Monument.png"
+        },
+        {
+            name: "Woodland_Mansion",
+            translationKey: "warps:icon.Woodland Mansion",
+            path: "textures/icons/Map_Woodland_Mansion.png"
+        },
         {name: "Ore", translationKey: "warps:icon.Ore", path: "textures/icons/Amethyst_Cluster.png"},
         {name: "Boat", translationKey: "warps:icon.Boat", path: "textures/icons/Boat.png"},
         {name: "Brewing_Stand", translationKey: "warps:icon.Brewing stand", path: "textures/icons/Brewing_Stand.png"},
@@ -90,20 +114,13 @@ export const Warps = () => {
         return `warps:dimension.${dimension}`;
     }
 
-
-    const getIconNameByIndex = (index) => {
-        if (index === undefined || index === null || isNaN(index) || index < 0 || index >= WARP_ICONS.length) {
-            return WARP_ICONS[0].name;
+    const selectFieldFromIcon = (field, whereKey, whereValue) => {
+        let foundIndex = WARP_ICONS.findIndex(i => i[whereKey].toLowerCase() === whereValue.toLowerCase());
+        if (foundIndex === -1) {
+            foundIndex = 0; // Domyślnie pierwsza ikona, jeśli nie znaleziono
         }
-        return WARP_ICONS[index].name;
-    }
-
-    const getIconIndexByName = (iconName) => {
-        const foundIndex = WARP_ICONS.findIndex(i => i.name.toLowerCase() === iconName.toLowerCase());
-        if (foundIndex !== -1) {
-            return foundIndex;
-        }
-        return 0;
+        if (field === 'index') return foundIndex;
+        return WARP_ICONS[foundIndex][field];
     }
 
 
@@ -249,7 +266,7 @@ export const Warps = () => {
                     rawtext: [{translate: "warps:add.field.name.placeholder"}]
                 }, {defaultValue: name}
             )
-            .dropdown({rawtext: [{translate: "warps:add.field.icon"}]}, iconOptions, {defaultValueIndex: getIconIndexByName(iconName)})
+            .dropdown({rawtext: [{translate: "warps:add.field.icon"}]}, iconOptions, {defaultValueIndex: selectFieldFromIcon('index', 'name', iconName)})
             .textField({rawtext: [{translate: "warps:add.field.x"}]}, {
                 rawtext: [{translate: "warps:add.field.x.placeholder", with: [xCoord.toString()]}]
             }, {defaultValue: xCoord.toString()})
@@ -278,14 +295,13 @@ export const Warps = () => {
             const warpY = parseFloat(res.formValues[3]);
             const warpZ = parseFloat(res.formValues[4]);
             const warpDimension = res.formValues[5].toLowerCase();
-            addWarpItem(player, warpName, getIconNameByIndex(iconIndex), warpX, warpY, warpZ, warpDimension);
+            addWarpItem(player, warpName, iconIndex, warpX, warpY, warpZ, warpDimension);
         })
     }
 
-    const addWarpItem = (player, warpName, iconName, warpX, warpY, warpZ, warpDimension) => {
+    const addWarpItem = (player, warpName, iconIndex, warpX, warpY, warpZ, warpDimension) => {
 
-        let selectedIconIndex = getIconIndexByName(iconName);
-        const selectedIcon = WARP_ICONS[selectedIconIndex] || WARP_ICONS[0];
+        const selectedIcon = WARP_ICONS[iconIndex] || WARP_ICONS[0];
 
         if (isNaN(warpX) || isNaN(warpY) || isNaN(warpZ)) {
             return player.sendMessage({translate: "warps:add.coords_must_be_number"});
@@ -354,7 +370,7 @@ export const Warps = () => {
                             {text: warp.x.toString()},
                             {text: warp.y.toString()},
                             {text: warp.z.toString()},
-                            {translate: getDimensionTranslationKey(warp.dimension)}
+                            {translate: getDimensionTranslationKey(warp.dimension)},
                         ]
                     }
                 }]
@@ -397,7 +413,8 @@ export const Warps = () => {
                             {text: warp.x.toString()},
                             {text: warp.y.toString()},
                             {text: warp.z.toString()},
-                            {translate: getDimensionTranslationKey(warp.dimension)}
+                            {translate: getDimensionTranslationKey(warp.dimension)},
+                            {translate: selectFieldFromIcon('translationKey', 'path', warp.icon)}
                         ]
                     }
                 }]
@@ -485,7 +502,8 @@ export const Warps = () => {
                         // Jeśli location jest podane, użyj go, w przeciwnym razie użyj lokalizacji gracza
                         const targetLocation = location || player.location;
                         if (warpName && iconName && targetLocation) {
-                            addWarpItem(player, warpName, iconName, targetLocation.x, targetLocation.y, targetLocation.z, getPlayerDimension(player));
+                            const iconIndex = selectFieldFromIcon('index', 'name', iconName);
+                            addWarpItem(player, warpName, iconIndex, targetLocation.x, targetLocation.y, targetLocation.z, getPlayerDimension(player));
                         } else {
                             addWarpItemMenu(player, targetLocation, {name: warpName, iconName: iconName})
                         }
@@ -531,7 +549,35 @@ export const Warps = () => {
                         return;
                     }
                     if (block.typeId === "air") return;
-                    addWarpItemMenu(player, block.location, {addY: 1})
+
+                    // Określ kierunek kliknięcia i dodaj 1 blok w tym kierunku
+                    let addX = 0, addY = 0, addZ = 0;
+
+                    switch (event.blockFace) {
+                        case Minecraft.Direction.Up:
+                            addY = 1; // Dodaj 1 blok w górę (nad blokiem)
+                            break;
+                        case Minecraft.Direction.Down:
+                            addY = -1; // Dodaj 1 blok w dół (pod blokiem)
+                            break;
+                        case Minecraft.Direction.North:
+                            addZ = -1; // Dodaj 1 blok na północ (obok bloku)
+                            break;
+                        case Minecraft.Direction.South:
+                            addZ = 1; // Dodaj 1 blok na południe (obok bloku)
+                            break;
+                        case Minecraft.Direction.East:
+                            addX = 1; // Dodaj 1 blok na wschód (obok bloku)
+                            break;
+                        case Minecraft.Direction.West:
+                            addX = -1; // Dodaj 1 blok na zachód (obok bloku)
+                            break;
+                        default:
+                            addY = 1; // Domyślnie nad blokiem
+                            break;
+                    }
+
+                    addWarpItemMenu(player, block.location, {addX: addX, addY: addY, addZ: addZ})
                 },
                 onUse: (event) => {
                     const player = event.source;
