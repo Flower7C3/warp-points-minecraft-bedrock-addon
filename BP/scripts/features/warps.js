@@ -2,6 +2,17 @@ import * as Minecraft from "@minecraft/server"
 import * as MinecraftUi from "@minecraft/server-ui"
 import {system, CustomCommandParamType, CustomCommandStatus} from "@minecraft/server";
 
+
+const WarpIcon = (key, category, path) => {
+    return {
+        name: key,
+        path: `textures/icons/${path}`,
+        category: category,
+        translatedName: `warps:icon.${key}`,
+        translatedCategory: `warps:category.${category}`
+    };
+}
+
 export const Warps = () => {
     ///=================================================================================================================
     // === Constants (module scope) ===
@@ -11,66 +22,78 @@ export const Warps = () => {
     const COMMAND_WARP_REMOVE = "warps:warps_remove";
     const ITEM_COMPONENT_ID = "warps:warp_menu";
 
-    // Lista dostępnych obrazków dla warps - zorganizowane w kategorie, posortowane alfabetycznie
+    // Lista dostępnych obrazków dla warps — zorganizowane w kategorie, posortowane alfabetycznie
     const WARP_ICONS = [
         // === LOKACJE SPECJALNE ===
-        {name: "Map_Marker", translationKey: "warps:icon.Map_Marker", path: "textures/icons/Map_Marker.png", category: "special"},
-        {name: "Heart", translationKey: "warps:icon.Heart", path: "textures/icons/Heart_Full.png", category: "special"},
-        {name: "Spawn", translationKey: "warps:icon.Spawn", path: "textures/icons/Map_Poi.png", category: "special"},
+        WarpIcon("Map_Marker", "special", "Map_Marker.png"),
+        WarpIcon("Heart", "special", "Heart_Full.png"),
+        WarpIcon("Spawn", "special", "Map_Poi.png"),
 
         // === MIEJSCA ===
-        {name: "Home", translationKey: "warps:icon.Home", path: "textures/icons/Home.png", category: "places"},
-        {name: "Castle", translationKey: "warps:icon.Castle", path: "textures/icons/Castle.png", category: "places"},
-        {name: "Church", translationKey: "warps:icon.Church", path: "textures/icons/Church.png", category: "places"},
-        {name: "Offices", translationKey: "warps:icon.Offices", path: "textures/icons/Offices.png", category: "places"},
-        {name: "Factory", translationKey: "warps:icon.Factory", path: "textures/icons/Factory.png", category: "places"},
-        {name: "Bank", translationKey: "warps:icon.Bank", path: "textures/icons/Bank.png", category: "places"},
-        {name: "Lighthouse", translationKey: "warps:icon.Lighthouse", path: "textures/icons/Lighthouse.png", category: "places"},
-        {name: "Tower", translationKey: "warps:icon.Tower", path: "textures/icons/Tower.png", category: "places"},
-        {name: "Fire", translationKey: "warps:icon.Fire", path: "textures/icons/Fire.png", category: "places"},
-        {name: "Hospital", translationKey: "warps:icon.Hospital", path: "textures/icons/Hospital.png", category: "places"},
-        {name: "Portal", translationKey: "warps:icon.Portal", path: "textures/icons/Portal.png", category: "places"},
+        WarpIcon("Home", "places", "Home.png"),
+        WarpIcon("Hotel", "places", "Hotel.png"),
+        WarpIcon("Castle", "places", "Castle.png"),
+        WarpIcon("Tower", "places", "Tower.png"),
+        WarpIcon("Lighthouse", "places", "Lighthouse.png"),
+        {},
+        WarpIcon("Church", "places", "Church.png"),
+        {},
+        WarpIcon("Police", "places", "Police.png"),
+        WarpIcon("Fire_Brigade", "places", "Fire_Brigade.png"),
+        WarpIcon("Hospital", "places", "Hospital.png"),
+        {},
+        WarpIcon("Government", "places", "Government.png"),
+        WarpIcon("Bank", "places", "Bank.png"),
+        WarpIcon("Museum", "places", "Museum.png"),
+        WarpIcon("School", "places", "School.png"),
+        WarpIcon("Offices", "places", "Offices.png"),
+        WarpIcon("Factory", "places", "Factory.png"),
 
         // === ZASOBY === (posortowane od najpospolitszych do najrzadszych)
-        {name: "Coal", translationKey: "warps:icon.Coal", path: "textures/icons/Coal.png", category: "resources"},
-        {name: "Copper", translationKey: "warps:icon.Copper", path: "textures/icons/Copper.png", category: "resources"},
-        {name: "Iron", translationKey: "warps:icon.Iron", path: "textures/icons/Iron.png", category: "resources"},
-        {name: "Redstone", translationKey: "warps:icon.Redstone", path: "textures/icons/Redstone.png", category: "resources"},
-        {name: "Lapis", translationKey: "warps:icon.Lapis", path: "textures/icons/Lapis.png", category: "resources"},
-        {name: "Gold", translationKey: "warps:icon.Gold", path: "textures/icons/Gold.png", category: "resources"},
-        {name: "Emerald", translationKey: "warps:icon.Emerald", path: "textures/icons/Emerald.png", category: "resources"},
-        {name: "Quartz", translationKey: "warps:icon.Quartz", path: "textures/icons/Quartz.png", category: "resources"},
-        {name: "Diamond", translationKey: "warps:icon.Diamond", path: "textures/icons/Diamond.png", category: "resources"},
-        {name: "Amethyst", translationKey: "warps:icon.Amethyst", path: "textures/icons/Amethyst.png", category: "resources"},
+        WarpIcon("Coal", "resources", "Coal.png"),
+        WarpIcon("Copper", "resources", "Copper.png"),
+        WarpIcon("Iron", "resources", "Iron.png"),
+        {},
+        WarpIcon("Redstone", "resources", "Redstone.png"),
+        WarpIcon("Lapis", "resources", "Lapis.png"),
+        WarpIcon("Gold", "resources", "Gold.png"),
+        {},
+        WarpIcon("Emerald", "resources", "Emerald.png"),
+        WarpIcon("Quartz", "resources", "Quartz.png"),
+        WarpIcon("Diamond", "resources", "Diamond.png"),
+        WarpIcon("Amethyst", "resources", "Amethyst.png"),
 
         // === FARMY ===
-        {name: "Animal_Farm", translationKey: "warps:icon.Animal Farm", path: "textures/icons/Animal_Farm.png", category: "farms"},
-        {name: "Crop_Farm", translationKey: "warps:icon.Crop Farm", path: "textures/icons/Crop_Farm.png", category: "farms"},
-        {name: "Mob_Farm", translationKey: "warps:icon.Mob Farm", path: "textures/icons/Mob_Farm.png", category: "farms"},
+        WarpIcon("Animal_Farm", "farms", "Animal_Farm.png"),
+        WarpIcon("Crop_Farm", "farms", "Crop_Farm.png"),
+        WarpIcon("Mob_Farm", "farms", "Mob_Farm.png"),
 
         // === NARZĘDZIA I BLOKI === (posortowane od podstawowych do najrzadszych)
-        {name: "Crafting", translationKey: "warps:icon.Crafting", path: "textures/icons/Crafting_Table.png", category: "tools"},
-        {name: "Furnace", translationKey: "warps:icon.Furnace", path: "textures/icons/Furnace.png", category: "tools"},
-        {name: "Chest", translationKey: "warps:icon.Chest", path: "textures/icons/Chest.png", category: "tools"},
-        {name: "Bed", translationKey: "warps:icon.Bed", path: "textures/icons/Bed.png", category: "tools"},
-        {name: "Barrel", translationKey: "warps:icon.Barrel", path: "textures/icons/Barrel.png", category: "tools"},
-        {name: "Campfire", translationKey: "warps:icon.Campfire", path: "textures/icons/Campfire.png", category: "tools"},
-        {name: "Composter", translationKey: "warps:icon.Composter", path: "textures/icons/Composter.png", category: "tools"},
-        {name: "Bell", translationKey: "warps:icon.Bell", path: "textures/icons/Bell.png", category: "tools"},
-        {name: "Anvil", translationKey: "warps:icon.Anvil", path: "textures/icons/Anvil.png", category: "tools"},
-        {name: "Enchanting", translationKey: "warps:icon.Enchanting", path: "textures/icons/Enchanting_Table.png", category: "tools"},
-        {name: "Brewing_Stand", translationKey: "warps:icon.Brewing stand", path: "textures/icons/Brewing_Stand.png", category: "tools"},
-        {name: "Smithing_Table", translationKey: "warps:icon.Smithing Table", path: "textures/icons/Smithing_Table.png", category: "tools"},
-        {name: "Loom", translationKey: "warps:icon.Loom", path: "textures/icons/Loom.png", category: "tools"},
-        {name: "Cartography_Table", translationKey: "warps:icon.Cartography Table", path: "textures/icons/Cartography_Table.png", category: "tools"},
-        {name: "Stonecutter", translationKey: "warps:icon.Stonecutter", path: "textures/icons/Stonecutter.png", category: "tools"},
-        {name: "Grindstone", translationKey: "warps:icon.Grindstone", path: "textures/icons/Grindstone.png", category: "tools"},
-        {name: "Ender_Chest", translationKey: "warps:icon.Ender_Chest", path: "textures/icons/Ender_Chest.png", category: "tools"},
-        {name: "Lodestone", translationKey: "warps:icon.Lodestone", path: "textures/icons/Lodestone.png", category: "tools"},
-        {name: "Respawn_Anchor", translationKey: "warps:icon.Respawn Anchor", path: "textures/icons/Respawn_Anchor.png", category: "tools"},
-        {name: "Beacon", translationKey: "warps:icon.Beacon", path: "textures/icons/Beacon.png", category: "tools"},
-        {name: "Spawner", translationKey: "warps:icon.Spawner", path: "textures/icons/Spawner.png", category: "tools"},
-        {name: "Shulker_Box", translationKey: "warps:icon.Shulker Box", path: "textures/icons/Shulker_Box.png", category: "tools"},
+        WarpIcon("Bed", "tools", "Bed.png"),
+        WarpIcon("Crafting", "tools", "Crafting_Table.png"),
+        {},
+        WarpIcon("Furnace", "tools", "Furnace.png"),
+        WarpIcon("Campfire", "tools", "Campfire.png"),
+        {},
+        WarpIcon("Chest", "tools", "Chest.png"),
+        WarpIcon("Barrel", "tools", "Barrel.png"),
+        WarpIcon("Ender_Chest", "tools", "Ender_Chest.png"),
+        WarpIcon("Shulker_Box", "tools", "Shulker_Box.png"),
+        {},
+        WarpIcon("Composter", "tools", "Composter.png"),
+        WarpIcon("Bell", "tools", "Bell.png"),
+        WarpIcon("Anvil", "tools", "Anvil.png"),
+        WarpIcon("Enchanting", "tools", "Enchanting_Table.png"),
+        WarpIcon("Brewing_Stand", "tools", "Brewing_Stand.png"),
+        WarpIcon("Smithing_Table", "tools", "Smithing_Table.png"),
+        WarpIcon("Loom", "tools", "Loom.png"),
+        WarpIcon("Cartography_Table", "tools", "Cartography_Table.png"),
+        WarpIcon("Stonecutter", "tools", "Stonecutter.png"),
+        WarpIcon("Grindstone", "tools", "Grindstone.png"),
+        WarpIcon("Lodestone", "tools", "Lodestone.png"),
+        WarpIcon("Respawn_Anchor", "tools", "Respawn_Anchor.png"),
+        WarpIcon("Beacon", "tools", "Beacon.png"),
+        WarpIcon("Spawner", "tools", "Spawner.png"),
     ];
 
     const useLock = new Map(); // Map<Player.id, boolean>
@@ -109,6 +132,27 @@ export const Warps = () => {
     }
 
     ///=================================================================================================================
+    // === Icon Functions ===
+    // Pobierz unikalne kategorie z ikon
+    const getCategories = () => {
+        const categories = new Set();
+        WARP_ICONS.forEach(icon => {
+            if (icon && icon.category) {
+                categories.add(icon.category);
+            }
+        });
+        return Array.from(categories);
+    }
+
+    // Pobierz ikony z danej kategorii
+    const getIconsByCategory = (category) => {
+        return WARP_ICONS.filter(icon => icon && icon.category === category);
+    }
+    const findIconByName = (iconName) => {
+        return WARP_ICONS.find(icon => icon && icon.name === iconName);
+    }
+
+    ///=================================================================================================================
     // === Helper Functions ===
     const getPlayer = (origin) => {
         let player = null;
@@ -127,16 +171,6 @@ export const Warps = () => {
     const getDimensionTranslationKey = (dimension) => {
         return `warps:dimension.${dimension}`;
     }
-
-    const selectFieldFromIcon = (field, whereKey, whereValue) => {
-        let foundIndex = WARP_ICONS.findIndex(i => i[whereKey].toLowerCase() === whereValue.toLowerCase());
-        if (foundIndex === -1) {
-            foundIndex = 0; // Domyślnie pierwsza ikona, jeśli nie znaleziono
-        }
-        if (field === 'index') return foundIndex;
-        return WARP_ICONS[foundIndex][field];
-    }
-
 
     const calculateDistance = (x1, y1, z1, x2, y2, z2) => {
         const dx = x2 - x1;
@@ -249,7 +283,7 @@ export const Warps = () => {
                         ]
                     }
                 }]
-            }, (warp.icon || WARP_ICONS[0].path))
+            }, (warp.icon ? (WARP_ICONS.find(icon => icon && icon.name === warp.icon) || {}).path || "" : (WARP_ICONS.find(icon => icon && icon.path) || {}).path || ""))
         })
 
         actionForm
@@ -263,33 +297,20 @@ export const Warps = () => {
         })
     }
 
-    // Pobierz unikalne kategorie z ikon
-    const getCategories = () => {
-        const categories = new Set();
-        WARP_ICONS.forEach(icon => {
-            if (icon.category) {
-                categories.add(icon.category);
-            }
-        });
-        return Array.from(categories);
-    }
-
-    // Pobierz ikony z danej kategorii
-    const getIconsByCategory = (category) => {
-        return WARP_ICONS.filter(icon => icon.category === category);
-    }
-
-    const addWarpItemMenu = (player, {warpName = "", iconName = "", category = "", targetLocation, warpDimensionId}) => {
+    const showAddWarpFormStep1 = (player, {
+        warpName = "",
+        iconName = "",
+        category = "",
+        targetLocation,
+        warpDimensionId
+    }) => {
         // Jeśli kategoria i ikona są już wybrane (np. po błędzie), pominij krok 1 i 2
         if (category && iconName) {
             const categoryIcons = getIconsByCategory(category);
             const selectedIcon = categoryIcons.find(icon => icon.name === iconName);
             if (selectedIcon) {
-                const selectedIconIndex = WARP_ICONS.indexOf(selectedIcon);
-                if (selectedIconIndex >= 0) {
-                    showWarpFormStep3(player, warpName, selectedIconIndex, targetLocation, warpDimensionId);
-                    return;
-                }
+                showAddWarpFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId);
+                return;
             }
         }
 
@@ -311,21 +332,21 @@ export const Warps = () => {
             }
 
             const selectedCategory = categories[categoryRes.selection];
-            showWarpFormStep2(player, warpName, selectedCategory, targetLocation, warpDimensionId);
+            showAddWarpFormStep2(player, warpName, selectedCategory, targetLocation, warpDimensionId);
         });
     }
 
-    const showWarpFormStep2 = (player, warpName, category, targetLocation, warpDimensionId) => {
+    const showAddWarpFormStep2 = (player, warpName, category, targetLocation, warpDimensionId) => {
         // Krok 2/3: Wybór ikony z wybranej kategorii
-        const categoryIcons = getIconsByCategory(category);
-        
+        const categoryIcons = WARP_ICONS.filter(icon => icon && icon.category === category);
+
         const iconForm = new MinecraftUi.ActionFormData()
             .title({rawtext: [{translate: "warps:add.step2.title"}]})
             .body({rawtext: [{translate: "warps:add.select_icon"}]});
 
         categoryIcons.forEach((icon) => {
             iconForm.button({
-                rawtext: [{translate: icon.translationKey}]
+                rawtext: [{translate: icon.translatedName}]
             }, icon.path);
         });
 
@@ -335,15 +356,29 @@ export const Warps = () => {
             }
 
             const selectedIcon = categoryIcons[iconRes.selection];
-            const selectedIconIndex = WARP_ICONS.indexOf(selectedIcon);
-            showWarpFormStep3(player, warpName, selectedIconIndex, targetLocation, warpDimensionId);
+            if (!selectedIcon) {
+                return;
+            }
+
+            showAddWarpFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId);
         });
     }
 
-    const showWarpFormStep3 = (player, warpName, iconIndex, targetLocation, warpDimensionId) => {
+    const showAddWarpFormStep3 = (player, warpName, icon, targetLocation, warpDimensionId) => {
         // Krok 3/3: Nazwa i współrzędne
         new MinecraftUi.ModalFormData()
             .title({rawtext: [{translate: "warps:add.step3.title"}]})
+            .label({rawtext: [{translate: "warps:add.field.category.label"}]})
+            .label({
+                rawtext: [{
+                    translate: "warps:add.field.category.value", with: {
+                        rawtext: [
+                            {translate: icon.translatedCategory},
+                            {translate: icon.translatedName}
+                        ]
+                    }
+                }]
+            })
             .textField({rawtext: [{translate: "warps:add.field.name.label"}]}, {rawtext: [{translate: "warps:add.field.name.placeholder"}]}, {defaultValue: warpName})
             .textField({rawtext: [{translate: "warps:add.field.x.label"}]}, {rawtext: [{translate: "warps:add.field.x.placeholder"}]}, {defaultValue: targetLocation.x.toString()})
             .textField({rawtext: [{translate: "warps:add.field.y.label"}]}, {rawtext: [{translate: "warps:add.field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
@@ -354,30 +389,33 @@ export const Warps = () => {
                 return;
             }
 
+            const warpNameIndex = 2;
+            const targetLocationXIndex = 3
+            const targetLocationYIndex = 4
+            const targetLocationZIndex = 5
+
             // Indeksy formValues: [0]=name, [1]=x, [2]=y, [3]=z
-            if (!res.formValues[0] || !res.formValues[1] || !res.formValues[2] || !res.formValues[3]) {
+            if (!res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex]) {
                 player.sendMessage({translate: "warps:add.fill_required"});
                 // Ponownie pokaż formularz z wypełnionymi danymi
-                showWarpFormStep3(player, warpName, iconIndex, targetLocation, warpDimensionId);
+                showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
                 return;
             }
 
-            warpName = res.formValues[0].replace('"', "'");
-            targetLocation.x = parseFloat(res.formValues[1]);
-            targetLocation.y = parseFloat(res.formValues[2]);
-            targetLocation.z = parseFloat(res.formValues[3]);
-            addWarpItem(player, warpName, iconIndex, targetLocation, warpDimensionId);
+            warpName = res.formValues[warpNameIndex].replace('"', "'");
+            targetLocation.x = parseFloat(res.formValues[targetLocationXIndex].toString());
+            targetLocation.y = parseFloat(res.formValues[targetLocationYIndex].toString());
+            targetLocation.z = parseFloat(res.formValues[targetLocationZIndex].toString());
+            addWarpItem(player, warpName, icon, targetLocation, warpDimensionId);
         });
     }
 
-    const addWarpItem = (player, warpName, iconIndex, targetLocation, warpDimensionId) => {
-
-        const selectedIcon = WARP_ICONS[iconIndex] || WARP_ICONS[0];
+    const addWarpItem = (player, warpName, icon, targetLocation, warpDimensionId) => {
 
         if (isNaN(targetLocation.x) || isNaN(targetLocation.y) || isNaN(targetLocation.z)) {
             player.sendMessage({translate: "warps:add.coords_must_be_number"});
             // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
-            showWarpFormStep3(player, warpName, iconIndex, targetLocation, warpDimensionId);
+            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
             return;
         }
 
@@ -394,7 +432,7 @@ export const Warps = () => {
                 with: [warpName]
             });
             // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
-            showWarpFormStep3(player, warpName, iconIndex, targetLocation, warpDimensionId);
+            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
             return;
         }
 
@@ -404,7 +442,7 @@ export const Warps = () => {
             y: targetLocation.y,
             z: targetLocation.z,
             dimension: warpDimensionId,
-            icon: selectedIcon.path
+            icon: icon.name
         };
 
         warps.push(newWarp);
@@ -447,7 +485,7 @@ export const Warps = () => {
                         ]
                     }
                 }]
-            }, (warp.icon || WARP_ICONS[0].path))
+            }, (warp.icon ? (WARP_ICONS.find(icon => icon && icon.name === warp.icon) || {}).path || "" : (WARP_ICONS.find(icon => icon && icon.path) || {}).path || ""))
         })
 
         actionForm.show(player).then((res) => {
@@ -475,6 +513,7 @@ export const Warps = () => {
     }
 
     const confirmRemoveWarp = (player, warp) => {
+        const icon = findIconByName(warp.icon)
         new MinecraftUi.MessageFormData()
             .title({rawtext: [{translate: "warps:remove.confirm.title"}]})
             .body({
@@ -487,7 +526,8 @@ export const Warps = () => {
                             {text: warp.y.toString()},
                             {text: warp.z.toString()},
                             {translate: getDimensionTranslationKey(warp.dimension)},
-                            {translate: selectFieldFromIcon('translationKey', 'path', warp.icon)}
+                            {translate: icon.translatedCategory},
+                            {translate: icon.translatedName}
                         ]
                     }
                 }]
@@ -523,7 +563,7 @@ export const Warps = () => {
         Minecraft.system.beforeEvents.startup.subscribe((event) => {
             console.info("[WARPS!] Loaded Script")
 
-            event.customCommandRegistry.registerEnum("warps:icon", WARP_ICONS.map(icon => icon.name))
+            event.customCommandRegistry.registerEnum("warps:icon", WARP_ICONS.filter(icon => icon && icon.name).map(icon => icon.name))
 
             event.customCommandRegistry.registerCommand(
                 {
@@ -576,10 +616,10 @@ export const Warps = () => {
                         const targetLocation = location || player.location;
                         const warpDimensionId = getPlayerDimension(player);
                         if (warpName && iconName && targetLocation) {
-                            const iconIndex = selectFieldFromIcon('index', 'name', iconName);
-                            addWarpItem(player, warpName, iconIndex, targetLocation, warpDimensionId);
+                            const icon = findIconByName(iconName);
+                            addWarpItem(player, warpName, icon, targetLocation, warpDimensionId);
                         } else {
-                            addWarpItemMenu(player, {
+                            showAddWarpFormStep1(player, {
                                 warpName: warpName,
                                 iconName: iconName,
                                 targetLocation: targetLocation,
@@ -657,7 +697,7 @@ export const Warps = () => {
                             break;
                     }
 
-                    addWarpItemMenu(player, {
+                    showAddWarpFormStep1(player, {
                         targetLocation: targetLocation,
                         warpDimensionId: getPlayerDimension(player)
                     })
