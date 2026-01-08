@@ -3,8 +3,10 @@ warps:menu.no_warps=§r§8[§dWarps!§8] §cThere are no Warps!§r
 warps:menu.button_format=§r§l%1$s§r §o%6$s meters\n§f(%2$s,%3$s,%4$s)§r
 warps:remove.button_format=§r§l%s§r §f(%s,%s,%s)§r %s
 
-warps:add.step1.title=§r§l§8Add Warp§r (step 1/2)§r
-warps:add.step2.title=§r§l§8Add Warp§r (step 2/2)§r
+warps:add.step1.title=§r§l§8Add Warp§r (step 1/3)§r
+warps:add.step2.title=§r§l§8Add Warp§r (step 2/3)§r
+warps:add.step3.title=§r§l§8Add Warp§r (step 3/3)§r
+warps:add.select_category=Select a category:
 warps:add.field..label=Place name
 warps:add.field.name.placeholder=Place name (required, string)
 warps:add.field.x.label=X coordinate
@@ -38,23 +40,69 @@ warps:dimension.overworld=§r§2Overworld§r
 warps:dimension.nether=§r§cNether§r
 warps:dimension.the_end=§r§5The End§r
 
-warps:icon.Poi=Point of Interest
+# === SPECIAL LOCATIONS ===
+warps:icon.Map_Marker=Map Marker
 warps:icon.Heart=Heart
-warps:icon.Plains Village=Plains Village
-warps:icon.Savanna Village=Savanna Village
-warps:icon.Snowy Village=Snowy Village
-warps:icon.Taiga Village=Taiga Village
-warps:icon.Ocean Monument=Ocean Monument
-warps:icon.Woodland Mansion=Woodland Mansion
-warps:icon.Ore=Ore
-warps:icon.Boat=Boat
-warps:icon.Brewing stand=Brewing Stand
-warps:icon.Mine=Mine
+warps:icon.Spawn=Spawn
+
+# === PLACES ===
+warps:icon.Home=Home
+warps:icon.Castle=Castle
+warps:icon.Church=Church
+warps:icon.Offices=Offices
+warps:icon.Factory=Factory
+warps:icon.Bank=Bank
+warps:icon.Lighthouse=Lighthouse
+warps:icon.Tower=Tower
+warps:icon.Fire=Fire
+warps:icon.Hospital=Hospital
+warps:icon.Portal=Portal
+
+# === RESOURCES ===
+warps:icon.Coal=Coal
+warps:icon.Copper=Copper
+warps:icon.Iron=Iron
+warps:icon.Redstone=Redstone
+warps:icon.Lapis=Lapis Lazuli
+warps:icon.Gold=Gold
+warps:icon.Emerald=Emerald
+warps:icon.Quartz=Nether Quartz
+warps:icon.Diamond=Diamond
+warps:icon.Amethyst=Amethyst
+
+# === FARMS ===
+warps:icon.Mob Farm=Mob Farm
+warps:icon.Crop Farm=Crop Farm
+warps:icon.Animal Farm=Animal Farm
+
+# === TOOLS & BLOCKS ===
 warps:icon.Crafting=Crafting Table
 warps:icon.Enchanting=Enchanting Table
-warps:icon.Fishing=Fishing
-warps:icon.Agriculture=Agriculture
-warps:icon.Food=Food
+warps:icon.Brewing stand=Brewing Stand
+warps:icon.Anvil=Anvil
+warps:icon.Furnace=Furnace
+warps:icon.Smithing Table=Smithing Table
+warps:icon.Loom=Loom
+warps:icon.Cartography Table=Cartography Table
+warps:icon.Stonecutter=Stonecutter
+warps:icon.Grindstone=Grindstone
+warps:icon.Bed=Bed
+warps:icon.Bell=Bell
+warps:icon.Beacon=Beacon
+warps:icon.Campfire=Campfire
+warps:icon.Composter=Composter
+warps:icon.Barrel=Barrel
 warps:icon.Chest=Chest
 warps:icon.Ender_Chest=Ender Chest
-warps:icon.Tnt=TNT
+warps:icon.Shulker Box=Shulker Box
+warps:icon.Respawn Anchor=Respawn Anchor
+warps:icon.Lodestone=Lodestone
+warps:icon.Spawner=Spawner
+
+# === CATEGORIES ===
+# === CATEGORIES ===
+warps:category.special=Special Locations
+warps:category.places=Places
+warps:category.resources=Resources
+warps:category.farms=Farms
+warps:category.tools=Tools & Blocks

@@ -11,52 +11,66 @@ export const Warps = () => {
     const COMMAND_WARP_REMOVE = "warps:warps_remove";
     const ITEM_COMPONENT_ID = "warps:warp_menu";
 
-    // Lista dostępnych obrazków dla warps
+    // Lista dostępnych obrazków dla warps - zorganizowane w kategorie, posortowane alfabetycznie
     const WARP_ICONS = [
-        {name: "Poi", translationKey: "warps:icon.Poi", path: "textures/icons/Map_Poi.png"},
-        {name: "Heart", translationKey: "warps:icon.Heart", path: "textures/icons/Heart_Full.png"},
-        {
-            name: "Plains_Village",
-            translationKey: "warps:icon.Plains Village",
-            path: "textures/icons/Map_Plains_Village.png"
-        },
-        {
-            name: "Savanna_Village",
-            translationKey: "warps:icon.Savanna Village",
-            path: "textures/icons/Map_Savanna_Village.png"
-        },
-        {
-            name: "Snowy_Village",
-            translationKey: "warps:icon.Snowy Village",
-            path: "textures/icons/Map_Snowy_Village.png"
-        },
-        {
-            name: "Taiga_Village",
-            translationKey: "warps:icon.Taiga Village",
-            path: "textures/icons/Map_Taiga_Village.png"
-        },
-        {
-            name: "Ocean_Monument",
-            translationKey: "warps:icon.Ocean Monument",
-            path: "textures/icons/Map_Ocean_Monument.png"
-        },
-        {
-            name: "Woodland_Mansion",
-            translationKey: "warps:icon.Woodland Mansion",
-            path: "textures/icons/Map_Woodland_Mansion.png"
-        },
-        {name: "Ore", translationKey: "warps:icon.Ore", path: "textures/icons/Amethyst_Cluster.png"},
-        {name: "Boat", translationKey: "warps:icon.Boat", path: "textures/icons/Boat.png"},
-        {name: "Brewing_Stand", translationKey: "warps:icon.Brewing stand", path: "textures/icons/Brewing_Stand.png"},
-        {name: "Mine", translationKey: "warps:icon.Mine", path: "textures/icons/Chest_Minecart.png"},
-        {name: "Crafting", translationKey: "warps:icon.Crafting", path: "textures/icons/Crafting_Table.png"},
-        {name: "Enchanting", translationKey: "warps:icon.Enchanting", path: "textures/icons/Enchanting_Table.png"},
-        {name: "Food", translationKey: "warps:icon.Food", path: "textures/icons/Food_Full.png"},
-        {name: "Agriculture", translationKey: "warps:icon.Agriculture", path: "textures/icons/Grass.png"},
-        {name: "Fishing", translationKey: "warps:icon.Fishing", path: "textures/icons/Fishing_Rod.png"},
-        {name: "Chest", translationKey: "warps:icon.Chest", path: "textures/icons/Chest.png"},
-        {name: "Ender_Chest", translationKey: "warps:icon.Ender_Chest", path: "textures/icons/Ender_Chest.png"},
-        {name: "Tnt", translationKey: "warps:icon.Tnt", path: "textures/icons/Tnt.png"},
+        // === LOKACJE SPECJALNE ===
+        {name: "Map_Marker", translationKey: "warps:icon.Map_Marker", path: "textures/icons/Map_Marker.png", category: "special"},
+        {name: "Heart", translationKey: "warps:icon.Heart", path: "textures/icons/Heart_Full.png", category: "special"},
+        {name: "Spawn", translationKey: "warps:icon.Spawn", path: "textures/icons/Map_Poi.png", category: "special"},
+
+        // === MIEJSCA ===
+        {name: "Home", translationKey: "warps:icon.Home", path: "textures/icons/Home.png", category: "places"},
+        {name: "Castle", translationKey: "warps:icon.Castle", path: "textures/icons/Castle.png", category: "places"},
+        {name: "Church", translationKey: "warps:icon.Church", path: "textures/icons/Church.png", category: "places"},
+        {name: "Offices", translationKey: "warps:icon.Offices", path: "textures/icons/Offices.png", category: "places"},
+        {name: "Factory", translationKey: "warps:icon.Factory", path: "textures/icons/Factory.png", category: "places"},
+        {name: "Bank", translationKey: "warps:icon.Bank", path: "textures/icons/Bank.png", category: "places"},
+        {name: "Lighthouse", translationKey: "warps:icon.Lighthouse", path: "textures/icons/Lighthouse.png", category: "places"},
+        {name: "Tower", translationKey: "warps:icon.Tower", path: "textures/icons/Tower.png", category: "places"},
+        {name: "Fire", translationKey: "warps:icon.Fire", path: "textures/icons/Fire.png", category: "places"},
+        {name: "Hospital", translationKey: "warps:icon.Hospital", path: "textures/icons/Hospital.png", category: "places"},
+        {name: "Portal", translationKey: "warps:icon.Portal", path: "textures/icons/Portal.png", category: "places"},
+
+        // === ZASOBY === (posortowane od najpospolitszych do najrzadszych)
+        {name: "Coal", translationKey: "warps:icon.Coal", path: "textures/icons/Coal.png", category: "resources"},
+        {name: "Copper", translationKey: "warps:icon.Copper", path: "textures/icons/Copper.png", category: "resources"},
+        {name: "Iron", translationKey: "warps:icon.Iron", path: "textures/icons/Iron.png", category: "resources"},
+        {name: "Redstone", translationKey: "warps:icon.Redstone", path: "textures/icons/Redstone.png", category: "resources"},
+        {name: "Lapis", translationKey: "warps:icon.Lapis", path: "textures/icons/Lapis.png", category: "resources"},
+        {name: "Gold", translationKey: "warps:icon.Gold", path: "textures/icons/Gold.png", category: "resources"},
+        {name: "Emerald", translationKey: "warps:icon.Emerald", path: "textures/icons/Emerald.png", category: "resources"},
+        {name: "Quartz", translationKey: "warps:icon.Quartz", path: "textures/icons/Quartz.png", category: "resources"},
+        {name: "Diamond", translationKey: "warps:icon.Diamond", path: "textures/icons/Diamond.png", category: "resources"},
+        {name: "Amethyst", translationKey: "warps:icon.Amethyst", path: "textures/icons/Amethyst.png", category: "resources"},
+
+        // === FARMY ===
+        {name: "Animal_Farm", translationKey: "warps:icon.Animal Farm", path: "textures/icons/Animal_Farm.png", category: "farms"},
+        {name: "Crop_Farm", translationKey: "warps:icon.Crop Farm", path: "textures/icons/Crop_Farm.png", category: "farms"},
+        {name: "Mob_Farm", translationKey: "warps:icon.Mob Farm", path: "textures/icons/Mob_Farm.png", category: "farms"},
+
+        // === NARZĘDZIA I BLOKI === (posortowane od podstawowych do najrzadszych)
+        {name: "Crafting", translationKey: "warps:icon.Crafting", path: "textures/icons/Crafting_Table.png", category: "tools"},
+        {name: "Furnace", translationKey: "warps:icon.Furnace", path: "textures/icons/Furnace.png", category: "tools"},
+        {name: "Chest", translationKey: "warps:icon.Chest", path: "textures/icons/Chest.png", category: "tools"},
+        {name: "Bed", translationKey: "warps:icon.Bed", path: "textures/icons/Bed.png", category: "tools"},
+        {name: "Barrel", translationKey: "warps:icon.Barrel", path: "textures/icons/Barrel.png", category: "tools"},
+        {name: "Campfire", translationKey: "warps:icon.Campfire", path: "textures/icons/Campfire.png", category: "tools"},
+        {name: "Composter", translationKey: "warps:icon.Composter", path: "textures/icons/Composter.png", category: "tools"},
+        {name: "Bell", translationKey: "warps:icon.Bell", path: "textures/icons/Bell.png", category: "tools"},
+        {name: "Anvil", translationKey: "warps:icon.Anvil", path: "textures/icons/Anvil.png", category: "tools"},
+        {name: "Enchanting", translationKey: "warps:icon.Enchanting", path: "textures/icons/Enchanting_Table.png", category: "tools"},
+        {name: "Brewing_Stand", translationKey: "warps:icon.Brewing stand", path: "textures/icons/Brewing_Stand.png", category: "tools"},
+        {name: "Smithing_Table", translationKey: "warps:icon.Smithing Table", path: "textures/icons/Smithing_Table.png", category: "tools"},
+        {name: "Loom", translationKey: "warps:icon.Loom", path: "textures/icons/Loom.png", category: "tools"},
+        {name: "Cartography_Table", translationKey: "warps:icon.Cartography Table", path: "textures/icons/Cartography_Table.png", category: "tools"},
+        {name: "Stonecutter", translationKey: "warps:icon.Stonecutter", path: "textures/icons/Stonecutter.png", category: "tools"},
+        {name: "Grindstone", translationKey: "warps:icon.Grindstone", path: "textures/icons/Grindstone.png", category: "tools"},
+        {name: "Ender_Chest", translationKey: "warps:icon.Ender_Chest", path: "textures/icons/Ender_Chest.png", category: "tools"},
+        {name: "Lodestone", translationKey: "warps:icon.Lodestone", path: "textures/icons/Lodestone.png", category: "tools"},
+        {name: "Respawn_Anchor", translationKey: "warps:icon.Respawn Anchor", path: "textures/icons/Respawn_Anchor.png", category: "tools"},
+        {name: "Beacon", translationKey: "warps:icon.Beacon", path: "textures/icons/Beacon.png", category: "tools"},
+        {name: "Spawner", translationKey: "warps:icon.Spawner", path: "textures/icons/Spawner.png", category: "tools"},
+        {name: "Shulker_Box", translationKey: "warps:icon.Shulker Box", path: "textures/icons/Shulker_Box.png", category: "tools"},
     ];
 
     const useLock = new Map(); // Map<Player.id, boolean>
@@ -249,42 +263,87 @@ export const Warps = () => {
         })
     }
 
-    const addWarpItemMenu = (player, {warpName = "", iconName = "", targetLocation, warpDimensionId}) => {
-        // Jeśli ikona jest już wybrana (np. po błędzie), pominij krok 1/2
-        if (iconName) {
-            const selectedIconIndex = selectFieldFromIcon('index', 'name', iconName);
-            if (selectedIconIndex >= 0 && selectedIconIndex < WARP_ICONS.length) {
-                showWarpFormStep2(player, warpName, selectedIconIndex, targetLocation, warpDimensionId);
-                return;
+    // Pobierz unikalne kategorie z ikon
+    const getCategories = () => {
+        const categories = new Set();
+        WARP_ICONS.forEach(icon => {
+            if (icon.category) {
+                categories.add(icon.category);
+            }
+        });
+        return Array.from(categories);
+    }
+
+    // Pobierz ikony z danej kategorii
+    const getIconsByCategory = (category) => {
+        return WARP_ICONS.filter(icon => icon.category === category);
+    }
+
+    const addWarpItemMenu = (player, {warpName = "", iconName = "", category = "", targetLocation, warpDimensionId}) => {
+        // Jeśli kategoria i ikona są już wybrane (np. po błędzie), pominij krok 1 i 2
+        if (category && iconName) {
+            const categoryIcons = getIconsByCategory(category);
+            const selectedIcon = categoryIcons.find(icon => icon.name === iconName);
+            if (selectedIcon) {
+                const selectedIconIndex = WARP_ICONS.indexOf(selectedIcon);
+                if (selectedIconIndex >= 0) {
+                    showWarpFormStep3(player, warpName, selectedIconIndex, targetLocation, warpDimensionId);
+                    return;
+                }
             }
         }
 
-        // Najpierw pokaż formularz wyboru ikony z widocznymi ikonami (krok 1/2)
-        const iconForm = new MinecraftUi.ActionFormData()
+        // Krok 1/3: Wybór kategorii
+        const categories = getCategories();
+        const categoryForm = new MinecraftUi.ActionFormData()
             .title({rawtext: [{translate: "warps:add.step1.title"}]})
+            .body({rawtext: [{translate: "warps:add.select_category"}]});
+
+        categories.forEach(cat => {
+            categoryForm.button({
+                rawtext: [{translate: `warps:category.${cat}`}]
+            });
+        });
+
+        categoryForm.show(player).then((categoryRes) => {
+            if (categoryRes.canceled || categoryRes.selection === undefined || categoryRes.selection >= categories.length) {
+                return;
+            }
+
+            const selectedCategory = categories[categoryRes.selection];
+            showWarpFormStep2(player, warpName, selectedCategory, targetLocation, warpDimensionId);
+        });
+    }
+
+    const showWarpFormStep2 = (player, warpName, category, targetLocation, warpDimensionId) => {
+        // Krok 2/3: Wybór ikony z wybranej kategorii
+        const categoryIcons = getIconsByCategory(category);
+        
+        const iconForm = new MinecraftUi.ActionFormData()
+            .title({rawtext: [{translate: "warps:add.step2.title"}]})
             .body({rawtext: [{translate: "warps:add.select_icon"}]});
 
-        // Dodaj przyciski z ikonami
-        WARP_ICONS.forEach((icon, index) => {
+        categoryIcons.forEach((icon) => {
             iconForm.button({
                 rawtext: [{translate: icon.translationKey}]
             }, icon.path);
         });
 
         iconForm.show(player).then((iconRes) => {
-            if (iconRes.canceled || iconRes.selection === undefined || iconRes.selection >= WARP_ICONS.length) {
+            if (iconRes.canceled || iconRes.selection === undefined || iconRes.selection >= categoryIcons.length) {
                 return;
             }
 
-            const selectedIconIndex = iconRes.selection;
-            showWarpFormStep2(player, warpName, selectedIconIndex, targetLocation, warpDimensionId);
+            const selectedIcon = categoryIcons[iconRes.selection];
+            const selectedIconIndex = WARP_ICONS.indexOf(selectedIcon);
+            showWarpFormStep3(player, warpName, selectedIconIndex, targetLocation, warpDimensionId);
         });
     }
 
-    const showWarpFormStep2 = (player, warpName, iconIndex, targetLocation, warpDimensionId) => {
-        // Pokaż formularz z pozostałymi polami (krok 2/2)
+    const showWarpFormStep3 = (player, warpName, iconIndex, targetLocation, warpDimensionId) => {
+        // Krok 3/3: Nazwa i współrzędne
         new MinecraftUi.ModalFormData()
-            .title({rawtext: [{translate: "warps:add.step2.title"}]})
+            .title({rawtext: [{translate: "warps:add.step3.title"}]})
             .textField({rawtext: [{translate: "warps:add.field.name.label"}]}, {rawtext: [{translate: "warps:add.field.name.placeholder"}]}, {defaultValue: warpName})
             .textField({rawtext: [{translate: "warps:add.field.x.label"}]}, {rawtext: [{translate: "warps:add.field.x.placeholder"}]}, {defaultValue: targetLocation.x.toString()})
             .textField({rawtext: [{translate: "warps:add.field.y.label"}]}, {rawtext: [{translate: "warps:add.field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
@@ -299,7 +358,7 @@ export const Warps = () => {
             if (!res.formValues[0] || !res.formValues[1] || !res.formValues[2] || !res.formValues[3]) {
                 player.sendMessage({translate: "warps:add.fill_required"});
                 // Ponownie pokaż formularz z wypełnionymi danymi
-                showWarpFormStep2(player, warpName, iconIndex, targetLocation, warpDimensionId);
+                showWarpFormStep3(player, warpName, iconIndex, targetLocation, warpDimensionId);
                 return;
             }
 
@@ -317,8 +376,8 @@ export const Warps = () => {
 
         if (isNaN(targetLocation.x) || isNaN(targetLocation.y) || isNaN(targetLocation.z)) {
             player.sendMessage({translate: "warps:add.coords_must_be_number"});
-            // Ponownie pokaż formularz z wypełnionymi danymi (krok 2/2, pomijając wybór ikony)
-            showWarpFormStep2(player, warpName, iconIndex, targetLocation, warpDimensionId);
+            // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
+            showWarpFormStep3(player, warpName, iconIndex, targetLocation, warpDimensionId);
             return;
         }
 
@@ -334,8 +393,8 @@ export const Warps = () => {
                 translate: "warps:add.duplicate_name",
                 with: [warpName]
             });
-            // Ponownie pokaż formularz z wypełnionymi danymi (krok 2/2, pomijając wybór ikony)
-            showWarpFormStep2(player, warpName, iconIndex, targetLocation, warpDimensionId);
+            // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
+            showWarpFormStep3(player, warpName, iconIndex, targetLocation, warpDimensionId);
             return;
         }
 

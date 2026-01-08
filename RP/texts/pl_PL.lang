@@ -3,8 +3,10 @@ warps:menu.no_warps=§r§8[§dWarps!§8] §cNie ma żadnych Warp§w!§r
 warps:menu.button_format=§r§l%1$s§r §o%6$s metrów§r\n%5$s§r §f%2$s,%3$s,%4$s§r
 warps:remove.button_format=§r§l%s§r §f(%s,%s,%s)§r %s
 
-warps:add.step1.title=§r§l§8Dodaj Warp§r (krok 1/2)§r
-warps:add.step2.title=§r§l§8Dodaj Warp§r (krok 2/2)§r
+warps:add.step1.title=§r§l§8Dodaj Warp§r (krok 1/3)§r
+warps:add.step2.title=§r§l§8Dodaj Warp§r (krok 2/3)§r
+warps:add.step3.title=§r§l§8Dodaj Warp§r (krok 3/3)§r
+warps:add.select_category=Wybierz kategorię:
 warps:add.field.name.label=Nazwa miejsca
 warps:add.field.name.placeholder=Nazwa miejsca (wymagane, tekst)
 warps:add.field.x.label=Współrzędna X
@@ -39,23 +41,69 @@ warps:dimension.overworld=§r§2Świat Główny§r
 warps:dimension.nether=§r§cNether§r
 warps:dimension.the_end=§r§5Kres§r
 
-warps:icon.Poi=Punkt zainteresowania
+# === LOKACJE SPECJALNE ===
+warps:icon.Map_Marker=Znacznik na Mapie
 warps:icon.Heart=Serce
-warps:icon.Plains Village=Wioska Równin
-warps:icon.Savanna Village=Wioska Sawanny
-warps:icon.Snowy Village=Śnieżna Wioska
-warps:icon.Taiga Village=Wioska Tajgi
-warps:icon.Ocean Monument=Monument Oceaniczny
-warps:icon.Woodland Mansion=Mansja Leśna
-warps:icon.Ore=Ruda
-warps:icon.Boat=Łódź
-warps:icon.Brewing stand=Stawek do warzenia
-warps:icon.Mine=Kopalnia
+warps:icon.Spawn=Spawn
+
+# === MIEJSCA ===
+warps:icon.Home=Dom
+warps:icon.Castle=Zamek
+warps:icon.Church=Kościół
+warps:icon.Offices=Biura
+warps:icon.Factory=Fabryka
+warps:icon.Bank=Bank
+warps:icon.Lighthouse=Latarnia Morska
+warps:icon.Tower=Wieża
+warps:icon.Fire=Ogień
+warps:icon.Hospital=Szpital
+warps:icon.Portal=Portal
+
+# === ZASOBY ===
+warps:icon.Coal=Węgiel
+warps:icon.Copper=Miedź
+warps:icon.Iron=Żelazo
+warps:icon.Redstone=Redstone
+warps:icon.Lapis=Lazuryt
+warps:icon.Gold=Złoto
+warps:icon.Emerald=Szmaragd
+warps:icon.Quartz=Kwarc z Netheru
+warps:icon.Diamond=Diament
+warps:icon.Amethyst=Ametyst
+
+# === FARMY ===
+warps:icon.Mob Farm=Farma Mobów
+warps:icon.Crop Farm=Farma Upraw
+warps:icon.Animal Farm=Farma Zwierząt
+
+# === NARZĘDZIA I BLOKI ===
 warps:icon.Crafting=Stół Rzemieślniczy
 warps:icon.Enchanting=Stół do Zaklęć
-warps:icon.Fishing=Wędkowanie
-warps:icon.Agriculture=Rolnictwo
-warps:icon.Food=Jedzenie
+warps:icon.Brewing stand=Stawek do Warzenia
+warps:icon.Anvil=Kowadło
+warps:icon.Furnace=Piec
+warps:icon.Smithing Table=Stół Kowalski
+warps:icon.Loom=Krosno
+warps:icon.Cartography Table=Stół Kartograficzny
+warps:icon.Stonecutter=Cięciarka Kamienia
+warps:icon.Grindstone=Ostrzarka
+warps:icon.Bed=Łóżko
+warps:icon.Bell=Dzwon
+warps:icon.Beacon=Magazyn
+warps:icon.Campfire=Ognisko
+warps:icon.Composter=Kompostownik
+warps:icon.Barrel=Beczka
 warps:icon.Chest=Skrzynia
 warps:icon.Ender_Chest=Skrzynia Kresu
-warps:icon.Tnt=TNT
+warps:icon.Shulker Box=Skrzynia Shulkera
+warps:icon.Respawn Anchor=Kotwica Odrodzenia
+warps:icon.Lodestone=Magnetyt
+warps:icon.Spawner=Spawner
+
+# === KATEGORIE ===
+# === KATEGORIE ===
+warps:category.special=Lokacje Specjalne
+warps:category.places=Miejsca
+warps:category.resources=Zasoby
+warps:category.farms=Farmy
+warps:category.tools=Narzędzia i Bloki
