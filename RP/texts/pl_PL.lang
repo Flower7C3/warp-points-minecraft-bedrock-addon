@@ -89,19 +89,19 @@ warps:icon.Amethyst=Ametyst
 warps:icon.TNT=TNT
 
 # === FARMY ===
-warps:icon.Mob Farm=Farma Mobów
-warps:icon.Crop Farm=Farma Upraw
-warps:icon.Animal Farm=Farma Zwierząt
+warps:icon.Mob_Farm=Farma Mobów
+warps:icon.Crop_Farm=Farma Upraw
+warps:icon.Animal_Farm=Farma Zwierząt
 
 # === NARZĘDZIA I BLOKI ===
 warps:icon.Crafting=Stół Rzemieślniczy
 warps:icon.Enchanting=Stół do Zaklęć
-warps:icon.Brewing stand=Stawek do Warzenia
+warps:icon.Brewing_Stand=Stawek do Warzenia
 warps:icon.Anvil=Kowadło
 warps:icon.Furnace=Piec
-warps:icon.Smithing Table=Stół Kowalski
+warps:icon.Smithing_Table=Stół Kowalski
 warps:icon.Loom=Krosno
-warps:icon.Cartography Table=Stół Kartograficzny
+warps:icon.Cartography_Table=Stół Kartograficzny
 warps:icon.Stonecutter=Cięciarka Kamienia
 warps:icon.Grindstone=Ostrzarka
 warps:icon.Bed=Łóżko
@@ -112,8 +112,8 @@ warps:icon.Composter=Kompostownik
 warps:icon.Barrel=Beczka
 warps:icon.Chest=Skrzynia
 warps:icon.Ender_Chest=Skrzynia Kresu
-warps:icon.Shulker Box=Skrzynia Shulkera
-warps:icon.Respawn Anchor=Kotwica Odrodzenia
+warps:icon.Shulker_Box=Skrzynia Shulkera
+warps:icon.Respawn_Anchor=Kotwica Odrodzenia
 warps:icon.Lodestone=Magnetyt
 warps:icon.Spawner=Spawner
 

@@ -88,19 +88,19 @@ warps:icon.Amethyst=Amethyst
 warps:icon.TNT=TNT
 
 # === FARMS ===
-warps:icon.Mob Farm=Mob Farm
-warps:icon.Crop Farm=Crop Farm
-warps:icon.Animal Farm=Animal Farm
+warps:icon.Mob_Farm=Mob Farm
+warps:icon.Crop_Farm=Crop Farm
+warps:icon.Animal_Farm=Animal Farm
 
 # === TOOLS & BLOCKS ===
 warps:icon.Crafting=Crafting Table
 warps:icon.Enchanting=Enchanting Table
-warps:icon.Brewing stand=Brewing Stand
+warps:icon.Brewing_stand=Brewing Stand
 warps:icon.Anvil=Anvil
 warps:icon.Furnace=Furnace
-warps:icon.Smithing Table=Smithing Table
+warps:icon.Smithing_Table=Smithing Table
 warps:icon.Loom=Loom
-warps:icon.Cartography Table=Cartography Table
+warps:icon.Cartography_Table=Cartography Table
 warps:icon.Stonecutter=Stonecutter
 warps:icon.Grindstone=Grindstone
 warps:icon.Bed=Bed
@@ -111,8 +111,8 @@ warps:icon.Composter=Composter
 warps:icon.Barrel=Barrel
 warps:icon.Chest=Chest
 warps:icon.Ender_Chest=Ender Chest
-warps:icon.Shulker Box=Shulker Box
-warps:icon.Respawn Anchor=Respawn Anchor
+warps:icon.Shulker_Box=Shulker Box
+warps:icon.Respawn_Anchor=Respawn Anchor
 warps:icon.Lodestone=Lodestone
 warps:icon.Spawner=Spawner
 
