@@ -72,6 +72,7 @@ warps:icon.School=School
 warps:icon.Hospital=Hospital
 warps:icon.Offices=Offices
 warps:icon.Factory=Factory
+warps:icon.Warehouse=Warehouse
 
 # === RESOURCES ===
 warps:icon.Coal=Coal
@@ -84,6 +85,7 @@ warps:icon.Emerald=Emerald
 warps:icon.Quartz=Nether Quartz
 warps:icon.Diamond=Diamond
 warps:icon.Amethyst=Amethyst
+warps:icon.TNT=TNT
 
 # === FARMS ===
 warps:icon.Mob Farm=Mob Farm
