@@ -1,6 +1,5 @@
 warps:menu.title=§r§l§dTeleportuj się do...§r
 warps:menu.no_warps=§r§8[§dWarps!§8] §cNie ma żadnych Warp§w!§r
-warps:menu.canceled_teleport=§r§8[§dWarps!§8] §cAnulowano teleportację Warp!§r
 warps:menu.button_format=§r§l%1$s§r §o%6$s metrów§r\n%5$s§r §f%2$s,%3$s,%4$s§r
 warps:remove.button_format=§r§l%s§r §f(%s,%s,%s)§r %s
 
@@ -19,7 +18,6 @@ warps:add.field.dimension.placeholder=%s (wymagane, tekst)
 warps:add.field.icon=Ikona
 warps:common.required_number=(wymagane, liczba)
 warps:common.required_string=(wymagane, tekst)
-warps:add.canceled=§r§8[§dWarps!§8] §cAnulowano dodawanie Warp!§r
 warps:add.fill_required=§r§8[§dWarps!§8] §7Musisz wypełnić wszystkie wymagane pola!§r
 warps:add.coords_must_be_number=§r§8[§dWarps!§8] §7Współrzędne muszą być liczbą!§r
 warps:add.dimension_invalid=§r§8[§dWarps!§8] §7Wymiar musi być jednym z: "overworld", "nether", "the_end"!§r
@@ -27,7 +25,6 @@ warps:add.duplicate_name=§r§8[§dWarps!§8] §cWarp o nazwie §l%s§r§c już 
 warps:add.success=§r§8[§dWarps!§8] §7Dodano Warp §l%s§r§7 na pozycji §f(%s,%s,%s)§r§7!§r
 
 warps:remove.title=§r§l§4Usuń §dWarp§r
-warps:remove.canceled=§r§8[§dWarps!§8] §cAnulowano usuwanie Warp!§r
 warps:remove.confirm.title=§r§4Czy na pewno chcesz usunąć ten Warp na zawsze?§r
 warps:remove.confirm.body=§r§8Nazwa: §f%s\n§8Wspórzędne: §f(%s,%s,%s)§r\n§8Wymiar: §f%s
 warps:remove.confirm.yes=§r§cTak, usuń na zawsze§r
@@ -36,19 +33,29 @@ warps:remove.not_deleted=§r§8[§dWarps!§8] §aNie usunięto Warp §l%s§r§a!
 warps:remove.success=§r§8[§dWarps!§8] §cUsunięto Warp §l%s§r§c!§r
 
 warps:teleport.not_found=§r§8[§dWarps!§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
-warps:teleport.success=§r§8[§dWarps!§8] §aTeleportowano do Warp §l%s§r§a!§r
 warps:teleport.error=§r§8[§dWarps!§8] §cBłąd podczas teleportacji do Warp §l%s§r§c!§r
 
 warps:dimension.overworld=§r§2Świat Główny§r
 warps:dimension.nether=§r§cNether§r
 warps:dimension.the_end=§r§5Kres§r
 
-
-location pin=pinezka lokalizacyjna
-heart=serce
-house=dom
-building=budynek
-bank=bank
-shop=sklep
-tree decidious=drzewo liściaste
-tree evergreen=drzewo iglaste
+warps:icon.Poi=Punkt zainteresowania
+warps:icon.Heart=Serce
+warps:icon.Plains Village=Wioska Równin
+warps:icon.Savanna Village=Wioska Sawanny
+warps:icon.Snowy Village=Śnieżna Wioska
+warps:icon.Taiga Village=Wioska Tajgi
+warps:icon.Ocean Monument=Monument Oceaniczny
+warps:icon.Woodland Mansion=Mansja Leśna
+warps:icon.Ore=Ruda
+warps:icon.Boat=Łódź
+warps:icon.Brewing stand=Stawek do warzenia
+warps:icon.Mine=Kopalnia
+warps:icon.Crafting=Stół Rzemieślniczy
+warps:icon.Enchanting=Stół do Zaklęć
+warps:icon.Fishing=Wędkowanie
+warps:icon.Agriculture=Rolnictwo
+warps:icon.Food=Jedzenie
+warps:icon.Chest=Skrzynia
+warps:icon.Ender_Chest=Skrzynia Kresu
+warps:icon.Tnt=TNT

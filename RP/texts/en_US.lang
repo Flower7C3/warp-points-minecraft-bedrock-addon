@@ -1,6 +1,5 @@
 warps:menu.title=§r§l§dTeleport to...§r
 warps:menu.no_warps=§r§8[§dWarps!§8] §cThere are no Warps!§r
-warps:menu.canceled_teleport=§r§8[§dWarps!§8] §cCanceled Warp Teleport!§r
 warps:menu.button_format=§r§l%1$s§r §o%6$s meters\n§f(%2$s,%3$s,%4$s)§r
 warps:remove.button_format=§r§l%s§r §f(%s,%s,%s)§r %s
 
@@ -18,7 +17,6 @@ warps:add.field.dimension.placeholder=%s (required, string)
 warps:add.field.icon=Icon
 warps:common.required_number=(required, number)
 warps:common.required_string=(required, string)
-warps:add.canceled=§r§8[§dWarps!§8] §cCanceled Warp Add!§r
 warps:add.fill_required=§r§8[§dWarps!§8] §7You need to fill up everything what is required!§r
 warps:add.coords_must_be_number=§r§8[§dWarps!§8] §7The Coordinates must be a Number!§r
 warps:add.dimension_invalid=§r§8[§dWarps!§8] §7The Dimension must be one of these: "overworld", "nether", "the_end"!§r
@@ -26,7 +24,6 @@ warps:add.duplicate_name=§r§8[§dWarps!§8] §cA warp with name §l%s§r§c al
 warps:add.success=§r§8[§dWarps!§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
 
 warps:remove.title=§r§l§4Delete §dWarp§r
-warps:remove.canceled=§r§8[§dWarps!§8] §cCanceled Warp delete!§r
 warps:remove.confirm.title=§r§4Are you sure that you want to delete this Warp for ever?§r
 warps:remove.confirm.body=§r§8Name: §f%s\n§8Coordinates: §f(%s,%s,%s)§r\n§8Dimension: §f%s
 warps:remove.confirm.yes=§r§cYes, delete permanently§r
@@ -35,18 +32,29 @@ warps:remove.not_deleted=§r§8[§dWarps!§8] §aNot deleted Warp §l%s§r§a!§
 warps:remove.success=§r§8[§dWarps!§8] §cDeleted Warp §l%s§r§c!§r
 
 warps:teleport.not_found=§r§8[§dWarps!§8] §cWarp with name §l%s§r§c not found!§r
-warps:teleport.success=§r§8[§dWarps!§8] §aTeleported to Warp §l%s§r§a!§r
 warps:teleport.error=§r§8[§dWarps!§8] §cError teleporting to Warp §l%s§r§c!§r
 
 warps:dimension.overworld=§r§2Overworld§r
 warps:dimension.nether=§r§cNether§r
 warps:dimension.the_end=§r§5The End§r
 
-location pin=location pin
-heart=heart
-house=house
-building=building
-bank=bank
-shop=shop
-tree decidious=tree decidious
-tree evergreen=tree evergreen
+warps:icon.Poi=Point of Interest
+warps:icon.Heart=Heart
+warps:icon.Plains Village=Plains Village
+warps:icon.Savanna Village=Savanna Village
+warps:icon.Snowy Village=Snowy Village
+warps:icon.Taiga Village=Taiga Village
+warps:icon.Ocean Monument=Ocean Monument
+warps:icon.Woodland Mansion=Woodland Mansion
+warps:icon.Ore=Ore
+warps:icon.Boat=Boat
+warps:icon.Brewing stand=Brewing Stand
+warps:icon.Mine=Mine
+warps:icon.Crafting=Crafting Table
+warps:icon.Enchanting=Enchanting Table
+warps:icon.Fishing=Fishing
+warps:icon.Agriculture=Agriculture
+warps:icon.Food=Food
+warps:icon.Chest=Chest
+warps:icon.Ender_Chest=Ender Chest
+warps:icon.Tnt=TNT

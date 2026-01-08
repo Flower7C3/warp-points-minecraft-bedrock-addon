@@ -13,15 +13,26 @@ export const Warps = () => {
 
     // Lista dostępnych obrazków dla warps
     const WARP_ICONS = [
-        {name: "location pin", path: "textures/icons/location-pin-svgrepo-com.png"},
-        {name: "heart", path: "textures/icons/heart-svgrepo-com.png"},
-        {name: "house", path: "textures/icons/house-svgrepo-com.png"},
-        {name: "building", path: "textures/icons/building-svgrepo-com.png"},
-        {name: "bank", path: "textures/icons/bank-svgrepo-com.png"},
-        {name: "shop", path: "textures/icons/shop-svgrepo-com.png"},
-        {name: "tree decidious", path: "textures/icons/tree-decidious-svgrepo-com.png"},
-        {name: "tree evergreen", path: "textures/icons/tree-evergreen-svgrepo-com.png"},
-
+        {name: "Poi", translationKey: "warps:icon.Poi", path: "textures/icons/Poi.png"},
+        {name: "Heart", translationKey: "warps:icon.Heart", path: "textures/icons/Heart_Full.png"},
+        {name: "Plains_Village", translationKey: "warps:icon.Plains Village", path: "textures/icons/Map_Plains_Village.png"},
+        {name: "Savanna_Village", translationKey: "warps:icon.Savanna Village", path: "textures/icons/Map_Savanna_Village.png"},
+        {name: "Snowy_Village", translationKey: "warps:icon.Snowy Village", path: "textures/icons/Map_Snowy_Village.png"},
+        {name: "Taiga_Village", translationKey: "warps:icon.Taiga Village", path: "textures/icons/Map_Taiga_Village.png"},
+        {name: "Ocean_Monument", translationKey: "warps:icon.Ocean Monument", path: "textures/icons/Map_Ocean_Monument.png"},
+        {name: "Woodland_Mansion", translationKey: "warps:icon.Woodland Mansion", path: "textures/icons/Map_Woodland_Mansion.png"},
+        {name: "Ore", translationKey: "warps:icon.Ore", path: "textures/icons/Amethyst_Cluster.png"},
+        {name: "Boat", translationKey: "warps:icon.Boat", path: "textures/icons/Boat.png"},
+        {name: "Brewing_Stand", translationKey: "warps:icon.Brewing stand", path: "textures/icons/Brewing_Stand.png"},
+        {name: "Mine", translationKey: "warps:icon.Mine", path: "textures/icons/Chest_Minecart.png"},
+        {name: "Crafting", translationKey: "warps:icon.Crafting", path: "textures/icons/Crafting_Table.png"},
+        {name: "Enchanting", translationKey: "warps:icon.Enchanting", path: "textures/icons/Enchanting_Table.png"},
+        {name: "Food", translationKey: "warps:icon.Food", path: "textures/icons/Food_Full.png"},
+        {name: "Agriculture", translationKey: "warps:icon.Agriculture", path: "textures/icons/Grass.png"},
+        {name: "Fishing", translationKey: "warps:icon.Fishing", path: "textures/icons/Fishing_Rod.png"},
+        {name: "Chest", translationKey: "warps:icon.Chest", path: "textures/icons/Chest.png"},
+        {name: "Ender_Chest", translationKey: "warps:icon.Ender_Chest", path: "textures/icons/Ender_Chest.png"},
+        {name: "Tnt", translationKey: "warps:icon.Tnt", path: "textures/icons/Tnt.png"},
     ];
 
     const useLock = new Map(); // Map<Player.id, boolean>
@@ -79,6 +90,23 @@ export const Warps = () => {
         return `warps:dimension.${dimension}`;
     }
 
+
+    const getIconNameByIndex = (index) => {
+        if (index === undefined || index === null || isNaN(index) || index < 0 || index >= WARP_ICONS.length) {
+            return WARP_ICONS[0].name;
+        }
+        return WARP_ICONS[index].name;
+    }
+
+    const getIconIndexByName = (iconName) => {
+        const foundIndex = WARP_ICONS.findIndex(i => i.name.toLowerCase() === iconName.toLowerCase());
+        if (foundIndex !== -1) {
+            return foundIndex;
+        }
+        return 0;
+    }
+
+
     const calculateDistance = (x1, y1, z1, x2, y2, z2) => {
         const dx = x2 - x1;
         const dy = y2 - y1;
@@ -101,13 +129,14 @@ export const Warps = () => {
             });
         }
 
+        teleportToWarp(player, warp);
+    }
+
+    const teleportToWarp = (player, warp) => {
         try {
             const dimension = getWarpDimension(warp.dimension);
             dimension.runCommand(`tp "${player.name}" ${warp.x} ${warp.y} ${warp.z}`);
-            // player.sendMessage({
-            //     translate: "warps:teleport.success",
-            //     with: [warp.name]
-            // });
+            player.dimension.playSound("mob.shulker.teleport", {x: warp.x, y: warp.y, z: warp.z});
         } catch (error) {
             console.error(`[WARPS!] Error teleporting to warp ${warpName}:`, error);
             player.sendMessage({
@@ -116,6 +145,7 @@ export const Warps = () => {
             });
         }
     }
+
 
     const showWarpsListMenuSortedByDistance = (player) => {
         let actionForm = new MinecraftUi.ActionFormData()
@@ -195,13 +225,10 @@ export const Warps = () => {
             .show(player).then((res) => {
             if (res.canceled || res.selection >= sortedWarps.length) {
                 return;
-                //return player.sendMessage({translate: "warps:menu.canceled_teleport"});
             }
 
-            console.info('[WARPS] Selected warp: ' + res.selection)
-
             const selectedWarp = sortedWarps[res.selection];
-            getWarpDimension(selectedWarp.dimension).runCommand(`tp "${player.name}" ${selectedWarp.x} ${selectedWarp.y} ${selectedWarp.z}`)
+            teleportToWarp(player, selectedWarp)
         })
     }
 
@@ -211,15 +238,10 @@ export const Warps = () => {
         const zCoord = Math.round(location.z + addZ);
         const dimensionId = getPlayerDimension(player);
 
-        // Przygotuj listę opcji dla dropdown z obrazkami
-        const iconOptions = WARP_ICONS.map(icon => icon.name);
-        let selectedIconIndex = 0;
-        if (iconName !== "") {
-            const foundIndex = WARP_ICONS.findIndex(i => i.name.toLowerCase() === iconName.toLowerCase());
-            if (foundIndex !== -1) {
-                selectedIconIndex = foundIndex;
-            }
-        }
+        // Przygotuj listę opcji dla dropdown z obrazkami (używając tłumaczeń)
+        const iconOptions = WARP_ICONS.map(icon => ({
+            rawtext: [{translate: icon.translationKey}]
+        }));
 
         new MinecraftUi.ModalFormData()
             .title({rawtext: [{translate: "warps:add.title"}]})
@@ -227,7 +249,7 @@ export const Warps = () => {
                     rawtext: [{translate: "warps:add.field.name.placeholder"}]
                 }, {defaultValue: name}
             )
-            .dropdown({rawtext: [{translate: "warps:add.field.icon"}]}, iconOptions, {defaultValueIndex: selectedIconIndex})
+            .dropdown({rawtext: [{translate: "warps:add.field.icon"}]}, iconOptions, {defaultValueIndex: getIconIndexByName(iconName)})
             .textField({rawtext: [{translate: "warps:add.field.x"}]}, {
                 rawtext: [{translate: "warps:add.field.x.placeholder", with: [xCoord.toString()]}]
             }, {defaultValue: xCoord.toString()})
@@ -243,7 +265,6 @@ export const Warps = () => {
             .show(player).then((res) => {
             if (res.canceled) {
                 return;
-                //return player.sendMessage({translate: "warps:add.canceled"});
             }
 
             // Indeksy formValues: [0]=name, [1]=icon, [2]=x, [3]=y, [4]=z, [5]=dimension
@@ -252,25 +273,18 @@ export const Warps = () => {
             }
 
             const warpName = res.formValues[0].replace('"', "'");
-            const iconName = res.formValues[1] !== undefined ? res.formValues[1] : "";
+            const iconIndex = res.formValues[1] !== undefined ? res.formValues[1] : "";
             const warpX = parseFloat(res.formValues[2]);
             const warpY = parseFloat(res.formValues[3]);
             const warpZ = parseFloat(res.formValues[4]);
             const warpDimension = res.formValues[5].toLowerCase();
-            addWarpItem(player, warpName, iconName, warpX, warpY, warpZ, warpDimension);
+            addWarpItem(player, warpName, getIconNameByIndex(iconIndex), warpX, warpY, warpZ, warpDimension);
         })
     }
 
     const addWarpItem = (player, warpName, iconName, warpX, warpY, warpZ, warpDimension) => {
 
-        // Znajdź indeks ikony na podstawie nazwy przekazanej jako parametr
-        let selectedIconIndex = 0;
-        if (iconName !== "") {
-            const foundIndex = WARP_ICONS.findIndex(i => i.name.toLowerCase() === iconName.toLowerCase());
-            if (foundIndex !== -1) {
-                selectedIconIndex = foundIndex;
-            }
-        }
+        let selectedIconIndex = getIconIndexByName(iconName);
         const selectedIcon = WARP_ICONS[selectedIconIndex] || WARP_ICONS[0];
 
         if (isNaN(warpX) || isNaN(warpY) || isNaN(warpZ)) {
@@ -283,6 +297,10 @@ export const Warps = () => {
 
         const warps = loadWarps();
 
+        warpX = Math.round(warpX);
+        warpY = Math.round(warpY);
+        warpZ = Math.round(warpZ);
+
         // Check if warp with same name already exists
         if (warps.some(w => w.name === warpName)) {
             return player.sendMessage({
@@ -293,9 +311,9 @@ export const Warps = () => {
 
         const newWarp = {
             name: warpName,
-            x: Math.round(warpX),
-            y: Math.round(warpY),
-            z: Math.round(warpZ),
+            x: warpX,
+            y: warpY,
+            z: warpZ,
             dimension: warpDimension,
             icon: selectedIcon.path
         };
@@ -303,9 +321,11 @@ export const Warps = () => {
         warps.push(newWarp);
         saveWarps(warps);
 
+        player.dimension.playSound("beacon.activate", player.location);
+        player.dimension.runCommand(`particle minecraft:endrod ${warpX} ${warpY} ${warpZ}`);
         player.sendMessage({
             translate: "warps:add.success",
-            with: [warpName, Math.round(warpX).toString(), Math.round(warpY).toString(), Math.round(warpZ).toString()]
+            with: [warpName, warpX.toString(), warpY.toString(), warpZ.toString()]
         });
     }
 
@@ -344,7 +364,6 @@ export const Warps = () => {
         actionForm.show(player).then((res) => {
             if (res.canceled || res.selection >= sortedWarps.length) {
                 return;
-                // return player.sendMessage({translate: "warps:remove.canceled"});
             }
 
             const selectedWarp = sortedWarps[res.selection];
@@ -386,10 +405,7 @@ export const Warps = () => {
             .button1({rawtext: [{translate: "warps:remove.confirm.yes"}]})
             .button2({rawtext: [{translate: "warps:remove.confirm.no"}]})
             .show(player).then((res) => {
-            if (res.selection === 1 || res.canceled) {
-                return;
-                // return player.sendMessage({translate: "warps:remove.not_deleted", with: [warp.name]});
-            } else if (res.selection === 0) {
+            if (res.selection === 0) {
                 const allWarps = loadWarps();
                 const updatedWarps = allWarps.filter(w =>
                     !(w.name === warp.name &&
@@ -400,6 +416,7 @@ export const Warps = () => {
                 );
                 saveWarps(updatedWarps);
 
+                player.dimension.playSound("beacon.deactivate", player.location);
                 return player.sendMessage({
                     translate: "warps:remove.success",
                     with: [warp.name]
@@ -416,8 +433,8 @@ export const Warps = () => {
         Minecraft.system.beforeEvents.startup.subscribe((event) => {
             console.info("[WARPS!] Loaded Script")
 
-
             event.customCommandRegistry.registerEnum("warps:icons", WARP_ICONS.map(icon => icon.name))
+
             event.customCommandRegistry.registerCommand(
                 {
                     name: COMMAND_WARPS_TP,
