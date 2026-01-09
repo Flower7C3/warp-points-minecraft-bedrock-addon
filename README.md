@@ -65,7 +65,8 @@ The addon includes two subpacks:
 
 ## Icons
 
-Some icons used in this addon are sourced from [SVG Repo - Building Line Filled Vectors Collection](https://www.svgrepo.com/collection/building-line-filled-vectors/). The icons have been converted to PNG format and scaled to 32x32 pixels for optimal display in Minecraft Bedrock Edition.
+Some icons used in this addon are sourced from [SVG Repo - Landscapes 23 Collection
+](https://www.svgrepo.com/collection/landscapes-23/).
 
 ## Technical Details
 

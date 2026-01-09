@@ -1,14 +1,14 @@
-warps:main_menu.title=§r§l§1Menu Warpów§r
+warps:main_menu.title=§r§l§1☈ Menu Warpów§r
 warps:main_menu.body=Wybierz akcję:
-warps:main_menu.teleport=§r§dTeleportuj§r
-warps:main_menu.manage=§r§eZarządzaj Warpami§r
-warps:main_menu.add=§r§bDodaj Warp§r
+warps:main_menu.teleport=§r§d✈ Teleportuj§r
+warps:main_menu.manage=§r§e☉ Zarządzaj Warpami§r
+warps:main_menu.add=§r§b✎ Dodaj Warp§r
 
-warps:add.step1.title=§r§l§bDodaj Warp§r krok 1/3
+warps:add.step1.title=§r§l§b✎ Dodaj Warp§r krok 1/3
 warps:add.step1.body=Wybierz kategorię dla ikony warpa:
-warps:add.step2.title=§r§l§bDodaj Warp§r krok 2/3
+warps:add.step2.title=§r§l§b✎ Dodaj Warp§r krok 2/3
 warps:add.step2.body=Wybierz ikonę z kategorii §l%s§r:
-warps:add.step3.title=§r§l§bDodaj Warp§r krok 3/3
+warps:add.step3.title=§r§l§b✎ Dodaj Warp§r krok 3/3
 warps:add.coords_must_be_number=§r§8[§1WARP§8] §7Współrzędne muszą być liczbą!§r
 warps:add.coords_out_of_range=§r§8[§1WARP§8] §7Współrzędne są poza prawidłowym zakresem!§r
 warps:add.duplicate_name=§r§8[§1WARP§8] §cWarp o nazwie §l%s§r§c już istnieje!§r
@@ -32,34 +32,34 @@ warps:add.select_icon=Wybierz ikonę dla tego warpa:
 warps:add.submit=Zapisz
 warps:add.success=§r§8[§1WARP§8] §7Dodano Warp §l%s§r§7 na pozycji §f(%s,%s,%s)§r§7!§r
 
-warps:teleport_menu.title=§r§l§dTeleportuj się do...§r
-warps:teleport_menu.title_all=§r§l§dTeleport§r wszystkie
-warps:teleport_menu.title_cat=§r§l§dTeleport§r %s
+warps:teleport_menu.title=§r§l§d✈ Teleportuj się do...§r
+warps:teleport_menu.title_all=§r§l§d✈ Teleport§r wszystkie
+warps:teleport_menu.title_cat=§r§l§d✈ Teleport§r %s
 
 warps:teleport.error=§r§8[§1WARP§8] §cBłąd podczas teleportacji do Warp §l%s§r§c!§r
 warps:teleport.not_found=§r§8[§1WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
 
-warps:manage_menu.title=§r§l§eZarządzaj Warpami§r
-warps:manage_menu.title_all=§r§l§eZarządzaj§r [wszystkie]
-warps:manage_menu.title_cat=§r§l§eZarządzaj§r [%s]
+warps:manage_menu.title=§r§l§e☉ Zarządzaj Warpami§r
+warps:manage_menu.title_all=§r§l§e☉ Zarządzaj§r [wszystkie]
+warps:manage_menu.title_cat=§r§l§e☉ Zarządzaj§r [%s]
 
-warps:warp_details.title=§r§l§eWarp§r [%s]
+warps:warp_details.title=§r§l§e☉ Warp§r [%s]
 warps:warp_details.body=Współrzędne: (%2$s,%3$s,%4$s)\nWymiar: %5$s\nKategoria: %6$s\nIkona: %7$s
-warps:warp_details.options.delete=§r§cUsuń§r
-warps:warp_details.options.edit_icon=§r§eZmień Ikonę§r
-warps:warp_details.options.edit_name=§r§eZmień Nazwę§r
-warps:warp_details.options.teleport=§r§dTeleportuj§r
+warps:warp_details.options.delete=§r§c☓Usuń§r
+warps:warp_details.options.edit_icon=§r§e✎ Zmień Ikonę§r
+warps:warp_details.options.edit_name=§r§e✎ Zmień Nazwę§r
+warps:warp_details.options.teleport=§r§d✈ Teleportuj§r
 
-warps:warp_details.edit_icon.title=§r§l§eZmiana ikony§r [%s]
+warps:warp_details.edit_icon.title=§r§l§e✎ Zmiana ikony§r [%s]
 warps:warp_details.edit_icon.step1.body=Wybierz kategorię, aby wybrać nową ikonę:
 warps:warp_details.edit_icon.step2.body=Wybierz nową ikonę z tej kategorii:
 warps:warp_details.edit_icon.success=§r§8[§1WARP§8] §7Zmieniono ikonę dla warpa §l%1$s§r§7 na §l%2$s§r§7!§r
 
-warps:warp_details.edit_name.title=§r§l§eZmiana nazwy§r [%s]
+warps:warp_details.edit_name.title=§r§l§e✎ Zmiana nazwy§r [%s]
 warps:warp_details.edit_name.not_found=§r§8[§1WARP§8] §cNie znaleziono warpa!§r
 warps:warp_details.edit_name.success=§r§8[§1WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
 
-warps:warp_details.remove_confirm.title=§r§l§4Usuń Warp§r [%s]
+warps:warp_details.remove_confirm.title=§r§l§4☓Usuń Warp§r [%s]
 warps:warp_details.remove_confirm.body=§r§8Nazwa: §f%1$s\n§8Kategoria: §f%6$s / %7$s§r\n§8Wspórzędne: §f(%2$s,%3$s,%4$s)§r\n§8Wymiar: §f%5$s\n\n§cCzy na pewno chcesz usunąć ten warp na zawsze?§r
 warps:warp_details.remove_confirm.no=§r§aNie§r
 warps:warp_details.remove_confirm.yes=§r§cTak, usuń na zawsze§r
@@ -86,32 +86,22 @@ warps:dimension.overworld=§r§2Świat Główny§r
 warps:dimension.the_end=§r§5Kres§r
 
 # === KATEGORIE ===
-warps:category.places=Miejsca
+warps:category.special=Specjalne
 warps:category.resources=Zasoby
-warps:category.special=Lokacje Specjalne
-warps:category.tools=Narzędzia i Bloki
+warps:category.places=Miejsca
+warps:category.landscapes=Krajobrazy
 
 # === MIEJSCA ===
-warps:icon.Animal_Farm=Farma Zwierząt
-warps:icon.Bank=Bank
-warps:icon.Beacon=Beacon
-warps:icon.Castle=Zamek
-warps:icon.Church=Kościół
-warps:icon.Crop_Farm=Farma Upraw
-warps:icon.Factory=Fabryka
-warps:icon.Fire_Brigade=Straż pożarna
-warps:icon.Government=Rząd
-warps:icon.Home=Dom
-warps:icon.Hospital=Szpital
-warps:icon.Hotel=Hotel
-warps:icon.Lighthouse=Latarnia Morska
-warps:icon.Mob_Farm=Farma Mobów
-warps:icon.Museum=Muzeum
-warps:icon.Offices=Biura
-warps:icon.Police=Policja
-warps:icon.School=Szkoła
-warps:icon.Tower=Wieża
-warps:icon.Warehouse=Magazyn
+warps:icon.Desert_Village=Wioska na Pustyni
+warps:icon.Jungle_Temple=Świątynia w Dżungli
+warps:icon.Ocean_Monument=Monument Oceaniczny
+warps:icon.Plains_Village=Wioska na Równinach
+warps:icon.Savanna_Village=Wioska na Sawannie
+warps:icon.Snowy_Village=Śnieżna Wioska
+warps:icon.Swamp_Hut=Chatka na Bagnie
+warps:icon.Taiga_Village=Wioska w Tajdze
+warps:icon.Trial_Chambers=Komnaty Prób
+warps:icon.Woodland_Mansion=Mansja w Lesie
 
 # === ZASOBY ===
 warps:icon.Amethyst=Ametyst
@@ -138,26 +128,30 @@ warps:icon.Marker_Yellow=Żółty Znacznik
 warps:icon.Target_Point=Punkt Celu
 warps:icon.Target_X=Cel X
 
-# === NARZĘDZIA I BLOKI ===
-warps:icon.Anvil=Kowadło
-warps:icon.Barrel=Beczka
-warps:icon.Beacon=Beacon
-warps:icon.Bed=Łóżko
-warps:icon.Bell=Dzwon
-warps:icon.Brewing_Stand=Stawek do Warzenia
-warps:icon.Campfire=Ognisko
-warps:icon.Cartography_Table=Stół Kartograficzny
-warps:icon.Chest=Skrzynia
-warps:icon.Composter=Kompostownik
-warps:icon.Crafting=Stół Rzemieślniczy
-warps:icon.Enchanting=Stół do Zaklęć
-warps:icon.Ender_Chest=Skrzynia Kresu
-warps:icon.Furnace=Piec
-warps:icon.Grindstone=Ostrzarka
-warps:icon.Lodestone=Magnetyt
-warps:icon.Loom=Krosno
-warps:icon.Respawn_Anchor=Kotwica Odrodzenia
-warps:icon.Shulker_Box=Skrzynia Shulkera
-warps:icon.Smithing_Table=Stół Kowalski
-warps:icon.Spawner=Spawner
-warps:icon.Stonecutter=Cięciarka Kamienia
+# === KRAJOBRAZY ===
+warps:icon.Amusement_Park=Park Rozrywki
+warps:icon.Beach_Sea=Plaża i Morze
+warps:icon.Bridge_River=Most i Rzeka
+warps:icon.Landscape_Castle=Zamek
+warps:icon.Cityscape_Futuristic=Futurystyczne Miasto
+warps:icon.Construction_Crane=Żuraw Budowlany
+warps:icon.Cottage=Chatka
+warps:icon.Desert=Pustynia
+warps:icon.Forest=Las
+warps:icon.Garden_Tree=Drzewo w Ogrodzie
+warps:icon.Industrial_Factory=Fabryka Przemysłowa
+warps:icon.Island=Wyspa
+warps:icon.Lake=Jezioro
+warps:icon.Mountains=Góry
+warps:icon.Park=Park
+warps:icon.River=Rzeka
+warps:icon.Road=Droga
+warps:icon.Ruins_Ancient=Starożytne Ruiny
+warps:icon.Savannah=Sawanna
+warps:icon.Sea_Boat=Morze i Łódź
+warps:icon.Seascape_Lighthouse=Latarnia Morska
+warps:icon.Street=Ulica
+warps:icon.Waterfall_River=Wodospad i Rzeka
+warps:icon.Antarctic=Antarktyka
+warps:icon.Cityscape=Krajobraz Miejski
+warps:icon.Modern_House=Nowoczesny Dom
