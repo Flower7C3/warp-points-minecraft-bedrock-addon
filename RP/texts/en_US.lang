@@ -1,24 +1,17 @@
-warps:menu.title=§r§l§dTeleport to...§r
-warps:menu.step1.body=Select how to filter warps:
-warps:menu.step1.select_category=Or select by category:
-warps:menu.step1.filter_all=All Warps
-warps:menu.step1.filter_category=%1$s
-warps:menu.step2.sort_change_to_distance=§r§l§3Sort: Alphabetically → By Distance§r
-warps:menu.step2.sort_change_to_alphabetical=§r§l§3Sort: By Distance → Alphabetically§r
-warps:menu.step2.select_all=Select Warp point:
-warps:menu.step2.select_category=Select Warp point using %1$s category:
-warps:menu.no_warps=§r§8[§dWarps!§8] §cThere are no Warps!§r
-warps:menu.no_warps_in_category=§r§8[§dWarps!§8] §cThere are no Warps in this category!§r
-warps:menu.button_format=§r§l%1$s§r §o%6$s meters\n§f(%2$s,%3$s,%4$s)§r
-warps:remove.button_format=§r§l%s§r §f(%s,%s,%s)§r %s
-
-warps:add.step1.title=§r§l§8Add Warp§r (step 1/3)§r
-warps:add.step2.title=§r§l§8Add Warp§r (step 2/3)§r
-warps:add.step3.title=§r§l§8Add Warp§r (step 3/3)§r
-warps:add.select_category=Select a category:
+warps:add.step1.title=§r§l§bAdd Warp§r step 1/3
+warps:add.step1.body=Select a category for the warp icon:
+warps:add.step2.title=§r§l§bAdd Warp§r step 2/3
+warps:add.step2.body=Select an icon from this category:
+warps:add.step3.title=§r§l§bAdd Warp§r step 3/3
+warps:add.step3.body=Enter the warp name and coordinates:
+warps:add.coords_must_be_number=§r§8[§dWarps!§8] §7The Coordinates must be a Number!§r
+warps:add.coords_out_of_range=§r§8[§dWarps!§8] §7The Coordinates are out of valid range!§r
+warps:add.duplicate_name=§r§8[§dWarps!§8] §cA warp with name §l%s§r§c already exists!§r
 warps:add.field.category.label=Category
-warps:add.field.category.value=§l%1$s / %1$s§r
+warps:add.field.category.value=§l%1$s / %2$s§r
+warps:add.field.icon=Icon
 warps:add.field.name.label=Place name
+warps:add.field.new_name.label=New place name
 warps:add.field.name.placeholder=Place name (required, string)
 warps:add.field.x.label=X coordinate
 warps:add.field.x.placeholder=%s (required, number)
@@ -26,103 +19,146 @@ warps:add.field.y=Y coordinate
 warps:add.field.y.label.placeholder=%s (required, number)
 warps:add.field.z=Z coordinate
 warps:add.field.z.label.placeholder=%s (required, number)
-warps:add.field.icon=Icon
+warps:add.fill_required=§r§8[§dWarps!§8] §7You need to fill up everything what is required!§r
+warps:add.invalid_icon=§r§8[§dWarps!§8] §7Invalid icon selected! Please try again.§r
+warps:add.name_too_long=§r§8[§dWarps!§8] §7The warp name is too long (max 50 characters)!§r
+warps:add.select_category=Select a category:
 warps:add.select_icon=Select an icon for this warp:
 warps:add.submit=Save
-warps:common.required_number=(required, number)
-warps:common.required_string=(required, string)
-warps:add.fill_required=§r§8[§dWarps!§8] §7You need to fill up everything what is required!§r
-warps:add.coords_must_be_number=§r§8[§dWarps!§8] §7The Coordinates must be a Number!§r
-warps:add.coords_out_of_range=§r§8[§dWarps!§8] §7The Coordinates are out of valid range!§r
-warps:add.name_too_long=§r§8[§dWarps!§8] §7The warp name is too long (max 50 characters)!§r
-warps:add.invalid_icon=§r§8[§dWarps!§8] §7Invalid icon selected! Please try again.§r
-warps:add.duplicate_name=§r§8[§dWarps!§8] §cA warp with name §l%s§r§c already exists!§r
 warps:add.success=§r§8[§dWarps!§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
 
-warps:remove.title=§r§l§4Delete Warp§r
-warps:remove.confirm.title=§r§4Are you sure that you want to delete this Warp for ever?§r
-warps:remove.confirm.body=§r§8Name: §f%1$s\n§8Category: §f%6$s / %7$s§r\n§8Coordinates: §f(%2$s,%3$s,%4$s)§r\n§8Dimension: §f%5$s
-warps:remove.confirm.yes=§r§cYes, delete permanently§r
+warps:button_format.long=§r§l%1$s§r §o%6$s meters\n§f(%2$s,%3$s,%4$s)§r
+warps:button_format.short=§r§l%s§r §f(%s,%s,%s)§r %s
+
+warps:common.required_number=(required, number)
+warps:common.required_string=(required, string)
+
+warps:dimension.nether=§r§cNether§r
+warps:dimension.overworld=§r§2Overworld§r
+warps:dimension.the_end=§r§5The End§r
+
+warps:main_menu.title=§r§l§1Warp Menu§r
+warps:main_menu.body=Select an action:
+warps:main_menu.manage=§r§eManage Warps§r
+warps:main_menu.teleport=§r§aTeleport§r
+warps:main_menu.add=§r§bAdd Warp§r
+
+warps:manage_menu.edit_icon.title=§r§l§bChange Icon§r [%s]
+warps:manage_menu.edit_icon.categories.body=Select a category to choose a new icon:
+warps:manage_menu.edit_icon.category.title=§r§l§bCategory§r [%s]
+warps:manage_menu.edit_icon.category.body=Select a new icon from this category:
+warps:manage_menu.edit_icon.details.title=§r§l§bEdit Icon§r [%s]
+warps:manage_menu.edit_icon.details.body=Enter the warp name and coordinates (icon will be changed):
+warps:manage_menu.edit_icon.success=§r§8[§dWarps!§8] §7Changed icon for warp §l%1$s§r§7 to §l%2$s§r§7!§r
+
+warps:manage_menu.edit_name.title=§r§l§bChange Name§r [%s]
+warps:manage_menu.edit_name.not_found=§r§8[§dWarps!§8] §cWarp not found!§r
+warps:manage_menu.edit_name.success=§r§8[§dWarps!§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
+
+warps:manage_menu.title=§r§l§eManage Warps§r
+warps:manage_menu.title_all=§r§l§eManage§r [all]
+warps:manage_menu.title_cat=§r§l§eManage§r [%s]
+
+warps:menu.filter_all=All Warps
+warps:menu.filter_category=%1$s
+warps:menu.filter_select_category=Or select by category:
+warps:menu.no_warps=§r§8[§dWarps!§8] §cThere are no Warps!§r
+warps:menu.no_warps_in_category=§r§8[§dWarps!§8] §cThere are no Warps in this category!§r
+warps:menu.select=Select a warp point to teleport:
+warps:menu.sort_change_to_alphabetical=§r§l§3Sort: By Distance → Alphabetically§r
+warps:menu.sort_change_to_distance=§r§l§3Sort: Alphabetically → By Distance§r
+
+warps:remove.list.title=§r§l§4Remove Warp§r [select]
+warps:remove.list.body=Select a warp to remove:
+warps:remove.confirm.title=§r§4Delete Warp§r [%s]
+warps:remove.confirm.body=§r§8Name: §f%1$s\n§8Category: §f%6$s / %7$s§r\n§8Coordinates: §f(%2$s,%3$s,%4$s)§r\n§8Dimension: §f%5$s\n\n§cAre you sure you want to delete this warp permanently?§r
 warps:remove.confirm.no=§r§aNo§r
+warps:remove.confirm.yes=§r§cYes, delete permanently§r
 warps:remove.not_deleted=§r§8[§dWarps!§8] §aNot deleted Warp §l%s§r§a!§r
 warps:remove.success=§r§8[§dWarps!§8] §cDeleted Warp §l%s§r§c!§r
 
-warps:teleport.not_found=§r§8[§dWarps!§8] §cWarp with name §l%s§r§c not found!§r
+warps:teleport_menu.title=§r§l§dTeleport to...§r
+warps:teleport_menu.title_all=§r§l§dTeleport§r [all]
+warps:teleport_menu.title_cat=§r§l§dTeleport§r [%s]
+
 warps:teleport.error=§r§8[§dWarps!§8] §cError teleporting to Warp §l%s§r§c!§r
+warps:teleport.not_found=§r§8[§dWarps!§8] §cWarp with name §l%s§r§c not found!§r
 
-warps:dimension.overworld=§r§2Overworld§r
-warps:dimension.nether=§r§cNether§r
-warps:dimension.the_end=§r§5The End§r
+warps:warp_details.title=§r§l§eWarp§r [%s]
+warps:warp_details.body=Coordinates: (%2$s,%3$s,%4$s)\nDimension: %5$s\nCategory: %6$s\nIcon: %7$s
+warps:warp_details.options.delete=§r§cDelete§r
+warps:warp_details.options.edit_icon=§r§bEdit Icon§r
+warps:warp_details.options.edit_name=§r§eEdit Name§r
+warps:warp_details.options.teleport=§r§aTeleport§r
 
-# === SPECIAL LOCATIONS ===
-warps:icon.Map_Marker=Map Marker
-warps:icon.Heart=Heart
-warps:icon.Spawn=Spawn
+# === CATEGORIES ===
+warps:category.farms=Farms
+warps:category.places=Places
+warps:category.resources=Resources
+warps:category.special=Special Locations
+warps:category.tools=Tools & Blocks
+
+# === FARMS ===
+warps:icon.Animal_Farm=Animal Farm
+warps:icon.Crop_Farm=Crop Farm
+warps:icon.Mob_Farm=Mob Farm
 
 # === PLACES ===
-warps:icon.Home=Home
+warps:icon.Bank=Bank
 warps:icon.Castle=Castle
-warps:icon.Hotel=Hotel
-warps:icon.Tower=Tower
-warps:icon.Lighthouse=Lighthouse
 warps:icon.Church=Church
-warps:icon.Police=Police
+warps:icon.Factory=Factory
 warps:icon.Fire_Brigade=Fire Brigade
 warps:icon.Government=Government
-warps:icon.Bank=Bank
-warps:icon.Museum=Museum
-warps:icon.School=School
+warps:icon.Home=Home
 warps:icon.Hospital=Hospital
+warps:icon.Hotel=Hotel
+warps:icon.Lighthouse=Lighthouse
+warps:icon.Museum=Museum
 warps:icon.Offices=Offices
-warps:icon.Factory=Factory
+warps:icon.Police=Police
+warps:icon.School=School
+warps:icon.Tower=Tower
 warps:icon.Warehouse=Warehouse
 
 # === RESOURCES ===
+warps:icon.Amethyst=Amethyst
 warps:icon.Coal=Coal
 warps:icon.Copper=Copper
-warps:icon.Iron=Iron
-warps:icon.Redstone=Redstone
-warps:icon.Lapis=Lapis Lazuli
-warps:icon.Gold=Gold
-warps:icon.Emerald=Emerald
-warps:icon.Quartz=Nether Quartz
 warps:icon.Diamond=Diamond
-warps:icon.Amethyst=Amethyst
+warps:icon.Emerald=Emerald
+warps:icon.Gold=Gold
+warps:icon.Iron=Iron
+warps:icon.Lapis=Lapis Lazuli
+warps:icon.Quartz=Nether Quartz
+warps:icon.Redstone=Redstone
 warps:icon.TNT=TNT
 
-# === FARMS ===
-warps:icon.Mob_Farm=Mob Farm
-warps:icon.Crop_Farm=Crop Farm
-warps:icon.Animal_Farm=Animal Farm
+# === SPECIAL LOCATIONS ===
+warps:icon.Heart=Heart
+warps:icon.Map_Marker=Map Marker
+warps:icon.Spawn=Spawn
 
 # === TOOLS & BLOCKS ===
-warps:icon.Crafting=Crafting Table
-warps:icon.Enchanting=Enchanting Table
-warps:icon.Brewing_stand=Brewing Stand
 warps:icon.Anvil=Anvil
-warps:icon.Furnace=Furnace
-warps:icon.Smithing_Table=Smithing Table
-warps:icon.Loom=Loom
-warps:icon.Cartography_Table=Cartography Table
-warps:icon.Stonecutter=Stonecutter
-warps:icon.Grindstone=Grindstone
+warps:icon.Barrel=Barrel
+warps:icon.Beacon=Beacon
 warps:icon.Bed=Bed
 warps:icon.Bell=Bell
-warps:icon.Beacon=Beacon
+warps:icon.Brewing_stand=Brewing Stand
 warps:icon.Campfire=Campfire
-warps:icon.Composter=Composter
-warps:icon.Barrel=Barrel
+warps:icon.Cartography_Table=Cartography Table
 warps:icon.Chest=Chest
+warps:icon.Composter=Composter
+warps:icon.Crafting=Crafting Table
+warps:icon.Enchanting=Enchanting Table
 warps:icon.Ender_Chest=Ender Chest
-warps:icon.Shulker_Box=Shulker Box
-warps:icon.Respawn_Anchor=Respawn Anchor
+warps:icon.Furnace=Furnace
+warps:icon.Grindstone=Grindstone
 warps:icon.Lodestone=Lodestone
+warps:icon.Loom=Loom
+warps:icon.Respawn_Anchor=Respawn Anchor
+warps:icon.Shulker_Box=Shulker Box
+warps:icon.Smithing_Table=Smithing Table
 warps:icon.Spawner=Spawner
-
-# === CATEGORIES ===
-# === CATEGORIES ===
-warps:category.special=Special Locations
-warps:category.places=Places
-warps:category.resources=Resources
-warps:category.farms=Farms
-warps:category.tools=Tools & Blocks
+warps:icon.Stonecutter=Stonecutter
