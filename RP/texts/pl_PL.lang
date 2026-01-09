@@ -34,6 +34,9 @@ warps:common.required_number=(wymagane, liczba)
 warps:common.required_string=(wymagane, tekst)
 warps:add.fill_required=§r§8[§dWarps!§8] §7Musisz wypełnić wszystkie wymagane pola!§r
 warps:add.coords_must_be_number=§r§8[§dWarps!§8] §7Współrzędne muszą być liczbą!§r
+warps:add.coords_out_of_range=§r§8[§dWarps!§8] §7Współrzędne są poza prawidłowym zakresem!§r
+warps:add.name_too_long=§r§8[§dWarps!§8] §7Nazwa warpa jest za długa (maksymalnie 50 znaków)!§r
+warps:add.invalid_icon=§r§8[§dWarps!§8] §7Wybrano nieprawidłową ikonę! Spróbuj ponownie.§r
 warps:add.duplicate_name=§r§8[§dWarps!§8] §cWarp o nazwie §l%s§r§c już istnieje!§r
 warps:add.success=§r§8[§dWarps!§8] §7Dodano Warp §l%s§r§7 na pozycji §f(%s,%s,%s)§r§7!§r
 

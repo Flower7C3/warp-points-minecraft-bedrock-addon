@@ -354,6 +354,7 @@ export const Warps = () => {
                 : "?";
 
             const icon = findIconByName(warp.icon);
+            const iconPath = icon ? icon.path : "";
             actionForm.button({
                 rawtext: [{
                     translate: "warps:menu.button_format",
@@ -368,7 +369,7 @@ export const Warps = () => {
                         ]
                     }
                 }]
-            }, icon ? icon.path : "");
+            }, iconPath);
         });
 
         actionForm.show(player).then((res) => {
@@ -506,10 +507,37 @@ export const Warps = () => {
     }
 
     const addWarpItem = (player, warpName, icon, targetLocation, warpDimensionId) => {
+        // Walidacja ikony
+        if (!icon || !icon.name) {
+            player.sendMessage({translate: "warps:add.invalid_icon"});
+            showAddWarpFormStep1(player, {warpName, targetLocation, warpDimensionId});
+            return;
+        }
+
+        // Walidacja nazwy
+        if (!warpName || warpName.trim().length === 0) {
+            player.sendMessage({translate: "warps:add.fill_required"});
+            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
+
+        if (warpName.length > 50) {
+            player.sendMessage({translate: "warps:add.name_too_long"});
+            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
 
         if (isNaN(targetLocation.x) || isNaN(targetLocation.y) || isNaN(targetLocation.z)) {
             player.sendMessage({translate: "warps:add.coords_must_be_number"});
             // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
+            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
+
+        // Walidacja współrzędnych (rozsądne limity)
+        // Y może być od -64 do 320 w Bedrock Edition (od wersji 1.18+)
+        if (Math.abs(targetLocation.x) > 30000000 || targetLocation.y < -64 || targetLocation.y > 320 || Math.abs(targetLocation.z) > 30000000) {
+            player.sendMessage({translate: "warps:add.coords_out_of_range"});
             showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
             return;
         }
@@ -608,7 +636,11 @@ export const Warps = () => {
     }
 
     const confirmRemoveWarp = (player, warp) => {
-        const icon = findIconByName(warp.icon)
+        const icon = findIconByName(warp.icon);
+        // Jeśli ikona nie istnieje, użyj domyślnych wartości
+        const categoryText = icon ? {translate: icon.translatedCategory} : {text: "?"};
+        const iconText = icon ? {translate: icon.translatedName} : {text: warp.icon || "?"};
+        
         new MinecraftUi.MessageFormData()
             .title({rawtext: [{translate: "warps:remove.confirm.title"}]})
             .body({
@@ -621,8 +653,8 @@ export const Warps = () => {
                             {text: warp.y.toString()},
                             {text: warp.z.toString()},
                             {translate: getDimensionTranslationKey(warp.dimension)},
-                            {translate: icon.translatedCategory},
-                            {translate: icon.translatedName}
+                            categoryText,
+                            iconText
                         ]
                     }
                 }]
