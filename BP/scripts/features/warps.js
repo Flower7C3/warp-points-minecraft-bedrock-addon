@@ -54,21 +54,28 @@ export const Warps = () => {
         WarpIcon("TNT", "resources", "ore/TNT.png"),
 
         // Minecraft Villages
+        WarpIcon("Plains_Village", "places", "village/plains_village.png"),
         WarpIcon("Desert_Village", "places", "village/desert_village.png"),
         WarpIcon("Jungle_Temple", "places", "village/jungle_temple.png"),
-        WarpIcon("Ocean_Monument", "places", "village/ocean_monument.png"),
-        WarpIcon("Plains_Village", "places", "village/plains_village.png"),
         WarpIcon("Savanna_Village", "places", "village/savanna_village.png"),
         WarpIcon("Snowy_Village", "places", "village/snowy_village.png"),
-        WarpIcon("Swamp_Hut", "places", "village/swamp_hut.png"),
         WarpIcon("Taiga_Village", "places", "village/taiga_village.png"),
+
+        // Minecraft Places
+        WarpIcon("Swamp_Hut", "places", "village/swamp_hut.png"),
+        WarpIcon("Ocean_Monument", "places", "village/ocean_monument.png"),
         WarpIcon("Trial_Chambers", "places", "village/trial_chambers.png"),
         WarpIcon("Woodland_Mansion", "places", "village/woodland_mansion.png"),
 
         // === KRAJOBRAZY ===
+        // Home
         WarpIcon("Cottage", "landscapes", "landscapes-23/cottage.png"),
         WarpIcon("Modern_House", "landscapes", "landscapes-23/modern-house.png"),
+        WarpIcon("Ruins_Ancient", "landscapes", "landscapes-23/ruins-ancient.png"),
+        WarpIcon("Landscape_Castle", "landscapes", "landscapes-23/castle.png"),
         WarpIcon("Antarctic", "landscapes", "landscapes-23/antarctic.png"),
+
+        // City
         WarpIcon("Cityscape", "landscapes", "landscapes-23/cityscape.png"),
         WarpIcon("Cityscape_Futuristic", "landscapes", "landscapes-23/cityscape-futuristic.png"),
         WarpIcon("Industrial_Factory", "landscapes", "landscapes-23/industrial-factory.png"),
@@ -79,18 +86,21 @@ export const Warps = () => {
         WarpIcon("Park", "landscapes", "landscapes-23/park.png"),
         WarpIcon("Amusement_Park", "landscapes", "landscapes-23/amusement-park.png"),
 
-        WarpIcon("Mountains", "landscapes", "landscapes-23/mountains-mountain.png"),
-        WarpIcon("Ruins_Ancient", "landscapes", "landscapes-23/ruins-ancient.png"),
-        WarpIcon("Landscape_Castle", "landscapes", "landscapes-23/castle.png"),
-
-        WarpIcon("Forest", "landscapes", "landscapes-23/forest.png"),
+        // Nature
+        WarpIcon("Bushes_Bush", "landscapes", "landscapes-23/bushes-bush.png"),
         WarpIcon("Desert", "landscapes", "landscapes-23/desert.png"),
+        WarpIcon("Forest", "landscapes", "landscapes-23/forest.png"),
+        WarpIcon("Mountains", "landscapes", "landscapes-23/mountains-mountain.png"),
+        WarpIcon("Rainforest", "landscapes", "landscapes-23/rainforest.png"),
         WarpIcon("Savannah", "landscapes", "landscapes-23/savannah.png"),
-        WarpIcon("Lake", "landscapes", "landscapes-23/lake.png"),
+
+        // Water
         WarpIcon("River", "landscapes", "landscapes-23/river.png"),
         WarpIcon("Bridge_River", "landscapes", "landscapes-23/bridge-river.png"),
         WarpIcon("Waterfall_River", "landscapes", "landscapes-23/waterfall-river.png"),
+        WarpIcon("Lake", "landscapes", "landscapes-23/lake.png"),
 
+        // Sea
         WarpIcon("Beach_Sea", "landscapes", "landscapes-23/beach-sea.png"),
         WarpIcon("Seascape_Lighthouse", "landscapes", "landscapes-23/seascape-lighthouse.png"),
         WarpIcon("Sea_Boat", "landscapes", "landscapes-23/sea-boat.png"),
