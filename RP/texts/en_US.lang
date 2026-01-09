@@ -1,4 +1,4 @@
-warps:main_menu.title=§r§l§1☈ Warp Menu§r
+warps:main_menu.title=§r§l§1☰ Warps main menu§r
 warps:main_menu.body=Select an action:
 warps:main_menu.teleport=§r§d✈ Teleport§r
 warps:main_menu.manage=§r§e☉ Manage Warps§r
@@ -45,21 +45,21 @@ warps:manage_menu.title_cat=§r§l§e☉ Manage§r [%s]
 
 warps:warp_details.title=§r§l§e☉ Warp§r [%s]
 warps:warp_details.body=Coordinates: (%2$s,%3$s,%4$s)\nDimension: %5$s\nCategory: %6$s\nIcon: %7$s
-warps:warp_details.options.delete=§r§c☓Delete§r
-warps:warp_details.options.edit_icon=§r§e✎ Edit Icon§r
-warps:warp_details.options.edit_name=§r§e✎ Edit Name§r
-warps:warp_details.options.teleport=§r§d✈ Teleport§r
+warps:warp_details.options.delete=§r§c☓ Delete§r
+warps:warp_details.options.edit_name=§r§e⌨ Rename§r
+warps:warp_details.options.edit_icon=§r§e⍟ Change Icon§r
+warps:warp_details.options.teleport=§r§d✈ Teleport to§r
 
-warps:warp_details.edit_icon.title=§r§l§e✎ Change Icon§r [%s]
+warps:warp_details.edit_name.title=§r§l§e⌨ Rename§r [%s]
+warps:warp_details.edit_name.not_found=§r§8[§1WARP§8] §cWarp not found!§r
+warps:warp_details.edit_name.success=§r§8[§1WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
+
+warps:warp_details.edit_icon.title=§r§l§e⍟ Change Icon§r [%s]
 warps:warp_details.edit_icon.step1.body=Select a category to choose a new icon:
 warps:warp_details.edit_icon.step2.body=Select a new icon from this category:
 warps:warp_details.edit_icon.success=§r§8[§1WARP§8] §7Changed icon for warp §l%1$s§r§7 to §l%2$s§r§7!§r
 
-warps:warp_details.edit_name.title=§r§l§e✎ Change Name§r [%s]
-warps:warp_details.edit_name.not_found=§r§8[§1WARP§8] §cWarp not found!§r
-warps:warp_details.edit_name.success=§r§8[§1WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
-
-warps:warp_details.remove_confirm.title=§r§l§4☓Delete Warp§r [%s]
+warps:warp_details.remove_confirm.title=§r§l§4☓ Delete Warp§r [%s]
 warps:warp_details.remove_confirm.body=§r§8Name: §f%1$s\n§8Category: §f%6$s / %7$s§r\n§8Coordinates: §f(%2$s,%3$s,%4$s)§r\n§8Dimension: §f%5$s\n\n§cAre you sure you want to delete this warp permanently?§r
 warps:warp_details.remove_confirm.no=§r§aNo§r
 warps:warp_details.remove_confirm.yes=§r§cYes, delete permanently§r

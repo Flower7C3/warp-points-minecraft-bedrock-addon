@@ -1,4 +1,4 @@
-warps:main_menu.title=§r§l§1☈ Menu Warpów§r
+warps:main_menu.title=§r§l§1☰ Menu główne Warpów§r
 warps:main_menu.body=Wybierz akcję:
 warps:main_menu.teleport=§r§d✈ Teleportuj§r
 warps:main_menu.manage=§r§e☉ Zarządzaj Warpami§r
@@ -33,33 +33,33 @@ warps:add.submit=Zapisz
 warps:add.success=§r§8[§1WARP§8] §7Dodano Warp §l%s§r§7 na pozycji §f(%s,%s,%s)§r§7!§r
 
 warps:teleport_menu.title=§r§l§d✈ Teleportuj się do...§r
-warps:teleport_menu.title_all=§r§l§d✈ Teleport§r wszystkie
-warps:teleport_menu.title_cat=§r§l§d✈ Teleport§r %s
+warps:teleport_menu.title_all=§r§l§d✈ Teleport się§r wszystkie
+warps:teleport_menu.title_cat=§r§l§d✈ Teleport się§r %s
 
 warps:teleport.error=§r§8[§1WARP§8] §cBłąd podczas teleportacji do Warp §l%s§r§c!§r
 warps:teleport.not_found=§r§8[§1WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
 
-warps:manage_menu.title=§r§l§e☉ Zarządzaj Warpami§r
+warps:manage_menu.title=§r§l§e☉ Zarządzaj§r
 warps:manage_menu.title_all=§r§l§e☉ Zarządzaj§r [wszystkie]
 warps:manage_menu.title_cat=§r§l§e☉ Zarządzaj§r [%s]
 
 warps:warp_details.title=§r§l§e☉ Warp§r [%s]
 warps:warp_details.body=Współrzędne: (%2$s,%3$s,%4$s)\nWymiar: %5$s\nKategoria: %6$s\nIkona: %7$s
-warps:warp_details.options.delete=§r§c☓Usuń§r
-warps:warp_details.options.edit_icon=§r§e✎ Zmień Ikonę§r
-warps:warp_details.options.edit_name=§r§e✎ Zmień Nazwę§r
-warps:warp_details.options.teleport=§r§d✈ Teleportuj§r
+warps:warp_details.options.delete=§r§c☓ Usuń§r
+warps:warp_details.options.edit_name=§r§e⌨ Zmień nazwę§r
+warps:warp_details.options.edit_icon=§r§e⍟ Zmień ikonę§r
+warps:warp_details.options.teleport=§r§d✈ Teleportuj się§r
 
-warps:warp_details.edit_icon.title=§r§l§e✎ Zmiana ikony§r [%s]
+warps:warp_details.edit_name.title=§r§l§e⌨ Zmień nazwę§r [%s]
+warps:warp_details.edit_name.not_found=§r§8[§1WARP§8] §cNie znaleziono warpa!§r
+warps:warp_details.edit_name.success=§r§8[§1WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
+
+warps:warp_details.edit_icon.title=§r§l§e⍟ Zmień ikonę§r [%s]
 warps:warp_details.edit_icon.step1.body=Wybierz kategorię, aby wybrać nową ikonę:
 warps:warp_details.edit_icon.step2.body=Wybierz nową ikonę z tej kategorii:
 warps:warp_details.edit_icon.success=§r§8[§1WARP§8] §7Zmieniono ikonę dla warpa §l%1$s§r§7 na §l%2$s§r§7!§r
 
-warps:warp_details.edit_name.title=§r§l§e✎ Zmiana nazwy§r [%s]
-warps:warp_details.edit_name.not_found=§r§8[§1WARP§8] §cNie znaleziono warpa!§r
-warps:warp_details.edit_name.success=§r§8[§1WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
-
-warps:warp_details.remove_confirm.title=§r§l§4☓Usuń Warp§r [%s]
+warps:warp_details.remove_confirm.title=§r§l§4☓ Usuń§r [%s]
 warps:warp_details.remove_confirm.body=§r§8Nazwa: §f%1$s\n§8Kategoria: §f%6$s / %7$s§r\n§8Wspórzędne: §f(%2$s,%3$s,%4$s)§r\n§8Wymiar: §f%5$s\n\n§cCzy na pewno chcesz usunąć ten warp na zawsze?§r
 warps:warp_details.remove_confirm.no=§r§aNie§r
 warps:warp_details.remove_confirm.yes=§r§cTak, usuń na zawsze§r
