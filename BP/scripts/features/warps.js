@@ -1107,22 +1107,14 @@ export const Warps = () => {
             ///=================================================================================================================
             // === Item Component Registration ===
             event.itemComponentRegistry.registerCustomComponent(ITEM_COMPONENT_ID, {
+                // Shift + right click na blok = dodawanie warpa
                 onUseOn: (event) => {
                     system.run(() => {
                         const player = event.source && event.source.typeId === "minecraft:player" ? event.source : null;
                         const item = event.itemStack;
                         const block = event.block;
-                        if (!player || !item || !block) return;
-                        if (useLock.has(player.id)) return;
-                        useLock.set(player.id, true);
-                        system.runTimeout(() => useLock.delete(player.id), 1);
-                        if (!player.isSneaking) {
-                            mainMenu(player);
-                            return;
-                        }
-                        if (block.typeId === "air") return;
+                        if (!player || !item || !block || !player.isSneaking || block.typeId === "air") return;
 
-                        // Shift+click na blok = dodawanie warpa
                         const blockLoc = block.location;
                         let targetLocation = {x: blockLoc.x, y: blockLoc.y, z: blockLoc.z};
 
@@ -1154,15 +1146,12 @@ export const Warps = () => {
                         });
                     });
                 },
+                // Right click = dodawanie warpa
                 onUse: (event) => {
                     system.run(() => {
                         const player = event.source && event.source.typeId === "minecraft:player" ? event.source : null;
-                        if (!player) return;
-                        system.runTimeout(() => {
-                            if (useLock.has(player.id)) return;
-                            if (!player.isSneaking) return;
-                            mainMenu(player);
-                        }, 1);
+                        if (!player || player.isSneaking) return;
+                        mainMenu(player);
                     });
                 }
             });
