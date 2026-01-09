@@ -266,7 +266,7 @@ export const Warps = () => {
             dimension.runCommand(`tp "${player.name}" ${warp.x} ${warp.y} ${warp.z}`);
             player.dimension.playSound("mob.shulker.teleport", {x: warp.x, y: warp.y, z: warp.z});
         } catch (error) {
-            console.error(`[WARPS!] Error teleporting to warp ${warp.name}:`, error);
+            console.error(`[WARP] Error teleporting to warp ${warp.name}:`, error);
             player.sendMessage({
                 translate: "warps:teleport.error",
                 with: [warp.name]
@@ -972,7 +972,7 @@ export const Warps = () => {
         ///=================================================================================================================
         // === Command Registration ===
         Minecraft.system.beforeEvents.startup.subscribe((event) => {
-            console.info("[WARPS!] Loaded Script")
+            console.info("[WARP] Loaded Script")
 
             event.customCommandRegistry.registerEnum("warps:icon", WARP_ICONS.filter(icon => icon && icon.name).map(icon => icon.name))
 
