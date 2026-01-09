@@ -33,15 +33,23 @@ warps:add.submit=Save
 warps:add.success=§r§8[§1WARP§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
 
 warps:teleport_menu.title=§r§l§d✈ Teleport to...§r
-warps:teleport_menu.title_all=§r§l§d✈ Teleport§r [all]
-warps:teleport_menu.title_cat=§r§l§d✈ Teleport§r [%s]
+warps:manage_menu.title=§r§l§e☉ Manage Warps§r
+
+warps:menu.filter_all=All Warps
+warps:menu.filter_category=%1$s
+warps:menu.filter_select_category=Or select category:
+
+warps:menu.sort_change_to_alphabetical=§r§3Change sort to §lalphabetical§r
+warps:menu.sort_change_to_distance=§r§3Change sort to §ldistance§r
+warps:menu.sorting_by_alphabetical_all=§rSorting by §lalphabetical§r order:
+warps:menu.sorting_by_alphabetical_cat=§rSorting by §lalphabetical§r order in §l%s§r category:
+warps:menu.sorting_by_distance_all=§rSorting by §ldistance§r:
+warps:menu.sorting_by_distance_cat=§rSorting by §ldistance§r in §l%s§r category:
 
 warps:teleport.error=§r§8[§1WARP§8] §cError teleporting to Warp §l%s§r§c!§r
 warps:warp.not_found=§r§8[§1WARP§8] §cWarp with name §l%s§r§c not found!§r
-
-warps:manage_menu.title=§r§l§e☉ Manage Warps§r
-warps:manage_menu.title_all=§r§l§e☉ Manage§r [all]
-warps:manage_menu.title_cat=§r§l§e☉ Manage§r [%s]
+warps:menu.no_warps=§r§8[§1WARP§8] §cThere are no Warps§r
+warps:menu.no_warps_in_category=§r§8[§1WARP§8] §cThere are no Warps in this category!§r
 
 warps:warp_details.title=§r§l§e☉ Warp§r [%s]
 warps:warp_details.body=Distance: §6$s meters\nCoordinates: %2$s, %3$s, %4$s\nDimension: %5$s\nCategory: %7$s\nIcon: %8$s
@@ -65,16 +73,6 @@ warps:warp_details.remove_confirm.no=§r§aNo§r
 warps:warp_details.remove_confirm.yes=§r§cYes, delete permanently§r
 warps:warp_details.remove.not_deleted=§r§8[§1WARP§8] §aNot deleted Warp §l%s§r§a!§r
 warps:warp_details.remove.success=§r§8[§1WARP§8] §cDeleted Warp §l%s§r§c!§r
-
-warps:menu.filter_all=All Warps
-warps:menu.filter_category=%1$s
-warps:menu.filter_select_category=Or select by category:
-warps:menu.no_warps=§r§8[§1WARP§8] §cThere are no Warps§r
-warps:menu.no_warps_in_category=§r§8[§1WARP§8] §cThere are no Warps in this category!§r
-warps:menu.sort_change_to_alphabetical=§r§3Change sort to §lalphabetical§r
-warps:menu.sort_change_to_distance=§r§3Change sort to §ldistance§r
-warps:menu.sorting_by_alphabetical=§rSorting by §lalphabetical§r order:
-warps:menu.sorting_by_distance=§rSorting by §ldistance§r:
 
 warps:button_format.long=§r§l%1$s§r §o%6$sm§r %2$s,%3$s,%4$s %5$s
 warps:button_format.short=§r§l%1$s§r %2$s,%3$s,%4$s %5$s

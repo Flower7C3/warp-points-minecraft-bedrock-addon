@@ -98,11 +98,14 @@ export const Warps = () => {
     ]
 
     const WARP_MENU = Object.freeze({
-        TELEPORT: "teleport",
-        MANAGEMENT: "management"
+        TELEPORT: 'teleport',
+        MANAGEMENT: 'management'
     });
 
-    const useLock = new Map(); // Map<Player.id, boolean>
+    const SORT_BY = Object.freeze({
+        DISTANCE: 'distance',
+        ALPHABETICAL: 'alphabetical'
+    });
 
     ///=================================================================================================================
     // === Data Management Functions ===
@@ -192,23 +195,26 @@ export const Warps = () => {
 
     const sortWarps = (warps, sortBy, player) => {
         const sorted = [...warps];
-        if (sortBy === 'distance') {
-            const playerLocation = player.location;
-            const playerDimension = getPlayerDimension(player);
-            sorted.sort((a, b) => {
-                const aSameDimension = a.dimension === playerDimension;
-                const bSameDimension = b.dimension === playerDimension;
-                if (aSameDimension && !bSameDimension) return -1;
-                if (!aSameDimension && bSameDimension) return 1;
-                if (aSameDimension && bSameDimension) {
-                    const distA = calculateDistance(playerLocation.x, playerLocation.y, playerLocation.z, a.x, a.y, a.z);
-                    const distB = calculateDistance(playerLocation.x, playerLocation.y, playerLocation.z, b.x, b.y, b.z);
-                    return distA - distB;
-                }
-                return 0;
-            });
-        } else {
-            sorted.sort((a, b) => a.name.localeCompare(b.name));
+        switch (sortBy) {
+            case SORT_BY.DISTANCE:
+                const playerLocation = player.location;
+                const playerDimension = getPlayerDimension(player);
+                sorted.sort((a, b) => {
+                    const aSameDimension = a.dimension === playerDimension;
+                    const bSameDimension = b.dimension === playerDimension;
+                    if (aSameDimension && !bSameDimension) return -1;
+                    if (!aSameDimension && bSameDimension) return 1;
+                    if (aSameDimension && bSameDimension) {
+                        const distA = calculateDistance(playerLocation.x, playerLocation.y, playerLocation.z, a.x, a.y, a.z);
+                        const distB = calculateDistance(playerLocation.x, playerLocation.y, playerLocation.z, b.x, b.y, b.z);
+                        return distA - distB;
+                    }
+                    return 0;
+                });
+                break;
+            case SORT_BY.ALPHABETICAL:
+                sorted.sort((a, b) => a.name.localeCompare(b.name));
+                break;
         }
         return sorted;
     }
@@ -345,56 +351,40 @@ export const Warps = () => {
             }
 
             // Domyślne sortowanie: distance dla teleport, alphabetical dla management
-            const defaultSortBy = mode === WARP_MENU.TELEPORT ? 'distance' : 'alphabetical';
+            const defaultSortBy = mode === WARP_MENU.TELEPORT ? SORT_BY.DISTANCE : SORT_BY.ALPHABETICAL;
             showWarpsListMenuWithOptions(player, filteredWarps, defaultSortBy, selectedCategory, mode);
         });
     }
 
     const showWarpsListMenuWithOptions = (player, warps, sortBy, selectedCategory = null, mode = WARP_MENU.TELEPORT) => {
         // Tytuł formularza
-        let actionFormTitle;
-        if (mode === WARP_MENU.TELEPORT) {
-            actionFormTitle = selectedCategory
-                ? {
-                    rawtext: [{
-                        translate: "warps:teleport_menu.title_cat",
-                        with: {
-                            rawtext: [{translate: `warps:category.${selectedCategory}`}]
-                        }
-                    }]
-                }
-                : {
-                    rawtext: [{translate: "warps:teleport_menu.title_all"}]
-                };
-        } else {
-            actionFormTitle = selectedCategory
-                ? {
-                    rawtext: [{
-                        translate: "warps:manage_menu.title_cat",
-                        with: {
-                            rawtext: [{translate: `warps:category.${selectedCategory}`}]
-                        }
-                    }]
-                }
-                : {
-                    rawtext: [{translate: "warps:manage_menu.title_all"}]
-                };
-        }
-
-        const actionForm = new MinecraftUi.ActionFormData()
-            .title(actionFormTitle)
-            .body("");
+        const actionFormTitleKey = (mode === WARP_MENU.TELEPORT)
+            ? "warps:teleport_menu.title"
+            : "warps:manage_menu.title";
 
         // Przycisk do zmiany sortowania na pierwszej pozycji
-        const sortButtonTextKey = sortBy === 'distance'
+        const sortButtonTextKey = sortBy === SORT_BY.DISTANCE
             ? "warps:menu.sort_change_to_alphabetical"
             : "warps:menu.sort_change_to_distance";
-        const sortLabelText = sortBy === 'distance'
+        const sortLabelTextKey = sortBy === SORT_BY.DISTANCE
             ? "warps:menu.sorting_by_distance"
             : "warps:menu.sorting_by_alphabetical";
 
-        actionForm.button({rawtext: [{translate: sortButtonTextKey}]});
-        actionForm.label({rawtext: [{translate: sortLabelText}]});
+        const actionForm = new MinecraftUi.ActionFormData()
+            .title({rawtext: [{translate: actionFormTitleKey}]})
+            .body("")
+            .button({rawtext: [{translate: sortButtonTextKey}]})
+            .label(selectedCategory
+                ? {
+                    rawtext: [{
+                        translate: `${sortLabelTextKey}_cat`,
+                        with: {
+                            rawtext: [{translate: `warps:category.${selectedCategory}`}]
+                        }
+                    }]
+                }
+                : {rawtext: [{translate: `${sortLabelTextKey}_all`}]}
+            );
 
         const sortedWarps = sortWarps(warps, sortBy, player);
         const playerLocation = player.location;
@@ -404,7 +394,7 @@ export const Warps = () => {
             const icon = findIconByName(warp.icon);
             const iconPath = icon ? icon.path : "";
 
-            const buttonTranslationKey = sortBy === 'distance'
+            const buttonTranslationKey = sortBy === SORT_BY.DISTANCE
                 ? "warps:button_format.long"
                 : "warps:button_format.short";
 
@@ -446,7 +436,7 @@ export const Warps = () => {
 
             // Jeśli wybrano przycisk zmiany sortowania (indeks 0)
             if (res.selection === 0) {
-                const newSortBy = sortBy === 'distance' ? 'alphabetical' : 'distance';
+                const newSortBy = sortBy === SORT_BY.DISTANCE ? SORT_BY.ALPHABETICAL : SORT_BY.DISTANCE;
                 showWarpsListMenuWithOptions(player, warps, newSortBy, selectedCategory, mode);
                 return;
             }
