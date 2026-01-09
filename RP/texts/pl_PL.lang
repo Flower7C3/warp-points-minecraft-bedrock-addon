@@ -86,21 +86,18 @@ warps:dimension.overworld=§r§2Świat Główny§r
 warps:dimension.the_end=§r§5Kres§r
 
 # === KATEGORIE ===
-warps:category.farms=Farmy
 warps:category.places=Miejsca
 warps:category.resources=Zasoby
 warps:category.special=Lokacje Specjalne
 warps:category.tools=Narzędzia i Bloki
 
-# === FARMY ===
-warps:icon.Animal_Farm=Farma Zwierząt
-warps:icon.Crop_Farm=Farma Upraw
-warps:icon.Mob_Farm=Farma Mobów
-
 # === MIEJSCA ===
+warps:icon.Animal_Farm=Farma Zwierząt
 warps:icon.Bank=Bank
+warps:icon.Beacon=Beacon
 warps:icon.Castle=Zamek
 warps:icon.Church=Kościół
+warps:icon.Crop_Farm=Farma Upraw
 warps:icon.Factory=Fabryka
 warps:icon.Fire_Brigade=Straż pożarna
 warps:icon.Government=Rząd
@@ -108,6 +105,7 @@ warps:icon.Home=Dom
 warps:icon.Hospital=Szpital
 warps:icon.Hotel=Hotel
 warps:icon.Lighthouse=Latarnia Morska
+warps:icon.Mob_Farm=Farma Mobów
 warps:icon.Museum=Muzeum
 warps:icon.Offices=Biura
 warps:icon.Police=Policja
@@ -129,14 +127,21 @@ warps:icon.Redstone=Redstone
 warps:icon.TNT=TNT
 
 # === LOKACJE SPECJALNE ===
-warps:icon.Heart=Serce
-warps:icon.Map_Marker=Znacznik na Mapie
-warps:icon.Spawn=Spawn
+warps:icon.Heart_Full=Serce
+warps:icon.Heart_Absorbing=Serce Absorbujące
+warps:icon.Heart_Frozen=Zamrożone Serce
+warps:icon.Heart_Hardcore=Serce Hardcore
+warps:icon.Marker_Blue=Niebieski Znacznik
+warps:icon.Marker_Red=Czerwony Znacznik
+warps:icon.Marker_White=Biały Znacznik
+warps:icon.Marker_Yellow=Żółty Znacznik
+warps:icon.Target_Point=Punkt Celu
+warps:icon.Target_X=Cel X
 
 # === NARZĘDZIA I BLOKI ===
 warps:icon.Anvil=Kowadło
 warps:icon.Barrel=Beczka
-warps:icon.Beacon=Magazyn
+warps:icon.Beacon=Beacon
 warps:icon.Bed=Łóżko
 warps:icon.Bell=Dzwon
 warps:icon.Brewing_Stand=Stawek do Warzenia

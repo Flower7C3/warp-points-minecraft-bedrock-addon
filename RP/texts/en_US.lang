@@ -86,21 +86,18 @@ warps:dimension.overworld=§r§2Overworld§r
 warps:dimension.the_end=§r§5The End§r
 
 # === CATEGORIES ===
-warps:category.farms=Farms
 warps:category.places=Places
 warps:category.resources=Resources
 warps:category.special=Special Locations
 warps:category.tools=Tools & Blocks
 
-# === FARMS ===
-warps:icon.Animal_Farm=Animal Farm
-warps:icon.Crop_Farm=Crop Farm
-warps:icon.Mob_Farm=Mob Farm
-
 # === PLACES ===
+warps:icon.Animal_Farm=Animal Farm
 warps:icon.Bank=Bank
+warps:icon.Beacon=Beacon
 warps:icon.Castle=Castle
 warps:icon.Church=Church
+warps:icon.Crop_Farm=Crop Farm
 warps:icon.Factory=Factory
 warps:icon.Fire_Brigade=Fire Brigade
 warps:icon.Government=Government
@@ -108,6 +105,7 @@ warps:icon.Home=Home
 warps:icon.Hospital=Hospital
 warps:icon.Hotel=Hotel
 warps:icon.Lighthouse=Lighthouse
+warps:icon.Mob_Farm=Mob Farm
 warps:icon.Museum=Museum
 warps:icon.Offices=Offices
 warps:icon.Police=Police
@@ -129,9 +127,16 @@ warps:icon.Redstone=Redstone
 warps:icon.TNT=TNT
 
 # === SPECIAL LOCATIONS ===
-warps:icon.Heart=Heart
-warps:icon.Map_Marker=Map Marker
-warps:icon.Spawn=Spawn
+warps:icon.Heart_Full=Heart
+warps:icon.Heart_Absorbing=Absorbing Heart
+warps:icon.Heart_Frozen=Frozen Heart
+warps:icon.Heart_Hardcore=Hardcore Heart
+warps:icon.Marker_Blue=Blue Marker
+warps:icon.Marker_Red=Red Marker
+warps:icon.Marker_White=White Marker
+warps:icon.Marker_Yellow=Yellow Marker
+warps:icon.Target_Point=Target Point
+warps:icon.Target_X=Target X
 
 # === TOOLS & BLOCKS ===
 warps:icon.Anvil=Anvil
