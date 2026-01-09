@@ -173,12 +173,11 @@ export const Warps = () => {
         return player.dimension.id.replace("minecraft:", "")
     }
 
-    const roundLocation = (location) => {
-        location.x = Math.round(location.x);
-        location.y = Math.round(location.y);
-        location.z = Math.round(location.z);
-        return location;
-    }
+    const roundLocation = (location) => ({
+        x: Math.round(location.x),
+        y: Math.round(location.y),
+        z: Math.round(location.z)
+    })
 
     const getDimensionTranslationKey = (dimension) => {
         return `warps:dimension.${dimension}`;
@@ -244,13 +243,7 @@ export const Warps = () => {
     const getWarpByName = (warpName) => {
         const warps = getValidWarps();
         const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
-
-        if (!warp) {
-            throw new Error({
-                translate: "warps:teleport.not_found",
-                with: [warpName]
-            });
-        }
+        return warp || null;
     }
 
     ///=================================================================================================================
@@ -265,7 +258,7 @@ export const Warps = () => {
 
         if (!warp) {
             return player.sendMessage({
-                translate: "warps:teleport.not_found",
+                translate: "warps:warp.not_found",
                 with: [warpName]
             });
         }
@@ -647,10 +640,12 @@ export const Warps = () => {
             }
 
             warpName = res.formValues[warpNameIndex].replace('"', "'");
-            targetLocation.x = parseFloat(res.formValues[targetLocationXIndex].toString());
-            targetLocation.y = parseFloat(res.formValues[targetLocationYIndex].toString());
-            targetLocation.z = parseFloat(res.formValues[targetLocationZIndex].toString());
-            addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId);
+            const finalLocation = {
+                x: parseFloat(res.formValues[targetLocationXIndex].toString()),
+                y: parseFloat(res.formValues[targetLocationYIndex].toString()),
+                z: parseFloat(res.formValues[targetLocationZIndex].toString())
+            };
+            addWarpItemSave(player, warpName, icon, finalLocation, warpDimensionId);
         });
     }
 
@@ -967,10 +962,9 @@ export const Warps = () => {
                     showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
                     break;
                 case 2: // Dodaj
-                    const warpDimensionId = getPlayerDimension(player);
                     addWarpItemFormStep1(player, {
-                        targetLocation: player.location,
-                        warpDimensionId: warpDimensionId
+                        targetLocation: roundLocation(player.location),
+                        warpDimensionId: getPlayerDimension(player)
                     });
                     break;
             }
@@ -1034,7 +1028,6 @@ export const Warps = () => {
                         const player = getPlayer(origin)
                         if (!player) return;
 
-                        // Jeśli location jest podane, użyj go, w przeciwnym razie użyj lokalizacji gracza
                         const targetLocation = roundLocation(location || player.location);
                         const warpDimensionId = getPlayerDimension(player);
                         if (warpName && iconName && targetLocation) {
@@ -1069,11 +1062,17 @@ export const Warps = () => {
                     system.run(() => {
                         const player = getPlayer(origin)
                         if (!player) return;
-                        try {
-                            const warp = getWarpByName(warpName);
+                        if (oldWarpName !== "") {
+                            const warp = getWarpByName(oldWarpName);
+                            if (!warp) {
+                                return player.sendMessage({
+                                    translate: "warps:warp.not_found",
+                                    with: [oldWarpName]
+                                });
+                            }
                             editWarpNameSave(player, warp, newWarpName);
-                        } catch (e) {
-                            return player.sendMessage(e);
+                        } else {
+                            showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
                         }
                     })
                 }
@@ -1094,13 +1093,14 @@ export const Warps = () => {
                         const player = getPlayer(origin)
                         if (!player) return;
                         if (warpName !== "") {
-                            if (!player) return;
-                            try {
-                                const warp = getWarpByName(warpName);
-                                removeWarpItemForm(player, warp);
-                            } catch (e) {
-                                return player.sendMessage(e);
+                            const warp = getWarpByName(warpName);
+                            if (!warp) {
+                                return player.sendMessage({
+                                    translate: "warps:warp.not_found",
+                                    with: [warpName]
+                                });
                             }
+                            removeWarpItemForm(player, warp);
                         } else {
                             showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
                         }
@@ -1143,10 +1143,9 @@ export const Warps = () => {
                                 break;
                         }
 
-                        const warpDimensionId = getPlayerDimension(player);
                         addWarpItemFormStep1(player, {
                             targetLocation: targetLocation,
-                            warpDimensionId: warpDimensionId
+                            warpDimensionId: getPlayerDimension(player)
                         });
                     });
                 },

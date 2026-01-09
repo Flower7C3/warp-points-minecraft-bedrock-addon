@@ -37,7 +37,7 @@ warps:teleport_menu.title_all=§r§l§d✈ Teleport się§r wszystkie
 warps:teleport_menu.title_cat=§r§l§d✈ Teleport się§r %s
 
 warps:teleport.error=§r§8[§1WARP§8] §cBłąd podczas teleportacji do Warp §l%s§r§c!§r
-warps:teleport.not_found=§r§8[§1WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
+warps:warp.not_found=§r§8[§1WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
 
 warps:manage_menu.title=§r§l§e☉ Zarządzaj§r
 warps:manage_menu.title_all=§r§l§e☉ Zarządzaj§r [wszystkie]

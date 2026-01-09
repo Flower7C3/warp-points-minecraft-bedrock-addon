@@ -37,7 +37,7 @@ warps:teleport_menu.title_all=§r§l§d✈ Teleport§r [all]
 warps:teleport_menu.title_cat=§r§l§d✈ Teleport§r [%s]
 
 warps:teleport.error=§r§8[§1WARP§8] §cError teleporting to Warp §l%s§r§c!§r
-warps:teleport.not_found=§r§8[§1WARP§8] §cWarp with name §l%s§r§c not found!§r
+warps:warp.not_found=§r§8[§1WARP§8] §cWarp with name §l%s§r§c not found!§r
 
 warps:manage_menu.title=§r§l§e☉ Manage Warps§r
 warps:manage_menu.title_all=§r§l§e☉ Manage§r [all]
