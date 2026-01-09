@@ -44,7 +44,7 @@ warps:manage_menu.title_all=§r§l§e☉ Manage§r [all]
 warps:manage_menu.title_cat=§r§l§e☉ Manage§r [%s]
 
 warps:warp_details.title=§r§l§e☉ Warp§r [%s]
-warps:warp_details.body=Coordinates: (%2$s,%3$s,%4$s)\nDimension: %5$s\nCategory: %6$s\nIcon: %7$s
+warps:warp_details.body=Distance: §6$s meters\nCoordinates: %2$s, %3$s, %4$s\nDimension: %5$s\nCategory: %7$s\nIcon: %8$s
 warps:warp_details.options.delete=§r§c☓ Delete§r
 warps:warp_details.options.edit_name=§r§e⌨ Rename§r
 warps:warp_details.options.edit_icon=§r§e⍟ Change Icon§r
@@ -60,7 +60,7 @@ warps:warp_details.edit_icon.step2.body=Select a new icon from this category:
 warps:warp_details.edit_icon.success=§r§8[§1WARP§8] §7Changed icon for warp §l%1$s§r§7 to §l%2$s§r§7!§r
 
 warps:warp_details.remove_confirm.title=§r§l§4☓ Delete Warp§r [%s]
-warps:warp_details.remove_confirm.body=§r§8Name: §f%1$s\n§8Category: §f%6$s / %7$s§r\n§8Coordinates: §f(%2$s,%3$s,%4$s)§r\n§8Dimension: §f%5$s\n\n§cAre you sure you want to delete this warp permanently?§r
+warps:warp_details.remove_confirm.body=§cAre you sure you want to delete this warp permanently?§r
 warps:warp_details.remove_confirm.no=§r§aNo§r
 warps:warp_details.remove_confirm.yes=§r§cYes, delete permanently§r
 warps:warp_details.remove.not_deleted=§r§8[§1WARP§8] §aNot deleted Warp §l%s§r§a!§r
@@ -71,12 +71,13 @@ warps:menu.filter_category=%1$s
 warps:menu.filter_select_category=Or select by category:
 warps:menu.no_warps=§r§8[§1WARP§8] §cThere are no Warps§r
 warps:menu.no_warps_in_category=§r§8[§1WARP§8] §cThere are no Warps in this category!§r
-warps:menu.select=Select a warp point to teleport:
-warps:menu.sort_change_to_alphabetical=§r§l§3Sort: By Distance → Alphabetically§r
-warps:menu.sort_change_to_distance=§r§l§3Sort: Alphabetically → By Distance§r
+warps:menu.sort_change_to_alphabetical=§r§3Change sort to §lalphabetical§r
+warps:menu.sort_change_to_distance=§r§3Change sort to §ldistance§r
+warps:menu.sorting_by_alphabetical=§rSorting by §lalphabetical§r order:
+warps:menu.sorting_by_distance=§rSorting by §ldistance§r:
 
-warps:button_format.long=§r§l%1$s§r §o%6$s meters\n§f(%2$s,%3$s,%4$s)§r
-warps:button_format.short=§r§l%s§r §f(%s,%s,%s)§r %s
+warps:button_format.long=§r§l%1$s§r §o%6$sm§r %2$s,%3$s,%4$s %5$s
+warps:button_format.short=§r§l%1$s§r %2$s,%3$s,%4$s %5$s
 
 warps:common.required_number=(required, number)
 warps:common.required_string=(required, string)

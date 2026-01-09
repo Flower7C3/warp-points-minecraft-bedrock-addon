@@ -294,7 +294,8 @@ export const Warps = () => {
             : {rawtext: [{translate: "warps:manage_menu.title"}]};
 
         const filterForm = new MinecraftUi.ActionFormData()
-            .title(filterFormTitle);
+            .title(filterFormTitle)
+            .body("");
 
         // Opcja: Wszystkie warpy
         filterForm.button({
@@ -381,19 +382,19 @@ export const Warps = () => {
         }
 
         const actionForm = new MinecraftUi.ActionFormData()
-            .title(actionFormTitle);
+            .title(actionFormTitle)
+            .body("");
 
         // Przycisk do zmiany sortowania na pierwszej pozycji
-        const sortButtonText = sortBy === 'distance'
-            ? {rawtext: [{translate: "warps:menu.sort_change_to_alphabetical"}]}
-            : {rawtext: [{translate: "warps:menu.sort_change_to_distance"}]};
+        const sortButtonTextKey = sortBy === 'distance'
+            ? "warps:menu.sort_change_to_alphabetical"
+            : "warps:menu.sort_change_to_distance";
+        const sortLabelText = sortBy === 'distance'
+            ? "warps:menu.sorting_by_distance"
+            : "warps:menu.sorting_by_alphabetical";
 
-        actionForm.button(sortButtonText);
-
-        // Label tylko dla teleport
-        if (mode === WARP_MENU.TELEPORT) {
-            actionForm.label({rawtext: [{translate: "warps:menu.select"}]});
-        }
+        actionForm.button({rawtext: [{translate: sortButtonTextKey}]});
+        actionForm.label({rawtext: [{translate: sortLabelText}]});
 
         const sortedWarps = sortWarps(warps, sortBy, player);
         const playerLocation = player.location;
@@ -465,7 +466,27 @@ export const Warps = () => {
 
     // Wrapper functions for compatibility
     const showWarpDetailsMenu = (player, warp) => {
+
+        const playerLocation = player.location;
+        const playerDimension = getPlayerDimension(player);
+
+        let distance = 0;
+        const warpSameDimension = warp.dimension === playerDimension;
+        if (warpSameDimension) {
+            distance = calculateDistance(
+                playerLocation.x, playerLocation.y, playerLocation.z,
+                warp.x, warp.y, warp.z
+            );
+        }
+
+        const distanceText = warpSameDimension
+            ? Math.round(distance).toString()
+            : "?";
+
         const {categoryText, iconText} = getWarpIconTexts(warp);
+
+        const icon = findIconByName(warp.icon);
+        const iconPath = icon ? icon.path : "";
 
         const optionsForm = new MinecraftUi.ActionFormData()
             .title({
@@ -474,25 +495,26 @@ export const Warps = () => {
                     with: {rawtext: [{text: warp.name}]}
                 }]
             })
-            .body({
-                rawtext: [{
-                    translate: "warps:warp_details.body",
-                    with: {
-                        rawtext: [
-                            {text: warp.name},
-                            {text: warp.x.toString()},
-                            {text: warp.y.toString()},
-                            {text: warp.z.toString()},
-                            {translate: getDimensionTranslationKey(warp.dimension)},
-                            categoryText,
-                            iconText
-                        ]
-                    }
-                }]
-            });
-
+            .body("")
         optionsForm.button({
             rawtext: [{translate: "warps:warp_details.options.teleport"}]
+        }, iconPath);
+        optionsForm.label({
+            rawtext: [{
+                translate: "warps:warp_details.body",
+                with: {
+                    rawtext: [
+                        {text: warp.name},
+                        {text: warp.x.toString()},
+                        {text: warp.y.toString()},
+                        {text: warp.z.toString()},
+                        {translate: getDimensionTranslationKey(warp.dimension)},
+                        {text: distanceText},
+                        categoryText,
+                        iconText
+                    ]
+                }
+            }]
         });
         optionsForm.button({
             rawtext: [{translate: "warps:warp_details.options.edit_name"}]
@@ -740,6 +762,7 @@ export const Warps = () => {
                 .submitButton({rawtext: [{translate: "warps:add.submit"}]})
                 .show(player).then((res) => {
                 if (res.canceled) {
+                    showWarpDetailsMenu(player, warp);
                     return;
                 }
 
@@ -791,11 +814,13 @@ export const Warps = () => {
         warps[warpIndex].name = newWarpName;
         saveWarps(warps);
 
-        player.dimension.playSound("beacon.activate", player.location);
+        player.dimension.playSound("beacon.power", player.location);
         player.sendMessage({
             translate: "warps:warp_details.edit_name.success",
             with: [oldName, newWarpName]
         });
+
+        showWarpDetailsMenu(player, warps[warpIndex]);
     }
 
     const editWarpIconFormStep1 = (player, warp) => {
@@ -818,6 +843,7 @@ export const Warps = () => {
 
         categoryForm.show(player).then((categoryRes) => {
             if (categoryRes.canceled || categoryRes.selection === undefined || categoryRes.selection >= categories.length) {
+                showWarpDetailsMenu(player, warp);
                 return;
             }
 
@@ -847,6 +873,7 @@ export const Warps = () => {
 
         iconForm.show(player).then((iconRes) => {
             if (iconRes.canceled || iconRes.selection === undefined || iconRes.selection >= categoryIcons.length) {
+                showWarpDetailsMenu(player, warp);
                 return;
             }
 
@@ -867,7 +894,7 @@ export const Warps = () => {
             warps[warpIndex].icon = selectedIcon.name;
             saveWarps(warps);
 
-            player.dimension.playSound("beacon.activate", player.location);
+            player.dimension.playSound("beacon.power", player.location);
             player.sendMessage({
                 translate: "warps:warp_details.edit_icon.success",
                 with: {
@@ -877,6 +904,8 @@ export const Warps = () => {
                     ]
                 }
             });
+
+            showWarpDetailsMenu(player, warps[warpIndex]);
         });
     }
 
@@ -893,22 +922,7 @@ export const Warps = () => {
                     with: {rawtext: [{text: warp.name}]}
                 }]
             })
-            .body({
-                rawtext: [{
-                    translate: "warps:warp_details.remove_confirm.body",
-                    with: {
-                        rawtext: [
-                            {text: warp.name},
-                            {text: warp.x.toString()},
-                            {text: warp.y.toString()},
-                            {text: warp.z.toString()},
-                            {translate: getDimensionTranslationKey(warp.dimension)},
-                            categoryText,
-                            iconText
-                        ]
-                    }
-                }]
-            })
+            .body({rawtext: [{translate: "warps:warp_details.remove_confirm.body"}]})
             .button1({rawtext: [{translate: "warps:warp_details.remove_confirm.yes"}]})
             .button2({rawtext: [{translate: "warps:warp_details.remove_confirm.no"}]})
             .show(player).then((res) => {
@@ -928,6 +942,8 @@ export const Warps = () => {
                     translate: "warps:warp_details.remove.success",
                     with: [warp.name]
                 });
+            } else {
+                showWarpDetailsMenu(player, warp);
             }
         })
     }
