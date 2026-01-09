@@ -1,12 +1,17 @@
+warps:main_menu.title=§r§l§1Warp Menu§r
+warps:main_menu.body=Select an action:
+warps:main_menu.teleport=§r§dTeleport§r
+warps:main_menu.manage=§r§eManage Warps§r
+warps:main_menu.add=§r§bAdd Warp§r
+
 warps:add.step1.title=§r§l§bAdd Warp§r step 1/3
 warps:add.step1.body=Select a category for the warp icon:
 warps:add.step2.title=§r§l§bAdd Warp§r step 2/3
 warps:add.step2.body=Select an icon from §l%s§r category:
 warps:add.step3.title=§r§l§bAdd Warp§r step 3/3
-warps:add.step3.body=Enter the warp name and coordinates:
-warps:add.coords_must_be_number=§r§8[§dWARP§8] §7The Coordinates must be a Number!§r
-warps:add.coords_out_of_range=§r§8[§dWARP§8] §7The Coordinates are out of valid range!§r
-warps:add.duplicate_name=§r§8[§dWARP§8] §cA warp with name §l%s§r§c already exists!§r
+warps:add.coords_must_be_number=§r§8[§1WARP§8] §7The Coordinates must be a Number!§r
+warps:add.coords_out_of_range=§r§8[§1WARP§8] §7The Coordinates are out of valid range!§r
+warps:add.duplicate_name=§r§8[§1WARP§8] §cA warp with name §l%s§r§c already exists!§r
 warps:add.field.category.label=Category
 warps:add.field.category.value=§l%1$s / %2$s§r
 warps:add.field.icon=Icon
@@ -15,17 +20,60 @@ warps:add.field.new_name.label=New place name
 warps:add.field.name.placeholder=Place name (required, string)
 warps:add.field.x.label=X coordinate
 warps:add.field.x.placeholder=%s (required, number)
-warps:add.field.y=Y coordinate
-warps:add.field.y.label.placeholder=%s (required, number)
-warps:add.field.z=Z coordinate
-warps:add.field.z.label.placeholder=%s (required, number)
-warps:add.fill_required=§r§8[§dWARP§8] §7You need to fill up everything what is required!§r
-warps:add.invalid_icon=§r§8[§dWARP§8] §7Invalid icon selected! Please try again.§r
-warps:add.name_too_long=§r§8[§dWARP§8] §7The warp name is too long (max 50 characters)!§r
+warps:add.field.y.label=Y coordinate
+warps:add.field.y.placeholder=%s (required, number)
+warps:add.field.z.label=Z coordinate
+warps:add.field.z.placeholder=%s (required, number)
+warps:add.fill_required=§r§8[§1WARP§8] §7You need to fill up everything what is required!§r
+warps:add.invalid_icon=§r§8[§1WARP§8] §7Invalid icon selected! Please try again.§r
+warps:add.name_too_long=§r§8[§1WARP§8] §7The warp name is too long (max 50 characters)!§r
 warps:add.select_category=Select a category:
 warps:add.select_icon=Select an icon for this warp:
 warps:add.submit=Save
-warps:add.success=§r§8[§dWARP§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
+warps:add.success=§r§8[§1WARP§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
+
+warps:teleport_menu.title=§r§l§dTeleport to...§r
+warps:teleport_menu.title_all=§r§l§dTeleport§r [all]
+warps:teleport_menu.title_cat=§r§l§dTeleport§r [%s]
+
+warps:teleport.error=§r§8[§1WARP§8] §cError teleporting to Warp §l%s§r§c!§r
+warps:teleport.not_found=§r§8[§1WARP§8] §cWarp with name §l%s§r§c not found!§r
+
+warps:manage_menu.title=§r§l§eManage Warps§r
+warps:manage_menu.title_all=§r§l§eManage§r [all]
+warps:manage_menu.title_cat=§r§l§eManage§r [%s]
+
+warps:warp_details.title=§r§l§eWarp§r [%s]
+warps:warp_details.body=Coordinates: (%2$s,%3$s,%4$s)\nDimension: %5$s\nCategory: %6$s\nIcon: %7$s
+warps:warp_details.options.delete=§r§cDelete§r
+warps:warp_details.options.edit_icon=§r§eEdit Icon§r
+warps:warp_details.options.edit_name=§r§eEdit Name§r
+warps:warp_details.options.teleport=§r§dTeleport§r
+
+warps:warp_details.edit_icon.title=§r§l§eChange Icon§r [%s]
+warps:warp_details.edit_icon.step1.body=Select a category to choose a new icon:
+warps:warp_details.edit_icon.step2.body=Select a new icon from this category:
+warps:warp_details.edit_icon.success=§r§8[§1WARP§8] §7Changed icon for warp §l%1$s§r§7 to §l%2$s§r§7!§r
+
+warps:warp_details.edit_name.title=§r§l§eChange Name§r [%s]
+warps:warp_details.edit_name.not_found=§r§8[§1WARP§8] §cWarp not found!§r
+warps:warp_details.edit_name.success=§r§8[§1WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
+
+warps:warp_details.remove_confirm.title=§r§l§4Delete Warp§r [%s]
+warps:warp_details.remove_confirm.body=§r§8Name: §f%1$s\n§8Category: §f%6$s / %7$s§r\n§8Coordinates: §f(%2$s,%3$s,%4$s)§r\n§8Dimension: §f%5$s\n\n§cAre you sure you want to delete this warp permanently?§r
+warps:warp_details.remove_confirm.no=§r§aNo§r
+warps:warp_details.remove_confirm.yes=§r§cYes, delete permanently§r
+warps:warp_details.remove.not_deleted=§r§8[§1WARP§8] §aNot deleted Warp §l%s§r§a!§r
+warps:warp_details.remove.success=§r§8[§1WARP§8] §cDeleted Warp §l%s§r§c!§r
+
+warps:menu.filter_all=All Warps
+warps:menu.filter_category=%1$s
+warps:menu.filter_select_category=Or select by category:
+warps:menu.no_warps=§r§8[§1WARP§8] §cThere are no Warps§r
+warps:menu.no_warps_in_category=§r§8[§1WARP§8] §cThere are no Warps in this category!§r
+warps:menu.select=Select a warp point to teleport:
+warps:menu.sort_change_to_alphabetical=§r§l§3Sort: By Distance → Alphabetically§r
+warps:menu.sort_change_to_distance=§r§l§3Sort: Alphabetically → By Distance§r
 
 warps:button_format.long=§r§l%1$s§r §o%6$s meters\n§f(%2$s,%3$s,%4$s)§r
 warps:button_format.short=§r§l%s§r §f(%s,%s,%s)§r %s
@@ -36,57 +84,6 @@ warps:common.required_string=(required, string)
 warps:dimension.nether=§r§cNether§r
 warps:dimension.overworld=§r§2Overworld§r
 warps:dimension.the_end=§r§5The End§r
-
-warps:main_menu.title=§r§l§1Warp Menu§r
-warps:main_menu.body=Select an action:
-warps:main_menu.manage=§r§eManage Warps§r
-warps:main_menu.teleport=§r§aTeleport§r
-warps:main_menu.add=§r§bAdd Warp§r
-
-warps:manage_menu.edit_icon.title=§r§l§bChange Icon§r [%s]
-warps:manage_menu.edit_icon.step1.body=Select a category to choose a new icon:
-warps:manage_menu.edit_icon.step2.body=Select a new icon from this category:
-warps:manage_menu.edit_icon.success=§r§8[§dWARP§8] §7Changed icon for warp §l%1$s§r§7 to §l%2$s§r§7!§r
-
-warps:manage_menu.edit_name.title=§r§l§bChange Name§r [%s]
-warps:manage_menu.edit_name.not_found=§r§8[§dWARP§8] §cWarp not found!§r
-warps:manage_menu.edit_name.success=§r§8[§dWARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
-
-warps:manage_menu.title=§r§l§eManage Warps§r
-warps:manage_menu.title_all=§r§l§eManage§r [all]
-warps:manage_menu.title_cat=§r§l§eManage§r [%s]
-
-warps:menu.filter_all=All Warps
-warps:menu.filter_category=%1$s
-warps:menu.filter_select_category=Or select by category:
-warps:menu.no_warps=§r§8[§dWARP§8] §cThere are no WARP§r
-warps:menu.no_warps_in_category=§r§8[§dWARP§8] §cThere are no Warps in this category!§r
-warps:menu.select=Select a warp point to teleport:
-warps:menu.sort_change_to_alphabetical=§r§l§3Sort: By Distance → Alphabetically§r
-warps:menu.sort_change_to_distance=§r§l§3Sort: Alphabetically → By Distance§r
-
-warps:remove.list.title=§r§l§4Remove Warp§r [select]
-warps:remove.list.body=Select a warp to remove:
-warps:remove.confirm.title=§r§l§4Delete Warp§r [%s]
-warps:remove.confirm.body=§r§8Name: §f%1$s\n§8Category: §f%6$s / %7$s§r\n§8Coordinates: §f(%2$s,%3$s,%4$s)§r\n§8Dimension: §f%5$s\n\n§cAre you sure you want to delete this warp permanently?§r
-warps:remove.confirm.no=§r§aNo§r
-warps:remove.confirm.yes=§r§cYes, delete permanently§r
-warps:remove.not_deleted=§r§8[§dWARP§8] §aNot deleted Warp §l%s§r§a!§r
-warps:remove.success=§r§8[§dWARP§8] §cDeleted Warp §l%s§r§c!§r
-
-warps:teleport_menu.title=§r§l§dTeleport to...§r
-warps:teleport_menu.title_all=§r§l§dTeleport§r [all]
-warps:teleport_menu.title_cat=§r§l§dTeleport§r [%s]
-
-warps:teleport.error=§r§8[§dWARP§8] §cError teleporting to Warp §l%s§r§c!§r
-warps:teleport.not_found=§r§8[§dWARP§8] §cWarp with name §l%s§r§c not found!§r
-
-warps:warp_details.title=§r§l§eWarp§r [%s]
-warps:warp_details.body=Coordinates: (%2$s,%3$s,%4$s)\nDimension: %5$s\nCategory: %6$s\nIcon: %7$s
-warps:warp_details.options.delete=§r§cDelete§r
-warps:warp_details.options.edit_icon=§r§bEdit Icon§r
-warps:warp_details.options.edit_name=§r§eEdit Name§r
-warps:warp_details.options.teleport=§r§aTeleport§r
 
 # === CATEGORIES ===
 warps:category.farms=Farms

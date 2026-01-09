@@ -722,7 +722,7 @@ export const Warps = () => {
             new MinecraftUi.ModalFormData()
                 .title({
                     rawtext: [{
-                        translate: "warps:manage_menu.edit_name.title",
+                        translate: "warps:warp_details.edit_name.title",
                         with: {rawtext: [{text: warp.name}]}
                     }]
                 })
@@ -767,7 +767,7 @@ export const Warps = () => {
         const warpIndex = warps.findIndex(w => w.name === warp.name);
 
         if (warpIndex === -1) {
-            player.sendMessage({translate: "warps:manage_menu.edit_name.not_found"});
+            player.sendMessage({translate: "warps:warp_details.edit_name.not_found"});
             return;
         }
 
@@ -787,7 +787,7 @@ export const Warps = () => {
 
         player.dimension.playSound("beacon.activate", player.location);
         player.sendMessage({
-            translate: "warps:manage_menu.edit_name.success",
+            translate: "warps:warp_details.edit_name.success",
             with: [oldName, newWarpName]
         });
     }
@@ -798,11 +798,11 @@ export const Warps = () => {
         const categoryForm = new MinecraftUi.ActionFormData()
             .title({
                 rawtext: [{
-                    translate: "warps:manage_menu.edit_icon.title",
+                    translate: "warps:warp_details.edit_icon.title",
                     with: {rawtext: [{text: warp.name}]}
                 }]
             })
-            .body({rawtext: [{translate: "warps:manage_menu.edit_icon.step1.body"}]});
+            .body({rawtext: [{translate: "warps:warp_details.edit_icon.step1.body"}]});
 
         categories.forEach(cat => {
             categoryForm.button({
@@ -827,11 +827,11 @@ export const Warps = () => {
         const iconForm = new MinecraftUi.ActionFormData()
             .title({
                 rawtext: [{
-                    translate: "warps:manage_menu.edit_icon.title",
+                    translate: "warps:warp_details.edit_icon.title",
                     with: {rawtext: [{text: warp.name}]}
                 }]
             })
-            .body({rawtext: [{translate: "warps:manage_menu.edit_icon.step2.body"}]});
+            .body({rawtext: [{translate: "warps:warp_details.edit_icon.step2.body"}]});
 
         categoryIcons.forEach((icon) => {
             iconForm.button({
@@ -854,7 +854,7 @@ export const Warps = () => {
             const warpIndex = warps.findIndex(w => w.name === warp.name);
 
             if (warpIndex === -1) {
-                player.sendMessage({translate: "warps:manage_menu.edit_name.not_found"});
+                player.sendMessage({translate: "warps:warp_details.edit_name.not_found"});
                 return;
             }
 
@@ -863,7 +863,7 @@ export const Warps = () => {
 
             player.dimension.playSound("beacon.activate", player.location);
             player.sendMessage({
-                translate: "warps:manage_menu.edit_icon.success",
+                translate: "warps:warp_details.edit_icon.success",
                 with: {
                     rawtext: [
                         {text: warp.name},
@@ -883,13 +883,13 @@ export const Warps = () => {
         new MinecraftUi.MessageFormData()
             .title({
                 rawtext: [{
-                    translate: "warps:remove.confirm.title",
+                    translate: "warps:warp_details.remove_confirm.title",
                     with: {rawtext: [{text: warp.name}]}
                 }]
             })
             .body({
                 rawtext: [{
-                    translate: "warps:remove.confirm.body",
+                    translate: "warps:warp_details.remove_confirm.body",
                     with: {
                         rawtext: [
                             {text: warp.name},
@@ -903,8 +903,8 @@ export const Warps = () => {
                     }
                 }]
             })
-            .button1({rawtext: [{translate: "warps:remove.confirm.yes"}]})
-            .button2({rawtext: [{translate: "warps:remove.confirm.no"}]})
+            .button1({rawtext: [{translate: "warps:warp_details.remove_confirm.yes"}]})
+            .button2({rawtext: [{translate: "warps:warp_details.remove_confirm.no"}]})
             .show(player).then((res) => {
             if (res.selection === 0) {
                 const allWarps = loadWarps();
@@ -919,7 +919,7 @@ export const Warps = () => {
 
                 player.dimension.playSound("beacon.deactivate", player.location);
                 return player.sendMessage({
-                    translate: "warps:remove.success",
+                    translate: "warps:warp_details.remove.success",
                     with: [warp.name]
                 });
             }
@@ -1151,10 +1151,11 @@ export const Warps = () => {
                     system.run(() => {
                         const player = event.source && event.source.typeId === "minecraft:player" ? event.source : null;
                         if (!player) return;
-                        if (useLock.has(player.id)) return;
-                        useLock.set(player.id, true);
-                        system.runTimeout(() => useLock.delete(player.id), 1);
-                        mainMenu(player);
+                        system.runTimeout(() => {
+                            if (useLock.has(player.id)) return;
+                            if (!player.isSneaking) return;
+                            mainMenu(player);
+                        }, 1);
                     });
                 }
             });
