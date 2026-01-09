@@ -173,6 +173,13 @@ export const Warps = () => {
         return player.dimension.id.replace("minecraft:", "")
     }
 
+    const roundLocation = (location) => {
+        location.x = Math.round(location.x);
+        location.y = Math.round(location.y);
+        location.z = Math.round(location.z);
+        return location;
+    }
+
     const getDimensionTranslationKey = (dimension) => {
         return `warps:dimension.${dimension}`;
     }
@@ -685,9 +692,7 @@ export const Warps = () => {
 
         const warps = loadWarps();
 
-        targetLocation.x = Math.round(targetLocation.x);
-        targetLocation.y = Math.round(targetLocation.y);
-        targetLocation.z = Math.round(targetLocation.z);
+        targetLocation = roundLocation(targetLocation);
 
         // Check if warp with same name already exists (tylko jeśli nie edytujemy lub zmieniamy nazwę)
         if (warps.some(w => w.name === warpName)) {
@@ -1030,7 +1035,7 @@ export const Warps = () => {
                         if (!player) return;
 
                         // Jeśli location jest podane, użyj go, w przeciwnym razie użyj lokalizacji gracza
-                        const targetLocation = location || player.location;
+                        const targetLocation = roundLocation(location || player.location);
                         const warpDimensionId = getPlayerDimension(player);
                         if (warpName && iconName && targetLocation) {
                             const icon = findIconByName(iconName);
@@ -1115,7 +1120,7 @@ export const Warps = () => {
                         if (!player || !item || !block || !player.isSneaking || block.typeId === "air") return;
 
                         const blockLoc = block.location;
-                        let targetLocation = {x: blockLoc.x, y: blockLoc.y, z: blockLoc.z};
+                        let targetLocation = roundLocation({x: blockLoc.x, y: blockLoc.y, z: blockLoc.z});
 
                         switch (event.blockFace) {
                             case Minecraft.Direction.Up:
