@@ -19,6 +19,7 @@ export const Warps = () => {
     const WORLD_PROP = "warps:data";
     const COMMAND_WARPS_TP = "warps:warps_tp";
     const COMMAND_WARPS_ADD = "warps:warps_add";
+    const COMMAND_WARP_RENAME = "warps:warps_rename";
     const COMMAND_WARP_REMOVE = "warps:warps_remove";
     const ITEM_COMPONENT_ID = "warps:warp_menu";
 
@@ -88,7 +89,12 @@ export const Warps = () => {
         WarpIcon("Respawn_Anchor", "tools", "Respawn_Anchor.png"),
         WarpIcon("Beacon", "tools", "Beacon.png"),
         WarpIcon("Spawner", "tools", "Spawner.png"),
-    ];
+    ]
+
+    const WARP_MENU = Object.freeze({
+        TELEPORT: "teleport",
+        MANAGEMENT: "management"
+    });
 
     const useLock = new Map(); // Map<Player.id, boolean>
 
@@ -221,6 +227,19 @@ export const Warps = () => {
         };
     }
 
+
+    const getWarpByName = (warpName) => {
+        const warps = getValidWarps();
+        const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
+
+        if (!warp) {
+            throw new Error({
+                translate: "warps:teleport.not_found",
+                with: [warpName]
+            });
+        }
+    }
+
     ///=================================================================================================================
     // === Teleport Functions ===
     const teleportToWarpByName = (player, warpName) => {
@@ -256,15 +275,15 @@ export const Warps = () => {
     }
 
     ///=================================================================================================================
-    // === Menu Functions ===
-    const showWarpsListMenu = (player, mode = 'teleport') => {
+    // === WARP DETAILS ===
+    const showCategoriesListMenu = (player, mode = WARP_MENU.TELEPORT) => {
         const warps = getValidWarps();
 
         if (warps.length === 0) {
             return player.sendMessage({translate: "warps:menu.no_warps"});
         }
 
-        const filterFormTitle = mode === 'teleport'
+        const filterFormTitle = mode === WARP_MENU.TELEPORT
             ? {rawtext: [{translate: "warps:teleport_menu.title"}]}
             : {rawtext: [{translate: "warps:manage_menu.title"}]};
 
@@ -319,15 +338,15 @@ export const Warps = () => {
             }
 
             // Domyślne sortowanie: distance dla teleport, alphabetical dla management
-            const defaultSortBy = mode === 'teleport' ? 'distance' : 'alphabetical';
+            const defaultSortBy = mode === WARP_MENU.TELEPORT ? 'distance' : 'alphabetical';
             showWarpsListMenuWithOptions(player, filteredWarps, defaultSortBy, selectedCategory, mode);
         });
     }
 
-    const showWarpsListMenuWithOptions = (player, warps, sortBy, selectedCategory = null, mode = 'teleport') => {
+    const showWarpsListMenuWithOptions = (player, warps, sortBy, selectedCategory = null, mode = WARP_MENU.TELEPORT) => {
         // Tytuł formularza
         let actionFormTitle;
-        if (mode === 'teleport') {
+        if (mode === WARP_MENU.TELEPORT) {
             actionFormTitle = selectedCategory
                 ? {
                     rawtext: [{
@@ -366,7 +385,7 @@ export const Warps = () => {
         actionForm.button(sortButtonText);
 
         // Label tylko dla teleport
-        if (mode === 'teleport') {
+        if (mode === WARP_MENU.TELEPORT) {
             actionForm.label({rawtext: [{translate: "warps:menu.select"}]});
         }
 
@@ -429,25 +448,17 @@ export const Warps = () => {
             const warpIndex = res.selection - 1;
             if (warpIndex >= 0 && warpIndex < sortedWarps.length) {
                 const selectedWarp = sortedWarps[warpIndex];
-                if (mode === 'teleport') {
+                if (mode === WARP_MENU.TELEPORT) {
                     teleportToWarp(player, selectedWarp);
                 } else {
-                    showWarpOptionsMenu(player, selectedWarp);
+                    showWarpDetailsMenu(player, selectedWarp);
                 }
             }
         });
     }
 
     // Wrapper functions for compatibility
-    const showWarpsListMenuForTeleport = (player) => {
-        showWarpsListMenu(player, 'teleport');
-    }
-
-    const showWarpsListMenuForManagement = (player) => {
-        showWarpsListMenu(player, 'management');
-    }
-
-    const showWarpOptionsMenu = (player, warp) => {
+    const showWarpDetailsMenu = (player, warp) => {
         const {categoryText, iconText} = getWarpIconTexts(warp);
 
         const optionsForm = new MinecraftUi.ActionFormData()
@@ -497,102 +508,43 @@ export const Warps = () => {
                     teleportToWarp(player, warp);
                     break;
                 case 1: // Zmień nazwę
-                    editWarpName(player, warp);
+                    editWarpNameForm(player, warp);
                     break;
                 case 2: // Zmień ikonę
-                    editWarpIcon(player, warp);
+                    editWarpIconFormStep1(player, warp);
                     break;
                 case 3: // Usuń
-                    confirmRemoveWarp(player, warp);
+                    removeWarpItemForm(player, warp);
                     break;
             }
         });
     }
 
-    const editWarpName = (player, warp) => {
-        system.run(() => {
-            const nameForm = new MinecraftUi.ModalFormData()
-                .title({
-                    rawtext: [{
-                        translate: "warps:manage_menu.edit_name.title",
-                        with: {rawtext: [{text: warp.name}]}
-                    }]
-                })
-                .textField(
-                    {rawtext: [{translate: "warps:add.field.name.new_name"}]},
-                    {rawtext: [{translate: "warps:add.field.name.placeholder"}]},
-                    {defaultValue: warp.name}
-                )
-                .submitButton({rawtext: [{translate: "warps:add.submit"}]})
-                .show(player).then((res) => {
-                    if (res.canceled) {
-                        return;
-                    }
 
-                    console.info(res.formValues)
-                    console.info(res.formValues.length)
+    ///=================================================================================================================
+    // === Add Functions ===
+    const addWarpItemFormStep1 = (player, {
+        warpName = "",
+        iconName = "",
+        category = "",
+        targetLocation,
+        warpDimensionId
+    }) => {
+        // Jeśli kategoria i ikona są już wybrane (np. po błędzie), pominij krok 1 i 2
+        if (category && iconName) {
+            const categoryIcons = getIconsByCategory(category);
+            const selectedIcon = categoryIcons.find(icon => icon.name === iconName);
+            if (selectedIcon) {
+                addWarpItemFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId);
+                return;
+            }
+        }
 
-                    if (!res.formValues || res.formValues.length === 0) {
-                        player.sendMessage({translate: "warps:add.fill_required"});
-                        editWarpName(player, warp);
-                        return;
-                    }
-
-                    const newName = res.formValues[0]?.toString().trim();
-                    if (!newName || newName.length === 0) {
-                        player.sendMessage({translate: "warps:add.fill_required"});
-                        editWarpName(player, warp);
-                        return;
-                    }
-
-                    if (newName.length > 50) {
-                        player.sendMessage({translate: "warps:add.name_too_long"});
-                        editWarpName(player, warp);
-                        return;
-                    }
-
-                    const warps = loadWarps();
-                    const warpIndex = warps.findIndex(w => w.name === warp.name);
-
-                    if (warpIndex === -1) {
-                        player.sendMessage({translate: "warps:manage_menu.edit_name.not_found"});
-                        return;
-                    }
-
-                    // Sprawdź czy nowa nazwa nie jest już zajęta (jeśli się zmieniła)
-                    if (newName !== warp.name && warps.some(w => w.name === newName)) {
-                        player.sendMessage({
-                            translate: "warps:add.duplicate_name",
-                            with: [newName]
-                        });
-                        editWarpName(player, warp);
-                        return;
-                    }
-
-                    const oldName = warp.name;
-                    warps[warpIndex].name = newName;
-                    saveWarps(warps);
-
-                    player.dimension.playSound("beacon.activate", player.location);
-                    player.sendMessage({
-                        translate: "warps:manage_menu.edit_name.success",
-                        with: [oldName, newName]
-                    });
-                });
-        });
-    }
-
-    const editWarpIcon = (player, warp) => {
-        // Krok 1: Wybór kategorii
+        // Krok 1/3: Wybór kategorii
         const categories = getCategories();
         const categoryForm = new MinecraftUi.ActionFormData()
-            .title({
-                rawtext: [{
-                    translate: "warps:manage_menu.edit_icon.title",
-                    with: {rawtext: [{text: warp.name}]}
-                }]
-            })
-            .body({rawtext: [{translate: "warps:manage_menu.edit_icon.categories.body"}]});
+            .title({rawtext: [{translate: "warps:add.step1.title"}]})
+            .body({rawtext: [{translate: "warps:add.step1.body"}]});
 
         categories.forEach(cat => {
             categoryForm.button({
@@ -606,22 +558,280 @@ export const Warps = () => {
             }
 
             const selectedCategory = categories[categoryRes.selection];
-            editWarpIconStep2(player, warp, selectedCategory);
+            addWarpItemFormStep2(player, warpName, selectedCategory, targetLocation, warpDimensionId);
         });
     }
 
-    const editWarpIconStep2 = (player, warp, category) => {
+    const addWarpItemFormStep2 = (player, warpName, category, targetLocation, warpDimensionId) => {
+        // Krok 2/3: Wybór ikony z wybranej kategorii
+        const categoryIcons = WARP_ICONS.filter(icon => icon && icon.category === category);
+
+        const iconForm = new MinecraftUi.ActionFormData()
+            .title({rawtext: [{translate: "warps:add.step2.title"}]})
+            .body({
+                rawtext: [{
+                    translate: "warps:add.step2.body",
+                    with: {rawtext: [{translate: `warps:category.${category}`}]}
+                }]
+            });
+
+        categoryIcons.forEach((icon) => {
+            iconForm.button({
+                rawtext: [{translate: icon.translatedName}]
+            }, icon.path);
+        });
+
+        iconForm.show(player).then((iconRes) => {
+            if (iconRes.canceled || iconRes.selection === undefined || iconRes.selection >= categoryIcons.length) {
+                return;
+            }
+
+            const selectedIcon = categoryIcons[iconRes.selection];
+            if (!selectedIcon) {
+                return;
+            }
+
+            addWarpItemFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId);
+        });
+    }
+
+    const addWarpItemFormStep3 = (player, warpName, icon, targetLocation, warpDimensionId) => {
+        // Krok 3/3: Nazwa i współrzędne
+        new MinecraftUi.ModalFormData()
+            .title({rawtext: [{translate: "warps:add.step3.title"}]})
+            .label({rawtext: [{translate: "warps:add.field.category.label"}]})
+            .label({
+                rawtext: [{
+                    translate: "warps:add.field.category.value", with: {
+                        rawtext: [
+                            {translate: icon.translatedCategory},
+                            {translate: icon.translatedName}
+                        ]
+                    }
+                }]
+            })
+            .textField({rawtext: [{translate: "warps:add.field.name.label"}]}, {rawtext: [{translate: "warps:add.field.name.placeholder"}]}, {defaultValue: warpName})
+            .textField({rawtext: [{translate: "warps:add.field.x.label"}]}, {rawtext: [{translate: "warps:add.field.x.placeholder"}]}, {defaultValue: targetLocation.x.toString()})
+            .textField({rawtext: [{translate: "warps:add.field.y.label"}]}, {rawtext: [{translate: "warps:add.field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
+            .textField({rawtext: [{translate: "warps:add.field.z.label"}]}, {rawtext: [{translate: "warps:add.field.z.placeholder"}]}, {defaultValue: targetLocation.z.toString()})
+            .submitButton({rawtext: [{translate: "warps:add.submit"}]})
+            .show(player).then((res) => {
+            if (res.canceled) {
+                return;
+            }
+
+            const warpNameIndex = 2;
+            const targetLocationXIndex = 3
+            const targetLocationYIndex = 4
+            const targetLocationZIndex = 5
+
+            // Indeksy formValues: [0]=name, [1]=x, [2]=y, [3]=z
+            if (!res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex]) {
+                player.sendMessage({translate: "warps:add.fill_required"});
+                // Ponownie pokaż formularz z wypełnionymi danymi
+                addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+                return;
+            }
+
+            warpName = res.formValues[warpNameIndex].replace('"', "'");
+            targetLocation.x = parseFloat(res.formValues[targetLocationXIndex].toString());
+            targetLocation.y = parseFloat(res.formValues[targetLocationYIndex].toString());
+            targetLocation.z = parseFloat(res.formValues[targetLocationZIndex].toString());
+            addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId);
+        });
+    }
+
+    const addWarpItemSave = (player, warpName, icon, targetLocation, warpDimensionId) => {
+        // Walidacja ikony
+        if (!icon || !icon.name) {
+            player.sendMessage({translate: "warps:add.invalid_icon"});
+            addWarpItemFormStep1(player, {warpName, targetLocation, warpDimensionId});
+            return;
+        }
+
+        // Walidacja nazwy
+        if (!warpName || warpName.trim().length === 0) {
+            player.sendMessage({translate: "warps:add.fill_required"});
+            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
+
+        if (warpName.length > 50) {
+            player.sendMessage({translate: "warps:add.name_too_long"});
+            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
+
+        if (isNaN(targetLocation.x) || isNaN(targetLocation.y) || isNaN(targetLocation.z)) {
+            player.sendMessage({translate: "warps:add.coords_must_be_number"});
+            // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
+            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
+
+        // Walidacja współrzędnych (rozsądne limity)
+        // Y może być od -64 do 320 w Bedrock Edition (od wersji 1.18+)
+        if (Math.abs(targetLocation.x) > 30000000 || targetLocation.y < -64 || targetLocation.y > 320 || Math.abs(targetLocation.z) > 30000000) {
+            player.sendMessage({translate: "warps:add.coords_out_of_range"});
+            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
+
+        const warps = loadWarps();
+
+        targetLocation.x = Math.round(targetLocation.x);
+        targetLocation.y = Math.round(targetLocation.y);
+        targetLocation.z = Math.round(targetLocation.z);
+
+        // Check if warp with same name already exists (tylko jeśli nie edytujemy lub zmieniamy nazwę)
+        if (warps.some(w => w.name === warpName)) {
+            player.sendMessage({
+                translate: "warps:add.duplicate_name",
+                with: [warpName]
+            });
+            // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
+            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
+
+        const newWarp = {
+            name: warpName,
+            x: targetLocation.x,
+            y: targetLocation.y,
+            z: targetLocation.z,
+            dimension: warpDimensionId,
+            icon: icon.name
+        };
+
+        warps.push(newWarp);
+        saveWarps(warps);
+
+        player.dimension.playSound("beacon.activate", player.location);
+        player.dimension.runCommand(`particle minecraft:endrod ${targetLocation.x} ${targetLocation.y} ${targetLocation.z}`);
+        player.sendMessage({
+            translate: "warps:add.success",
+            with: [warpName, targetLocation.x.toString(), targetLocation.y.toString(), targetLocation.z.toString()]
+        });
+    }
+
+    ///=================================================================================================================
+    // === WARP EDIT ===
+
+    const editWarpNameForm = (player, warp) => {
+        system.run(() => {
+            new MinecraftUi.ModalFormData()
+                .title({
+                    rawtext: [{
+                        translate: "warps:manage_menu.edit_name.title",
+                        with: {rawtext: [{text: warp.name}]}
+                    }]
+                })
+                .textField(
+                    {rawtext: [{translate: "warps:add.field.new_name.label"}]},
+                    {rawtext: [{translate: "warps:add.field.name.placeholder"}]},
+                    {defaultValue: warp.name}
+                )
+                .submitButton({rawtext: [{translate: "warps:add.submit"}]})
+                .show(player).then((res) => {
+                if (res.canceled) {
+                    return;
+                }
+
+                if (!res.formValues || res.formValues.length === 0) {
+                    player.sendMessage({translate: "warps:add.fill_required"});
+                    editWarpNameForm(player, warp);
+                    return;
+                }
+
+                const newWarpName = res.formValues[0]?.toString().trim();
+
+                editWarpNameSave(player, warp, newWarpName);
+            });
+        });
+    }
+
+    const editWarpNameSave = (player, warp, newWarpName) => {
+        if (!newWarpName || newWarpName.length === 0) {
+            player.sendMessage({translate: "warps:add.fill_required"});
+            editWarpNameForm(player, warp);
+            return;
+        }
+
+        if (newWarpName.length > 50) {
+            player.sendMessage({translate: "warps:add.name_too_long"});
+            editWarpNameForm(player, warp);
+            return;
+        }
+
+        const warps = loadWarps();
+        const warpIndex = warps.findIndex(w => w.name === warp.name);
+
+        if (warpIndex === -1) {
+            player.sendMessage({translate: "warps:manage_menu.edit_name.not_found"});
+            return;
+        }
+
+        // Sprawdź czy nowa nazwa nie jest już zajęta (jeśli się zmieniła)
+        if (newWarpName !== warp.name && warps.some(w => w.name === newWarpName)) {
+            player.sendMessage({
+                translate: "warps:add.duplicate_name",
+                with: [newWarpName]
+            });
+            editWarpNameForm(player, warp);
+            return;
+        }
+
+        const oldName = warp.name;
+        warps[warpIndex].name = newWarpName;
+        saveWarps(warps);
+
+        player.dimension.playSound("beacon.activate", player.location);
+        player.sendMessage({
+            translate: "warps:manage_menu.edit_name.success",
+            with: [oldName, newWarpName]
+        });
+    }
+
+    const editWarpIconFormStep1 = (player, warp) => {
+        // Krok 1: Wybór kategorii
+        const categories = getCategories();
+        const categoryForm = new MinecraftUi.ActionFormData()
+            .title({
+                rawtext: [{
+                    translate: "warps:manage_menu.edit_icon.title",
+                    with: {rawtext: [{text: warp.name}]}
+                }]
+            })
+            .body({rawtext: [{translate: "warps:manage_menu.edit_icon.step1.body"}]});
+
+        categories.forEach(cat => {
+            categoryForm.button({
+                rawtext: [{translate: `warps:category.${cat}`}]
+            });
+        });
+
+        categoryForm.show(player).then((categoryRes) => {
+            if (categoryRes.canceled || categoryRes.selection === undefined || categoryRes.selection >= categories.length) {
+                return;
+            }
+
+            const selectedCategory = categories[categoryRes.selection];
+            editWarpIconFormStep2(player, warp, selectedCategory);
+        });
+    }
+
+    const editWarpIconFormStep2 = (player, warp, category) => {
         // Krok 2: Wybór ikony z wybranej kategorii
         const categoryIcons = WARP_ICONS.filter(icon => icon && icon.category === category);
 
         const iconForm = new MinecraftUi.ActionFormData()
             .title({
                 rawtext: [{
-                    translate: "warps:manage_menu.edit_icon.category.title",
-                    with: {rawtext: [{translate: `warps:category.${category}`}]}
+                    translate: "warps:manage_menu.edit_icon.title",
+                    with: {rawtext: [{text: warp.name}]}
                 }]
             })
-            .body({rawtext: [{translate: "warps:manage_menu.edit_icon.category.body"}]});
+            .body({rawtext: [{translate: "warps:manage_menu.edit_icon.step2.body"}]});
 
         categoryIcons.forEach((icon) => {
             iconForm.button({
@@ -665,276 +875,9 @@ export const Warps = () => {
     }
 
     ///=================================================================================================================
-    // === Add Functions ===
-    const showAddWarpFormStep1 = (player, {
-        warpName = "",
-        iconName = "",
-        category = "",
-        targetLocation,
-        warpDimensionId,
-        isEditing = false,
-        existingWarpName = null
-    }) => {
-        // Jeśli kategoria i ikona są już wybrane (np. po błędzie), pominij krok 1 i 2
-        if (category && iconName) {
-            const categoryIcons = getIconsByCategory(category);
-            const selectedIcon = categoryIcons.find(icon => icon.name === iconName);
-            if (selectedIcon) {
-                showAddWarpFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-                return;
-            }
-        }
-
-        // Krok 1/3: Wybór kategorii
-        const categories = getCategories();
-        const categoryForm = new MinecraftUi.ActionFormData()
-            .title({rawtext: [{translate: "warps:add.step1.title"}]})
-            .body({rawtext: [{translate: "warps:add.step1.body"}]});
-
-        categories.forEach(cat => {
-            categoryForm.button({
-                rawtext: [{translate: `warps:category.${cat}`}]
-            });
-        });
-
-        categoryForm.show(player).then((categoryRes) => {
-            if (categoryRes.canceled || categoryRes.selection === undefined || categoryRes.selection >= categories.length) {
-                return;
-            }
-
-            const selectedCategory = categories[categoryRes.selection];
-            showAddWarpFormStep2(player, warpName, selectedCategory, targetLocation, warpDimensionId, isEditing, existingWarpName);
-        });
-    }
-
-    const showAddWarpFormStep2 = (player, warpName, category, targetLocation, warpDimensionId, isEditing = false, existingWarpName = null) => {
-        // Krok 2/3: Wybór ikony z wybranej kategorii
-        const categoryIcons = WARP_ICONS.filter(icon => icon && icon.category === category);
-
-        const iconForm = new MinecraftUi.ActionFormData()
-            .title({
-                rawtext: [{
-                    translate: "warps:add.step2.title",
-                    with: {rawtext: [{translate: `warps:category.${category}`}]}
-                }]
-            })
-            .body({rawtext: [{translate: "warps:add.step2.body"}]});
-
-        categoryIcons.forEach((icon) => {
-            iconForm.button({
-                rawtext: [{translate: icon.translatedName}]
-            }, icon.path);
-        });
-
-        iconForm.show(player).then((iconRes) => {
-            if (iconRes.canceled || iconRes.selection === undefined || iconRes.selection >= categoryIcons.length) {
-                return;
-            }
-
-            const selectedIcon = categoryIcons[iconRes.selection];
-            if (!selectedIcon) {
-                return;
-            }
-
-            showAddWarpFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-        });
-    }
-
-    const showAddWarpFormStep3 = (player, warpName, icon, targetLocation, warpDimensionId, isEditing = false, existingWarpName = null) => {
-        // Krok 3/3: Nazwa i współrzędne
-        const formTitle = isEditing
-            ? {
-                rawtext: [{
-                    translate: "warps:manage_menu.edit_icon.details.title", with: {
-                        rawtext: [
-                            {translate: existingWarpName},
-                            {translate: existingWarpName},
-                        ]
-                    }
-                }]
-            }
-            : {rawtext: [{translate: "warps:add.step3.title"}]};
-        const formBody = isEditing
-            ? {rawtext: [{translate: "warps:manage_menu.edit_icon.details.body"}]}
-            : {rawtext: [{translate: "warps:add.step3.body"}]};
-
-        const form = new MinecraftUi.ModalFormData()
-            .title(formTitle)
-            .label({rawtext: [{translate: "warps:add.field.category.label"}]})
-            .label({
-                rawtext: [{
-                    translate: "warps:add.field.category.value", with: {
-                        rawtext: [
-                            {translate: icon.translatedCategory},
-                            {translate: icon.translatedName}
-                        ]
-                    }
-                }]
-            })
-            .textField({rawtext: [{translate: "warps:add.field.name.label"}]}, {rawtext: [{translate: "warps:add.field.name.placeholder"}]}, {defaultValue: warpName})
-            .textField({rawtext: [{translate: "warps:add.field.x.label"}]}, {rawtext: [{translate: "warps:add.field.x.placeholder"}]}, {defaultValue: targetLocation.x.toString()})
-            .textField({rawtext: [{translate: "warps:add.field.y.label"}]}, {rawtext: [{translate: "warps:add.field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
-            .textField({rawtext: [{translate: "warps:add.field.z.label"}]}, {rawtext: [{translate: "warps:add.field.z.placeholder"}]}, {defaultValue: targetLocation.z.toString()})
-            .submitButton({rawtext: [{translate: "warps:add.submit"}]})
-            .show(player).then((res) => {
-                if (res.canceled) {
-                    return;
-                }
-
-                const warpNameIndex = 2;
-                const targetLocationXIndex = 3
-                const targetLocationYIndex = 4
-                const targetLocationZIndex = 5
-
-                // Indeksy formValues: [0]=name, [1]=x, [2]=y, [3]=z
-                if (!res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex]) {
-                    player.sendMessage({translate: "warps:add.fill_required"});
-                    // Ponownie pokaż formularz z wypełnionymi danymi
-                    showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-                    return;
-                }
-
-                warpName = res.formValues[warpNameIndex].replace('"', "'");
-                targetLocation.x = parseFloat(res.formValues[targetLocationXIndex].toString());
-                targetLocation.y = parseFloat(res.formValues[targetLocationYIndex].toString());
-                targetLocation.z = parseFloat(res.formValues[targetLocationZIndex].toString());
-                addWarpItem(player, warpName, icon, targetLocation, warpDimensionId, existingWarpName);
-            });
-    }
-
-    const addWarpItem = (player, warpName, icon, targetLocation, warpDimensionId, existingWarpName = null) => {
-        const isEditing = existingWarpName !== null;
-
-        // Walidacja ikony
-        if (!icon || !icon.name) {
-            player.sendMessage({translate: "warps:add.invalid_icon"});
-            if (existingWarpName) {
-                // Jeśli edytujemy, wróć do menu opcji
-                const warps = loadWarps();
-                const warp = warps.find(w => w.name === existingWarpName);
-                if (warp) {
-                    showWarpOptionsMenu(player, warp);
-                }
-            } else {
-                showAddWarpFormStep1(player, {warpName, targetLocation, warpDimensionId});
-            }
-            return;
-        }
-
-        // Walidacja nazwy
-        if (!warpName || warpName.trim().length === 0) {
-            player.sendMessage({translate: "warps:add.fill_required"});
-            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-            return;
-        }
-
-        if (warpName.length > 50) {
-            player.sendMessage({translate: "warps:add.name_too_long"});
-            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-            return;
-        }
-
-        if (isNaN(targetLocation.x) || isNaN(targetLocation.y) || isNaN(targetLocation.z)) {
-            player.sendMessage({translate: "warps:add.coords_must_be_number"});
-            // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
-            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-            return;
-        }
-
-        // Walidacja współrzędnych (rozsądne limity)
-        // Y może być od -64 do 320 w Bedrock Edition (od wersji 1.18+)
-        if (Math.abs(targetLocation.x) > 30000000 || targetLocation.y < -64 || targetLocation.y > 320 || Math.abs(targetLocation.z) > 30000000) {
-            player.sendMessage({translate: "warps:add.coords_out_of_range"});
-            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-            return;
-        }
-
-        const warps = loadWarps();
-
-        targetLocation.x = Math.round(targetLocation.x);
-        targetLocation.y = Math.round(targetLocation.y);
-        targetLocation.z = Math.round(targetLocation.z);
-
-        const warpIndex = isEditing ? warps.findIndex(w => w.name === existingWarpName) : -1;
-
-        // Check if warp with same name already exists (tylko jeśli nie edytujemy lub zmieniamy nazwę)
-        if (!isEditing && warps.some(w => w.name === warpName)) {
-            player.sendMessage({
-                translate: "warps:add.duplicate_name",
-                with: [warpName]
-            });
-            // Ponownie pokaż formularz z wypełnionymi danymi (krok 3/3, pomijając wybór kategorii i ikony)
-            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-            return;
-        }
-
-        // Jeśli edytujemy i zmieniamy nazwę, sprawdź czy nowa nazwa nie jest zajęta
-        if (isEditing && warpName !== existingWarpName && warps.some(w => w.name === warpName)) {
-            player.sendMessage({
-                translate: "warps:add.duplicate_name",
-                with: [warpName]
-            });
-            showAddWarpFormStep3(player, warpName, icon, targetLocation, warpDimensionId, isEditing, existingWarpName);
-            return;
-        }
-
-        if (isEditing && warpIndex !== -1) {
-            // Edycja istniejącego warpa
-            warps[warpIndex].name = warpName;
-            warps[warpIndex].icon = icon.name;
-            saveWarps(warps);
-
-            player.dimension.playSound("beacon.activate", player.location);
-            player.sendMessage({
-                translate: "warps:manage_menu.edit_icon.success",
-                with: {
-                    rawtext: [
-                        {text: warpName},
-                        {translate: icon.translatedName}
-                    ]
-                }
-            });
-        } else {
-            // Dodawanie nowego warpa
-            const newWarp = {
-                name: warpName,
-                x: targetLocation.x,
-                y: targetLocation.y,
-                z: targetLocation.z,
-                dimension: warpDimensionId,
-                icon: icon.name
-            };
-
-            warps.push(newWarp);
-            saveWarps(warps);
-
-            player.dimension.playSound("beacon.activate", player.location);
-            player.dimension.runCommand(`particle minecraft:endrod ${targetLocation.x} ${targetLocation.y} ${targetLocation.z}`);
-            player.sendMessage({
-                translate: "warps:add.success",
-                with: [warpName, targetLocation.x.toString(), targetLocation.y.toString(), targetLocation.z.toString()]
-            });
-        }
-    }
-
-    ///=================================================================================================================
     // === Remove Functions ===
 
-    const removeWarpItemByName = (player, warpName) => {
-        const warps = getValidWarps();
-        const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
-
-        if (!warp) {
-            return player.sendMessage({
-                translate: "warps:teleport.not_found",
-                with: [warpName]
-            });
-        }
-
-        confirmRemoveWarp(player, warp);
-    }
-
-    const confirmRemoveWarp = (player, warp) => {
+    const removeWarpItemForm = (player, warp) => {
         const {categoryText, iconText} = getWarpIconTexts(warp);
 
         new MinecraftUi.MessageFormData()
@@ -985,7 +928,7 @@ export const Warps = () => {
 
     ///=================================================================================================================
     // === Main Menu ===
-    const showMainMenu = (player) => {
+    const mainMenu = (player) => {
         const menuForm = new MinecraftUi.ActionFormData()
             .title({rawtext: [{translate: "warps:main_menu.title"}]})
             .body({rawtext: [{translate: "warps:main_menu.body"}]});
@@ -1007,14 +950,14 @@ export const Warps = () => {
 
             switch (res.selection) {
                 case 0: // Teleportuj
-                    showWarpsListMenuForTeleport(player);
+                    showCategoriesListMenu(player, WARP_MENU.TELEPORT);
                     break;
                 case 1: // Zarządzaj
-                    showWarpsListMenuForManagement(player);
+                    showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
                     break;
                 case 2: // Dodaj
                     const warpDimensionId = getPlayerDimension(player);
-                    showAddWarpFormStep1(player, {
+                    addWarpItemFormStep1(player, {
                         targetLocation: player.location,
                         warpDimensionId: warpDimensionId
                     });
@@ -1050,7 +993,7 @@ export const Warps = () => {
                         if (warpName !== "") {
                             teleportToWarpByName(player, warpName)
                         } else {
-                            showWarpsListMenuForTeleport(player)
+                            showCategoriesListMenu(player, WARP_MENU.TELEPORT);
                         }
                     });
                     return {
@@ -1085,14 +1028,41 @@ export const Warps = () => {
                         const warpDimensionId = getPlayerDimension(player);
                         if (warpName && iconName && targetLocation) {
                             const icon = findIconByName(iconName);
-                            addWarpItem(player, warpName, icon, targetLocation, warpDimensionId);
+                            addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId);
                         } else {
-                            showAddWarpFormStep1(player, {
+                            addWarpItemFormStep1(player, {
                                 warpName: warpName,
                                 iconName: iconName,
                                 targetLocation: targetLocation,
                                 warpDimensionId: warpDimensionId
                             });
+                        }
+                    })
+                }
+            )
+
+            event.customCommandRegistry.registerCommand(
+                {
+                    name: COMMAND_WARP_RENAME,
+                    description: "Rename a public Warp",
+                    permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
+                    optionalParameters: [{
+                        type: CustomCommandParamType.String,
+                        name: "warps:name",
+                    }, {
+                        type: CustomCommandParamType.String,
+                        name: "warps:name",
+                    }],
+                },
+                (origin, oldWarpName = "", newWarpName = "") => {
+                    system.run(() => {
+                        const player = getPlayer(origin)
+                        if (!player) return;
+                        try {
+                            const warp = getWarpByName(warpName);
+                            editWarpNameSave(player, warp, newWarpName);
+                        } catch (e) {
+                            return player.sendMessage(e);
                         }
                     })
                 }
@@ -1113,9 +1083,15 @@ export const Warps = () => {
                         const player = getPlayer(origin)
                         if (!player) return;
                         if (warpName !== "") {
-                            removeWarpItemByName(player, warpName)
+                            if (!player) return;
+                            try {
+                                const warp = getWarpByName(warpName);
+                                removeWarpItemForm(player, warp);
+                            } catch (e) {
+                                return player.sendMessage(e);
+                            }
                         } else {
-                            showWarpsListMenuForManagement(player)
+                            showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
                         }
                     })
                 }
@@ -1134,7 +1110,7 @@ export const Warps = () => {
                         useLock.set(player.id, true);
                         system.runTimeout(() => useLock.delete(player.id), 1);
                         if (!player.isSneaking) {
-                            showMainMenu(player);
+                            mainMenu(player);
                             return;
                         }
                         if (block.typeId === "air") return;
@@ -1165,7 +1141,7 @@ export const Warps = () => {
                         }
 
                         const warpDimensionId = getPlayerDimension(player);
-                        showAddWarpFormStep1(player, {
+                        addWarpItemFormStep1(player, {
                             targetLocation: targetLocation,
                             warpDimensionId: warpDimensionId
                         });
@@ -1178,7 +1154,7 @@ export const Warps = () => {
                         if (useLock.has(player.id)) return;
                         useLock.set(player.id, true);
                         system.runTimeout(() => useLock.delete(player.id), 1);
-                        showMainMenu(player);
+                        mainMenu(player);
                     });
                 }
             });

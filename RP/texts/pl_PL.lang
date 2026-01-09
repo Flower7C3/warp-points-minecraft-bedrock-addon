@@ -1,9 +1,8 @@
 warps:add.step1.title=§r§l§bDodaj Warp§r krok 1/3
 warps:add.step1.body=Wybierz kategorię dla ikony warpa:
 warps:add.step2.title=§r§l§bDodaj Warp§r krok 2/3
-warps:add.step2.body=Wybierz ikonę z tej kategorii:
+warps:add.step2.body=Wybierz ikonę z kategorii §l%s§r:
 warps:add.step3.title=§r§l§bDodaj Warp§r krok 3/3
-warps:add.step3.body=Wprowadź nazwę warpa i współrzędne:
 warps:add.coords_must_be_number=§r§8[§dWarps!§8] §7Współrzędne muszą być liczbą!§r
 warps:add.coords_out_of_range=§r§8[§dWarps!§8] §7Współrzędne są poza prawidłowym zakresem!§r
 warps:add.duplicate_name=§r§8[§dWarps!§8] §cWarp o nazwie §l%s§r§c już istnieje!§r
@@ -45,14 +44,11 @@ warps:main_menu.teleport=§r§aTeleportuj§r
 warps:main_menu.add=§r§bDodaj Warp§r
 
 warps:manage_menu.edit_icon.title=§r§l§bZmiana ikony§r [%s]
-warps:manage_menu.edit_icon.categories.body=Wybierz kategorię, aby wybrać nową ikonę:
-warps:manage_menu.edit_icon.category.title=§r§l§bKategoria§r [%s]
-warps:manage_menu.edit_icon.category.body=Wybierz nową ikonę z tej kategorii:
-warps:manage_menu.edit_icon.details.title=§r§l§bZmień Ikonę§r [%s]
-warps:manage_menu.edit_icon.details.body=Wprowadź nazwę warpa i współrzędne (ikona zostanie zmieniona):
+warps:manage_menu.edit_icon.step1.body=Wybierz kategorię, aby wybrać nową ikonę:
+warps:manage_menu.edit_icon.step2.body=Wybierz nową ikonę z tej kategorii:
 warps:manage_menu.edit_icon.success=§r§8[§dWarps!§8] §7Zmieniono ikonę dla warpa §l%1$s§r§7 na §l%2$s§r§7!§r
 
-warps:manage_menu.edit_name.title=§r§l§bZmiana nazwy§r [%1$s]
+warps:manage_menu.edit_name.title=§r§l§bZmiana nazwy§r [%s]
 warps:manage_menu.edit_name.not_found=§r§8[§dWarps!§8] §cNie znaleziono warpa!§r
 warps:manage_menu.edit_name.success=§r§8[§dWarps!§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
 
@@ -71,7 +67,7 @@ warps:menu.sort_change_to_distance=§r§l§3Sortuj: Alfabetycznie → Według Dy
 
 warps:remove.list.title=§r§l§4Usuń Warp§r
 warps:remove.list.body=Wybierz warp do usunięcia:
-warps:remove.confirm.title=§r§4Usuń Warp§r [%s]
+warps:remove.confirm.title=§r§l§4Usuń Warp§r [%s]
 warps:remove.confirm.body=§r§8Nazwa: §f%1$s\n§8Kategoria: §f%6$s / %7$s§r\n§8Wspórzędne: §f(%2$s,%3$s,%4$s)§r\n§8Wymiar: §f%5$s\n\n§cCzy na pewno chcesz usunąć ten warp na zawsze?§r
 warps:remove.confirm.no=§r§aNie§r
 warps:remove.confirm.yes=§r§cTak, usuń na zawsze§r

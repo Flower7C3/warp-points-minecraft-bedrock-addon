@@ -30,9 +30,9 @@
       "language": "javascript",
       "uuid": "7eaaba7a-0c36-4786-9c99-72db468742e4",
       "version": [
-        1,
+        3,
         0,
-        0
+        4
       ],
       "entry": "scripts/main.js"
     }
