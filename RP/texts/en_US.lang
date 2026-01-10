@@ -1,14 +1,14 @@
 warps:main_menu.title=§r§l§1☰ Warps main menu§r
 warps:main_menu.body=Select an action:
-warps:main_menu.teleport=§r§d✈ Teleport§r
-warps:main_menu.manage=§r§e☉ Manage Warps§r
-warps:main_menu.add=§r§b✎ Add Warp§r
+warps:main_menu.teleport=§r§3✈ Teleport§r
+warps:main_menu.manage=§r§5❣ Manage Warps§r
+warps:main_menu.add=§r§6✚ Add Warp§r
 
-warps:add.step1.title=§r§l§b✎ Add Warp§r step 1/3
+warps:add.step1.title=§r§l§6✚ Add Warp§r step 1/3
 warps:add.step1.body=Select a category for the warp icon:
-warps:add.step2.title=§r§l§b✎ Add Warp§r step 2/3
+warps:add.step2.title=§r§l§6✚ Add Warp§r step 2/3
 warps:add.step2.body=Select an icon from §l%s§r category:
-warps:add.step3.title=§r§l§b✎ Add Warp§r step 3/3
+warps:add.step3.title=§r§l§6✚ Add Warp§r step 3/3
 warps:add.coords_must_be_number=§r§8[§1WARP§8] §7The Coordinates must be a Number!§r
 warps:add.coords_out_of_range=§r§8[§1WARP§8] §7The Coordinates are out of valid range!§r
 warps:add.duplicate_name=§r§8[§1WARP§8] §cA warp with name §l%s§r§c already exists!§r
@@ -32,15 +32,15 @@ warps:add.select_icon=Select an icon for this warp:
 warps:add.submit=Save
 warps:add.success=§r§8[§1WARP§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
 
-warps:teleport_menu.title=§r§l§d✈ Teleport to...§r
-warps:manage_menu.title=§r§l§e☉ Manage Warps§r
+warps:teleport_menu.title=§r§l§3✈ Teleport to...§r
+warps:manage_menu.title=§r§l§5❣ Manage Warps§r
 
 warps:menu.filter_all=All Warps
 warps:menu.filter_category=%1$s
 warps:menu.filter_select_category=Or select category:
 
-warps:menu.sort_change_to_alphabetical=§r§3Change sort to §lalphabetical§r
-warps:menu.sort_change_to_distance=§r§3Change sort to §ldistance§r
+warps:menu.sort_change_to_alphabetical=§r§6Change sort to §lalphabetical§r
+warps:menu.sort_change_to_distance=§r§6Change sort to §ldistance§r
 warps:menu.sorting_by_alphabetical_all=§rSorting by §lalphabetical§r order:
 warps:menu.sorting_by_alphabetical_cat=§rSorting by §lalphabetical§r order in §l%s§r category:
 warps:menu.sorting_by_distance_all=§rSorting by §ldistance§r:
@@ -51,38 +51,65 @@ warps:warp.not_found=§r§8[§1WARP§8] §cWarp with name §l%s§r§c not found!
 warps:menu.no_warps=§r§8[§1WARP§8] §cThere are no Warps§r
 warps:menu.no_warps_in_category=§r§8[§1WARP§8] §cThere are no Warps in this category!§r
 
-warps:warp_details.title=§r§l§e☉ Warp§r [%s]
-warps:warp_details.body=Distance: §6$s meters\nCoordinates: %2$s, %3$s, %4$s\nDimension: %5$s\nCategory: %7$s\nIcon: %8$s
-warps:warp_details.options.delete=§r§c☓ Delete§r
-warps:warp_details.options.edit_name=§r§e⌨ Rename§r
-warps:warp_details.options.edit_icon=§r§e⍟ Change Icon§r
-warps:warp_details.options.teleport=§r§d✈ Teleport to§r
+warps:warp_details.title=§r§l§5❣ Warp§r §l%s
+warps:warp_details.body_1=Distance: §l%6$s meter§r\nCoordinates: §l%2$s§r\nDimension: §l%3$s§r\nOwner: §l%5$s§r\nVisibility: §l%6$s§r\nCategory: §l%8$s§r\nIcon: §l%9$s§r
+warps:warp_details.body_2=Distance: §l%6$s meters§r\nCoordinates: §l%2$s§r\nDimension: §l%3$s§r\nOwner: §l%5$s§r\nVisibility: §l%6$s§r\nCategory: §l%8$s§r\nIcon: §l%9$s§r
+warps:warp_details.body_5=Distance: §l%6$s meters§r\nCoordinates: §l%2$s§r\nDimension: §l%3$s§r\nOwner: §l%5$s§r\nVisibility: §l%6$s§r\nCategory: §l%8$s§r\nIcon: §l%9$s§r
+warps:warp_details.options.delete=§r§c✖ Delete§r
+warps:warp_details.options.edit_name=§r§5✎ Rename§r
+warps:warp_details.options.edit_icon=§r§5✯ Change Icon§r
+warps:warp_details.options.change_visibility=§r§5⇨ Change Visibility§r
+warps:warp_details.options.teleport=§r§3✈ Teleport to§r
 
-warps:warp_details.edit_name.title=§r§l§e⌨ Rename§r [%s]
+warps:warp_details.edit_name.title=§r§l§5✎ Rename§r §l%s
 warps:warp_details.edit_name.not_found=§r§8[§1WARP§8] §cWarp not found!§r
 warps:warp_details.edit_name.success=§r§8[§1WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
 
-warps:warp_details.edit_icon.title=§r§l§e⍟ Change Icon§r [%s]
+warps:warp_details.edit_icon.title=§r§l§5✯ Change Icon§r §l%s
 warps:warp_details.edit_icon.step1.body=Select a category to choose a new icon:
-warps:warp_details.edit_icon.step2.body=Select a new icon from this category:
+warps:warp_details.edit_icon.step2.body=Select a new icon from §l%s§r category:
 warps:warp_details.edit_icon.success=§r§8[§1WARP§8] §7Changed icon for warp §l%1$s§r§7 to §l%2$s§r§7!§r
 
-warps:warp_details.remove_confirm.title=§r§l§4☓ Delete Warp§r [%s]
+warps:warp_details.change_visibility.title=§r§l§5⇨ Change Visibility§r §l%s
+warps:warp_details.change_visibility.body=Current visibility: %2$s\n\nSelect new visibility:
+warps:warp_details.change_visibility.public_warning.title=§r§l§c⚠ Warning§r
+warps:warp_details.change_visibility.public_warning.body=§cMaking a warp public is permanent and cannot be reversed!\n\nAnyone will be able to edit or delete this warp.§r
+warps:warp_details.change_visibility.public_warning.confirm=§r§cYes, make public§r
+warps:warp_details.change_visibility.public_warning.cancel=§r§aCancel§r
+warps:warp_details.change_visibility.success=§r§8[§1WARP§8] §7Changed visibility for warp §l%1$s§r§7 from §l%2$s§r§7 to §l%3$s§r§7!§r
+warps:visibility.cannot_change_public=§r§8[§1WARP§8] §cCannot change visibility of public warps!§r
+
+warps:warp_details.remove_confirm.title=§r§l§4✖ Delete Warp§r §l%s
 warps:warp_details.remove_confirm.body=§cAre you sure you want to delete this warp permanently?§r
 warps:warp_details.remove_confirm.no=§r§aNo§r
 warps:warp_details.remove_confirm.yes=§r§cYes, delete permanently§r
 warps:warp_details.remove.not_deleted=§r§8[§1WARP§8] §aNot deleted Warp §l%s§r§a!§r
 warps:warp_details.remove.success=§r§8[§1WARP§8] §cDeleted Warp §l%s§r§c!§r
 
-warps:button_format.long=§r§l%1$s§r §o%6$sm§r %2$s,%3$s,%4$s %5$s
-warps:button_format.short=§r§l%1$s§r %2$s,%3$s,%4$s %5$s
+warps:visibility.state.private.label=§9■ Private§r
+warps:visibility.state.protected.label=§e◆ Protected§r
+warps:visibility.state.public.label=§f◎ Public§r
+warps:visibility.state.private.symbol=§9■§r
+warps:visibility.state.protected.symbol=§e◆§r
+warps:visibility.state.public.symbol=§f◎§r
+
+warps:error.no_permission=§r§8[§1WARP§8] §cYou don't have permission to modify this warp!§r
+
+warps:add.field.visibility.label=Visibility
+
+warps:button_format.long_1=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
+warps:button_format.long_2=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
+warps:button_format.long_5=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
+warps:button_format.short_1=%7$s §l%1$s§r %2$s %3$s
+warps:button_format.short_2=%7$s §l%1$s§r %2$s %3$s
+warps:button_format.short_5=%7$s §l%1$s§r %2$s %3$s
 
 warps:common.required_number=(required, number)
 warps:common.required_string=(required, string)
 
-warps:dimension.nether=§r§cNether§r
-warps:dimension.overworld=§r§2Overworld§r
-warps:dimension.the_end=§r§5The End§r
+warps:dimension.nether=§cNether§r
+warps:dimension.overworld=§2Overworld§r
+warps:dimension.the_end=§bThe End§r
 
 # === CATEGORIES ===
 warps:category.special=Special
@@ -91,16 +118,16 @@ warps:category.places=Places
 warps:category.landscapes=Landscapes
 
 # === PLACES ===
-warps:icon.Desert_Village=Desert Village
-warps:icon.Jungle_Temple=Jungle Temple
-warps:icon.Ocean_Monument=Ocean Monument
-warps:icon.Plains_Village=Plains Village
-warps:icon.Savanna_Village=Savanna Village
-warps:icon.Snowy_Village=Snowy Village
-warps:icon.Swamp_Hut=Swamp Hut
-warps:icon.Taiga_Village=Taiga Village
-warps:icon.Trial_Chambers=Trial Chambers
-warps:icon.Woodland_Mansion=Woodland Mansion
+warps:icon.Desert_Village=Desert village
+warps:icon.Jungle_Temple=Jungle temple
+warps:icon.Ocean_Monument=Ocean monument
+warps:icon.Plains_Village=Plains village
+warps:icon.Savanna_Village=Savanna village
+warps:icon.Snowy_Village=Snowy village
+warps:icon.Swamp_Hut=Swamp hut
+warps:icon.Taiga_Village=Taiga village
+warps:icon.Trial_Chambers=Trial chambers
+warps:icon.Woodland_Mansion=Woodland mansion
 
 # === RESOURCES ===
 warps:icon.Amethyst=Amethyst
@@ -110,36 +137,36 @@ warps:icon.Diamond=Diamond
 warps:icon.Emerald=Emerald
 warps:icon.Gold=Gold
 warps:icon.Iron=Iron
-warps:icon.Lapis=Lapis Lazuli
-warps:icon.Quartz=Nether Quartz
+warps:icon.Lapis=Lapis lazuli
+warps:icon.Quartz=Nether quartz
 warps:icon.Redstone=Redstone
 warps:icon.TNT=TNT
 
 # === SPECIAL LOCATIONS ===
 warps:icon.Heart_Full=Heart
-warps:icon.Heart_Absorbing=Absorbing Heart
-warps:icon.Heart_Frozen=Frozen Heart
-warps:icon.Heart_Hardcore=Hardcore Heart
-warps:icon.Marker_Blue=Blue Marker
-warps:icon.Marker_Red=Red Marker
-warps:icon.Marker_White=White Marker
-warps:icon.Marker_Yellow=Yellow Marker
-warps:icon.Target_Point=Target Point
+warps:icon.Heart_Absorbing=Absorbing heart
+warps:icon.Heart_Frozen=Frozen heart
+warps:icon.Heart_Hardcore=Hardcore heart
+warps:icon.Marker_Blue=Blue marker
+warps:icon.Marker_Red=Red marker
+warps:icon.Marker_White=White marker
+warps:icon.Marker_Yellow=Yellow marker
+warps:icon.Target_Point=Target point
 warps:icon.Target_X=Target X
 
 # === LANDSCAPES ===
-warps:icon.Amusement_Park=Amusement Park
-warps:icon.Beach_Sea=Beach & Sea
-warps:icon.Bridge_River=Bridge & River
+warps:icon.Amusement_Park=Amusement park
+warps:icon.Beach_Sea=Beach & sea
+warps:icon.Bridge_River=Bridge & river
 warps:icon.Bushes_Bush=Bushes
 warps:icon.Landscape_Castle=Castle
-warps:icon.Cityscape_Futuristic=Futuristic Cityscape
-warps:icon.Construction_Crane=Construction Crane
+warps:icon.Cityscape_Futuristic=Futuristic cityscape
+warps:icon.Construction_Crane=Construction crane
 warps:icon.Cottage=Cottage
 warps:icon.Desert=Desert
 warps:icon.Forest=Forest
-warps:icon.Garden_Tree=Garden Tree
-warps:icon.Industrial_Factory=Industrial Factory
+warps:icon.Garden_Tree=Garden tree
+warps:icon.Industrial_Factory=Industrial factory
 warps:icon.Island=Island
 warps:icon.Lake=Lake
 warps:icon.Mountains=Mountains
@@ -147,12 +174,12 @@ warps:icon.Park=Park
 warps:icon.River=River
 warps:icon.Rainforest=Rainforest
 warps:icon.Road=Road
-warps:icon.Ruins_Ancient=Ancient Ruins
+warps:icon.Ruins_Ancient=Ancient ruins
 warps:icon.Savannah=Savannah
-warps:icon.Sea_Boat=Sea & Boat
-warps:icon.Seascape_Lighthouse=Seascape Lighthouse
+warps:icon.Sea_Boat=Sea & boat
+warps:icon.Seascape_Lighthouse=Seascape lighthouse
 warps:icon.Street=Street
-warps:icon.Waterfall_River=Waterfall & River
+warps:icon.Waterfall_River=Waterfall & river
 warps:icon.Antarctic=Antarctic
 warps:icon.Cityscape=Cityscape
-warps:icon.Modern_House=Modern House
+warps:icon.Modern_House=Modern house

@@ -117,6 +117,12 @@ export const Warps = () => {
         ALPHABETICAL: 'alphabetical'
     });
 
+    const WARP_VISIBILITY = Object.freeze({
+        PRIVATE: 'private',
+        PROTECTED: 'protected',
+        PUBLIC: 'public'
+    });
+
     ///=================================================================================================================
     // === Data Management Functions ===
     const loadWarps = () => {
@@ -125,15 +131,49 @@ export const Warps = () => {
             return [];
         }
         try {
-            return JSON.parse(saved);
+            const warps = JSON.parse(saved);
+            // Migracja: dodaj owner i visibility do istniejących warpa
+            return warps.map(warp => {
+                if (!warp.owner) {
+                    warp.owner = ""; // Nieznany właściciel dla starych warpa
+                }
+                if (!warp.visibility) {
+                    warp.visibility = WARP_VISIBILITY.PUBLIC; // Migracja na public
+                }
+                return warp;
+            });
         } catch {
             return [];
         }
     }
 
-    const saveWarps = (warps) => {
+    const saveWarps = (warps, player, soundId, translateKey, translateParams = []) => {
         const json = JSON.stringify(warps);
         Minecraft.world.setDynamicProperty(WORLD_PROP, json);
+        player.dimension.playSound(soundId, player.location);
+
+        // Formatuj parametry dla rawtext
+        const formattedParams = translateParams.map(param => {
+            // Jeśli param jest już obiektem z rawtext, zwróć go
+            if (typeof param === 'object' && param.rawtext) {
+                return param;
+            }
+            // Jeśli param jest obiektem z translate lub text, zwróć go bezpośrednio
+            if (typeof param === 'object' && (param.translate || param.text)) {
+                return param;
+            }
+            // Jeśli param jest stringiem lub liczbą, opakuj w text
+            return {text: param.toString()};
+        });
+
+        player.sendMessage({
+            rawtext: [{
+                translate: translateKey,
+                with: {
+                    rawtext: formattedParams
+                }
+            }]
+        });
     }
 
     const getValidWarps = () => {
@@ -146,8 +186,85 @@ export const Warps = () => {
         );
     }
 
-    const getWarpDimension = (dimensionId) => {
-        return Minecraft.world.getDimension(`minecraft:${dimensionId}`);
+    ///=================================================================================================================
+    // === Warp Functions ===
+    const getWarpByName = (warpName) => {
+        const warps = getValidWarps();
+        const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
+        return warp || null;
+    }
+
+
+    const getWarpDimension = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
+
+
+    const getWarpIconTexts = (warp) => {
+        if (!warp || !warp.icon) {
+            return {
+                categoryText: {text: "?"},
+                iconText: {text: "?"}
+            };
+        }
+        const icon = findIconByName(warp.icon);
+        if (!icon) {
+            return {
+                categoryText: {text: "?"},
+                iconText: {text: warp.icon || "?"}
+            };
+        }
+        return {
+            categoryText: icon.translatedCategory ? {translate: icon.translatedCategory} : {text: "?"},
+            iconText: icon.translatedName ? {translate: icon.translatedName} : {text: warp.icon || "?"}
+        };
+    }
+
+    const getWarpVisibility = (warp) => (warp.visibility || WARP_VISIBILITY.PUBLIC);
+
+    const getWarpDetails = (warp, player, translationKey) => {
+        const playerLocation = player.location;
+        const playerDimension = getPlayerDimension(player);
+
+        let distance = 0;
+        const warpSameDimension = warp.dimension === playerDimension;
+        if (warpSameDimension) {
+            distance = calculateDistance(
+                playerLocation.x, playerLocation.y, playerLocation.z,
+                warp.x, warp.y, warp.z
+            );
+        }
+
+        const distanceText = warpSameDimension ? Math.round(distance).toString() : "?";
+        const ownerName = warp.owner || "";
+        const visibilityKey = getWarpVisibility(warp);
+        const visibilitySymbol = getVisibilitySymbol(visibilityKey);
+        const {categoryText, iconText} = getWarpIconTexts(warp);
+
+        if (distance === 1) {
+            translationKey += "_1";
+        } else if (distance < 5) {
+            translationKey += "_2";
+        } else {
+            translationKey += "_5";
+        }
+
+        return {
+            rawtext: [{
+                translate: translationKey,
+                with: {
+                    rawtext: [
+                        {text: warp.name},
+                        {text: `${warp.x}, ${warp.y}, ${warp.z}`},
+                        {translate: getDimensionTranslationKey(warp.dimension)},
+                        {text: distanceText},
+                        {text: ownerName || "?"},
+                        {translate: `warps:visibility.state.${visibilityKey}.label`},
+                        visibilitySymbol,
+                        categoryText,
+                        iconText
+                    ]
+                }
+            }]
+        };
     }
 
     ///=================================================================================================================
@@ -173,24 +290,54 @@ export const Warps = () => {
     ///=================================================================================================================
     // === Helper Functions ===
     const getPlayer = (origin) => {
-        let player = null;
         if (origin.sourceType === Minecraft.CustomCommandSource.Entity && origin.sourceEntity.typeId === "minecraft:player") {
-            player = origin.sourceEntity;
-        } else if (origin.sourceType === Minecraft.CustomCommandSource.NPCDialogue && origin.initiator.typeId === "minecraft:player") {
-            player = origin.initiator;
+            return origin.sourceEntity;
         }
-        return player;
+        if (origin.sourceType === Minecraft.CustomCommandSource.NPCDialogue && origin.initiator.typeId === "minecraft:player") {
+            return origin.initiator;
+        }
+        return null;
     }
 
-    const getPlayerDimension = (player) => {
-        return player.dimension.id.replace("minecraft:", "")
-    }
+    const getPlayerDimension = (player) => player.dimension.id.replace("minecraft:", "");
 
     const roundLocation = (location) => ({
         x: Math.round(location.x),
         y: Math.round(location.y),
         z: Math.round(location.z)
     })
+
+    const getVisibilityIndex = (visibility) => {
+        switch (visibility) {
+            case WARP_VISIBILITY.PRIVATE:
+                return 0;
+            case WARP_VISIBILITY.PROTECTED:
+                return 1;
+            case WARP_VISIBILITY.PUBLIC:
+                return 2;
+            default:
+                return 1; // Domyślnie protected
+        }
+    }
+
+    const getVisibilityByIndex = (index) => {
+        switch (index) {
+            case 0:
+                return WARP_VISIBILITY.PRIVATE;
+            case 1:
+                return WARP_VISIBILITY.PROTECTED;
+            case 2:
+                return WARP_VISIBILITY.PUBLIC;
+            default:
+                return WARP_VISIBILITY.PROTECTED;
+        }
+    }
+
+    const getVisibilitySymbol = (visibility) => {
+        if (!visibility) return {text: ""};
+        const key = `warps:visibility.state.${visibility}.symbol`;
+        return {translate: key};
+    }
 
     const getDimensionTranslationKey = (dimension) => {
         return `warps:dimension.${dimension}`;
@@ -247,19 +394,28 @@ export const Warps = () => {
         });
     }
 
-    const getWarpIconTexts = (warp) => {
-        const icon = findIconByName(warp.icon);
-        return {
-            categoryText: icon ? {translate: icon.translatedCategory} : {text: "?"},
-            iconText: icon ? {translate: icon.translatedName} : {text: warp.icon || "?"}
-        };
+
+    const canPlayerSeeWarp = (player, warp) => {
+        if (!warp.visibility) return true; // Dla starych warpa bez visibility
+        if (warp.visibility === WARP_VISIBILITY.PUBLIC || warp.visibility === WARP_VISIBILITY.PROTECTED) {
+            return true;
+        }
+        if (warp.visibility === WARP_VISIBILITY.PRIVATE) {
+            return warp.owner === player.name;
+        }
+        return true;
     }
 
+    const canPlayerEditWarp = (player, warp) => {
+        if (!warp.owner) return true; // Dla starych warpa bez owner
+        if (warp.visibility === WARP_VISIBILITY.PUBLIC) {
+            return true; // Publiczne mogą edytować wszyscy
+        }
+        return warp.owner === player.name; // Tylko właściciel może edytować protected i private
+    }
 
-    const getWarpByName = (warpName) => {
-        const warps = getValidWarps();
-        const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
-        return warp || null;
+    const filterWarpsByVisibility = (warps, player) => {
+        return warps.filter(warp => canPlayerSeeWarp(player, warp));
     }
 
     ///=================================================================================================================
@@ -269,7 +425,7 @@ export const Warps = () => {
             return;
         }
 
-        const warps = getValidWarps();
+        const warps = filterWarpsByVisibility(getValidWarps(), player);
         const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
 
         if (!warp) {
@@ -299,7 +455,8 @@ export const Warps = () => {
     ///=================================================================================================================
     // === WARP DETAILS ===
     const showCategoriesListMenu = (player, mode = WARP_MENU.TELEPORT) => {
-        const warps = getValidWarps();
+        const allWarps = getValidWarps();
+        const warps = filterWarpsByVisibility(allWarps, player);
 
         if (warps.length === 0) {
             return player.sendMessage({translate: "warps:menu.no_warps"});
@@ -356,6 +513,9 @@ export const Warps = () => {
                 }
             }
 
+            // Filtruj ponownie według visibility (na wypadek gdyby kategoria zawierała niewidoczne warpy)
+            filteredWarps = filterWarpsByVisibility(filteredWarps, player);
+
             if (filteredWarps.length === 0) {
                 return player.sendMessage({translate: "warps:menu.no_warps_in_category"});
             }
@@ -396,47 +556,24 @@ export const Warps = () => {
                 : {rawtext: [{translate: `${sortLabelTextKey}_all`}]}
             );
 
-        const sortedWarps = sortWarps(warps, sortBy, player);
-        const playerLocation = player.location;
-        const playerDimension = getPlayerDimension(player);
+        // Filtruj warpy według visibility
+        const visibleWarps = filterWarpsByVisibility(warps, player);
+        const sortedWarps = sortWarps(visibleWarps, sortBy, player);
 
         sortedWarps.forEach(warp => {
-            const icon = findIconByName(warp.icon);
-            const iconPath = icon ? icon.path : "";
+            try {
+                const buttonTranslationKey = sortBy === SORT_BY.DISTANCE
+                    ? "warps:button_format.long"
+                    : "warps:button_format.short";
 
-            const buttonTranslationKey = sortBy === SORT_BY.DISTANCE
-                ? "warps:button_format.long"
-                : "warps:button_format.short";
-
-            // Format z dystansem dla teleport
-            let distance = 0;
-            const warpSameDimension = warp.dimension === playerDimension;
-            if (warpSameDimension) {
-                distance = calculateDistance(
-                    playerLocation.x, playerLocation.y, playerLocation.z,
-                    warp.x, warp.y, warp.z
+                const icon = findIconByName(warp.icon);
+                actionForm.button(
+                    getWarpDetails(warp, player, buttonTranslationKey),
+                    icon && icon.path ? icon.path : ""
                 );
+            } catch (error) {
+                console.error(`[WARP] Error creating button for warp ${warp.name}:`, error);
             }
-
-            const distanceText = warpSameDimension
-                ? Math.round(distance).toString()
-                : "?";
-
-            actionForm.button({
-                rawtext: [{
-                    translate: buttonTranslationKey,
-                    with: {
-                        rawtext: [
-                            {text: warp.name},
-                            {text: warp.x.toString()},
-                            {text: warp.y.toString()},
-                            {text: warp.z.toString()},
-                            {translate: getDimensionTranslationKey(warp.dimension)},
-                            {text: distanceText}
-                        ]
-                    }
-                }]
-            }, iconPath);
         });
 
         actionForm.show(player).then((res) => {
@@ -466,28 +603,7 @@ export const Warps = () => {
 
     // Wrapper functions for compatibility
     const showWarpDetailsMenu = (player, warp) => {
-
-        const playerLocation = player.location;
-        const playerDimension = getPlayerDimension(player);
-
-        let distance = 0;
-        const warpSameDimension = warp.dimension === playerDimension;
-        if (warpSameDimension) {
-            distance = calculateDistance(
-                playerLocation.x, playerLocation.y, playerLocation.z,
-                warp.x, warp.y, warp.z
-            );
-        }
-
-        const distanceText = warpSameDimension
-            ? Math.round(distance).toString()
-            : "?";
-
-        const {categoryText, iconText} = getWarpIconTexts(warp);
-
         const icon = findIconByName(warp.icon);
-        const iconPath = icon ? icon.path : "";
-
         const optionsForm = new MinecraftUi.ActionFormData()
             .title({
                 rawtext: [{
@@ -496,52 +612,70 @@ export const Warps = () => {
                 }]
             })
             .body("")
-        optionsForm.button({
-            rawtext: [{translate: "warps:warp_details.options.teleport"}]
-        }, iconPath);
-        optionsForm.label({
-            rawtext: [{
-                translate: "warps:warp_details.body",
-                with: {
-                    rawtext: [
-                        {text: warp.name},
-                        {text: warp.x.toString()},
-                        {text: warp.y.toString()},
-                        {text: warp.z.toString()},
-                        {translate: getDimensionTranslationKey(warp.dimension)},
-                        {text: distanceText},
-                        categoryText,
-                        iconText
-                    ]
-                }
-            }]
-        });
-        optionsForm.button({
-            rawtext: [{translate: "warps:warp_details.options.edit_name"}]
-        });
-        optionsForm.button({
-            rawtext: [{translate: "warps:warp_details.options.edit_icon"}]
-        });
-        optionsForm.button({
-            rawtext: [{translate: "warps:warp_details.options.delete"}]
-        });
+            .button({
+                rawtext: [{translate: "warps:warp_details.options.teleport"}]
+            }, icon ? icon.path : "")
+            .label(
+                getWarpDetails(warp, player, "warps:warp_details.body")
+            );
+        const canEdit = canPlayerEditWarp(player, warp);
+        let buttonIndex = 1;
+
+        if (canEdit) {
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.edit_name"}]
+            });
+            buttonIndex++;
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.edit_icon"}]
+            });
+            buttonIndex++;
+            if (warp.visibility !== WARP_VISIBILITY.PUBLIC) {
+                optionsForm.button({
+                    rawtext: [{translate: "warps:warp_details.options.change_visibility"}]
+                });
+                buttonIndex++;
+            }
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.delete"}]
+            });
+            buttonIndex++;
+        }
 
         optionsForm.show(player).then((res) => {
             if (res.canceled) {
                 return;
             }
 
-            switch (res.selection) {
-                case 0: // Teleportuj
-                    teleportToWarp(player, warp);
-                    break;
-                case 1: // Zmień nazwę
+            if (res.selection === 0) {
+                // Teleportuj
+                teleportToWarp(player, warp);
+                return;
+            }
+
+            if (!canEdit) {
+                player.sendMessage({translate: "warps:error.no_permission"});
+                return;
+            }
+
+            let actionIndex = res.selection - 1;
+            const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
+
+            switch (actionIndex) {
+                case 0: // Zmień nazwę
                     editWarpNameForm(player, warp);
                     break;
-                case 2: // Zmień ikonę
+                case 1: // Zmień ikonę
                     editWarpIconFormStep1(player, warp);
                     break;
-                case 3: // Usuń
+                case 2: // Zmień visibility lub Usuń
+                    if (hasVisibilityButton) {
+                        editWarpVisibilityForm(player, warp);
+                    } else {
+                        removeWarpItemForm(player, warp);
+                    }
+                    break;
+                case 3: // Usuń (gdy visibility button jest widoczny)
                     removeWarpItemForm(player, warp);
                     break;
             }
@@ -623,8 +757,8 @@ export const Warps = () => {
         });
     }
 
-    const addWarpItemFormStep3 = (player, warpName, icon, targetLocation, warpDimensionId) => {
-        // Krok 3/3: Nazwa i współrzędne
+    const addWarpItemFormStep3 = (player, warpName, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED) => {
+        // Krok 3/3: Nazwa, współrzędne i visibility
         new MinecraftUi.ModalFormData()
             .title({rawtext: [{translate: "warps:add.step3.title"}]})
             .label({rawtext: [{translate: "warps:add.field.category.label"}]})
@@ -642,6 +776,17 @@ export const Warps = () => {
             .textField({rawtext: [{translate: "warps:add.field.x.label"}]}, {rawtext: [{translate: "warps:add.field.x.placeholder"}]}, {defaultValue: targetLocation.x.toString()})
             .textField({rawtext: [{translate: "warps:add.field.y.label"}]}, {rawtext: [{translate: "warps:add.field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
             .textField({rawtext: [{translate: "warps:add.field.z.label"}]}, {rawtext: [{translate: "warps:add.field.z.placeholder"}]}, {defaultValue: targetLocation.z.toString()})
+            .dropdown(
+                {rawtext: [{translate: "warps:add.field.visibility.label"}]},
+                [
+                    {rawtext: [{translate: "warps:visibility.state.private.label"}]},
+                    {rawtext: [{translate: "warps:visibility.state.protected.label"}]},
+                    {rawtext: [{translate: "warps:visibility.state.public.label"}]}
+                ],
+                {
+                    defaultValueIndex: getVisibilityIndex(visibility)
+                }
+            )
             .submitButton({rawtext: [{translate: "warps:add.submit"}]})
             .show(player).then((res) => {
             if (res.canceled) {
@@ -652,12 +797,16 @@ export const Warps = () => {
             const targetLocationXIndex = 3
             const targetLocationYIndex = 4
             const targetLocationZIndex = 5
+            const visibilityIndex = 6
 
-            // Indeksy formValues: [0]=name, [1]=x, [2]=y, [3]=z
-            if (!res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex]) {
+            // Indeksy formValues: [0]=category label, [1]=category value, [2]=name, [3]=x, [4]=y, [5]=z, [6]=visibility
+            if (!res.formValues || !res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex] || res.formValues[visibilityIndex] === undefined) {
                 player.sendMessage({translate: "warps:add.fill_required"});
                 // Ponownie pokaż formularz z wypełnionymi danymi
-                addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+                const currentVisibility = res.formValues && res.formValues[visibilityIndex] !== undefined
+                    ? getVisibilityByIndex(res.formValues[visibilityIndex])
+                    : visibility;
+                addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId, currentVisibility);
                 return;
             }
 
@@ -667,11 +816,12 @@ export const Warps = () => {
                 y: parseFloat(res.formValues[targetLocationYIndex].toString()),
                 z: parseFloat(res.formValues[targetLocationZIndex].toString())
             };
-            addWarpItemSave(player, warpName, icon, finalLocation, warpDimensionId);
+            const selectedVisibility = getVisibilityByIndex(res.formValues[visibilityIndex]);
+            addWarpItemSave(player, warpName, icon, finalLocation, warpDimensionId, selectedVisibility);
         });
     }
 
-    const addWarpItemSave = (player, warpName, icon, targetLocation, warpDimensionId) => {
+    const addWarpItemSave = (player, warpName, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED) => {
         // Walidacja ikony
         if (!icon || !icon.name) {
             player.sendMessage({translate: "warps:add.invalid_icon"});
@@ -728,18 +878,17 @@ export const Warps = () => {
             y: targetLocation.y,
             z: targetLocation.z,
             dimension: warpDimensionId,
-            icon: icon.name
+            icon: icon.name,
+            owner: player.name,
+            visibility: visibility
         };
 
         warps.push(newWarp);
-        saveWarps(warps);
-
-        player.dimension.playSound("beacon.activate", player.location);
+        saveWarps(warps, player, "beacon.activate", "warps:add.success", [
+            warpName,
+            targetLocation.x.toString(), targetLocation.y.toString(), targetLocation.z.toString()
+        ]);
         player.dimension.runCommand(`particle minecraft:endrod ${targetLocation.x} ${targetLocation.y} ${targetLocation.z}`);
-        player.sendMessage({
-            translate: "warps:add.success",
-            with: [warpName, targetLocation.x.toString(), targetLocation.y.toString(), targetLocation.z.toString()]
-        });
     }
 
     ///=================================================================================================================
@@ -780,6 +929,11 @@ export const Warps = () => {
     }
 
     const editWarpNameSave = (player, warp, newWarpName) => {
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
         if (!newWarpName || newWarpName.length === 0) {
             player.sendMessage({translate: "warps:add.fill_required"});
             editWarpNameForm(player, warp);
@@ -812,18 +966,131 @@ export const Warps = () => {
 
         const oldName = warp.name;
         warps[warpIndex].name = newWarpName;
-        saveWarps(warps);
+        saveWarps(warps, player, "beacon.power", "warps:warp_details.edit_name.success", [
+            oldName,
+            newWarpName,
+        ]);
+        showWarpDetailsMenu(player, warps[warpIndex]);
+    }
 
-        player.dimension.playSound("beacon.power", player.location);
-        player.sendMessage({
-            translate: "warps:warp_details.edit_name.success",
-            with: [oldName, newWarpName]
+    const editWarpVisibilityForm = (player, warp) => {
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        // Nie można zmieniać publicznych
+        if (warp.visibility === WARP_VISIBILITY.PUBLIC) {
+            player.sendMessage({translate: "warps:visibility.cannot_change_public"});
+            showWarpDetailsMenu(player, warp);
+            return;
+        }
+
+        system.run(() => {
+            const availableOptions = [];
+            const currentIndex = warp.visibility === WARP_VISIBILITY.PRIVATE ? 0 : 1;
+
+            if (warp.visibility === WARP_VISIBILITY.PRIVATE) {
+                // Prywatny może stać się zabezpieczony lub publiczny
+                availableOptions.push({rawtext: [{translate: "warps:visibility.state.protected.label"}]});
+                availableOptions.push({rawtext: [{translate: "warps:visibility.state.public.label"}]});
+            } else if (warp.visibility === WARP_VISIBILITY.PROTECTED) {
+                // Zabezpieczony może stać się prywatny lub publiczny
+                availableOptions.push({rawtext: [{translate: "warps:visibility.state.private.label"}]});
+                availableOptions.push({rawtext: [{translate: "warps:visibility.state.public.label"}]});
+            }
+
+            new MinecraftUi.ActionFormData()
+                .title({
+                    rawtext: [{
+                        translate: "warps:warp_details.change_visibility.title",
+                        with: {rawtext: [{text: warp.name}]}
+                    }]
+                })
+                .body({
+                    rawtext: [{
+                        translate: "warps:warp_details.change_visibility.body",
+                        with: {
+                            rawtext: [
+                                {text: warp.name},
+                                {translate: `warps:visibility.state.${warp.visibility}.label`}
+                            ]
+                        }
+                    }]
+                })
+                .button(availableOptions[0])
+                .button(availableOptions[1])
+                .show(player).then((res) => {
+                if (res.canceled) {
+                    showWarpDetailsMenu(player, warp);
+                    return;
+                }
+
+                let newVisibility;
+                if (warp.visibility === WARP_VISIBILITY.PRIVATE) {
+                    newVisibility = res.selection === 0 ? WARP_VISIBILITY.PROTECTED : WARP_VISIBILITY.PUBLIC;
+                } else {
+                    newVisibility = res.selection === 0 ? WARP_VISIBILITY.PRIVATE : WARP_VISIBILITY.PUBLIC;
+                }
+
+                // Ostrzeżenie przy przejściu na publiczny
+                if (newVisibility === WARP_VISIBILITY.PUBLIC) {
+                    new MinecraftUi.MessageFormData()
+                        .title({
+                            rawtext: [{
+                                translate: "warps:warp_details.change_visibility.public_warning.title"
+                            }]
+                        })
+                        .body({
+                            rawtext: [{
+                                translate: "warps:warp_details.change_visibility.public_warning.body"
+                            }]
+                        })
+                        .button1({rawtext: [{translate: "warps:warp_details.change_visibility.public_warning.confirm"}]})
+                        .button2({rawtext: [{translate: "warps:warp_details.change_visibility.public_warning.cancel"}]})
+                        .show(player).then((confirmRes) => {
+                        if (confirmRes.selection === 0) {
+                            editWarpVisibilitySave(player, warp, newVisibility);
+                        } else {
+                            editWarpVisibilityForm(player, warp);
+                        }
+                    });
+                } else {
+                    editWarpVisibilitySave(player, warp, newVisibility);
+                }
+            });
         });
+    }
 
+    const editWarpVisibilitySave = (player, warp, newVisibility) => {
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        const warps = loadWarps();
+        const warpIndex = warps.findIndex(w => w.name === warp.name);
+
+        if (warpIndex === -1) {
+            player.sendMessage({translate: "warps:warp_details.edit_name.not_found"});
+            return;
+        }
+
+        warps[warpIndex].visibility = newVisibility;
+        saveWarps(warps, player, "beacon.power", "warps:warp_details.change_visibility.success", [
+            warp.name,
+            {translate: `warps:visibility.state.${warp.visibility}.label`},
+            {translate: `warps:visibility.${newVisibility.toString()}.label`}
+        ]);
         showWarpDetailsMenu(player, warps[warpIndex]);
     }
 
     const editWarpIconFormStep1 = (player, warp) => {
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
         // Krok 1: Wybór kategorii
         const categories = getCategories();
         const categoryForm = new MinecraftUi.ActionFormData()
@@ -863,7 +1130,12 @@ export const Warps = () => {
                     with: {rawtext: [{text: warp.name}]}
                 }]
             })
-            .body({rawtext: [{translate: "warps:warp_details.edit_icon.step2.body"}]});
+            .body({
+                rawtext: [{
+                    translate: "warps:warp_details.edit_icon.step2.body",
+                    with: {rawtext: [{translate: `warps:category.${category}`}]}
+                }]
+            });
 
         categoryIcons.forEach((icon) => {
             iconForm.button({
@@ -882,6 +1154,12 @@ export const Warps = () => {
                 return;
             }
 
+            // Sprawdź uprawnienia przed zapisem
+            if (!canPlayerEditWarp(player, warp)) {
+                player.sendMessage({translate: "warps:error.no_permission"});
+                return;
+            }
+
             // Zapisz zmianę ikony
             const warps = loadWarps();
             const warpIndex = warps.findIndex(w => w.name === warp.name);
@@ -892,19 +1170,10 @@ export const Warps = () => {
             }
 
             warps[warpIndex].icon = selectedIcon.name;
-            saveWarps(warps);
-
-            player.dimension.playSound("beacon.power", player.location);
-            player.sendMessage({
-                translate: "warps:warp_details.edit_icon.success",
-                with: {
-                    rawtext: [
-                        {text: warp.name},
-                        {translate: selectedIcon.translatedName}
-                    ]
-                }
-            });
-
+            saveWarps(warps, player, "beacon.power", "warps:warp_details.edit_icon.success", [
+                {text: warp.name},
+                {translate: selectedIcon.translatedName}
+            ]);
             showWarpDetailsMenu(player, warps[warpIndex]);
         });
     }
@@ -913,7 +1182,10 @@ export const Warps = () => {
     // === Remove Functions ===
 
     const removeWarpItemForm = (player, warp) => {
-        const {categoryText, iconText} = getWarpIconTexts(warp);
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
 
         new MinecraftUi.MessageFormData()
             .title({
@@ -927,6 +1199,12 @@ export const Warps = () => {
             .button2({rawtext: [{translate: "warps:warp_details.remove_confirm.no"}]})
             .show(player).then((res) => {
             if (res.selection === 0) {
+                // Sprawdź uprawnienia przed usunięciem
+                if (!canPlayerEditWarp(player, warp)) {
+                    player.sendMessage({translate: "warps:error.no_permission"});
+                    return;
+                }
+
                 const allWarps = loadWarps();
                 const updatedWarps = allWarps.filter(w =>
                     !(w.name === warp.name &&
@@ -935,13 +1213,9 @@ export const Warps = () => {
                         w.z === warp.z &&
                         w.dimension === warp.dimension)
                 );
-                saveWarps(updatedWarps);
-
-                player.dimension.playSound("beacon.deactivate", player.location);
-                return player.sendMessage({
-                    translate: "warps:warp_details.remove.success",
-                    with: [warp.name]
-                });
+                saveWarps(updatedWarps, player, "beacon.deactivate", "warps:warp_details.remove.success", [
+                    warp.name,
+                ]);
             } else {
                 showWarpDetailsMenu(player, warp);
             }

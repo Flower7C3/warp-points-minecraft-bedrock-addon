@@ -1,14 +1,14 @@
 warps:main_menu.title=§r§l§1☰ Menu główne Warpów§r
 warps:main_menu.body=Wybierz akcję:
-warps:main_menu.teleport=§r§d✈ Teleportuj§r
-warps:main_menu.manage=§r§e☉ Zarządzaj Warpami§r
-warps:main_menu.add=§r§b✎ Dodaj Warp§r
+warps:main_menu.teleport=§r§3✈ Teleportuj§r
+warps:main_menu.manage=§r§5❣ Zarządzaj Warpami§r
+warps:main_menu.add=§r§6✚ Dodaj Warp§r
 
-warps:add.step1.title=§r§l§b✎ Dodaj Warp§r krok 1/3
+warps:add.step1.title=§r§l§6✚ Dodaj Warp§r krok 1/3
 warps:add.step1.body=Wybierz kategorię dla ikony warpa:
-warps:add.step2.title=§r§l§b✎ Dodaj Warp§r krok 2/3
+warps:add.step2.title=§r§l§6✚ Dodaj Warp§r krok 2/3
 warps:add.step2.body=Wybierz ikonę z kategorii §l%s§r:
-warps:add.step3.title=§r§l§b✎ Dodaj Warp§r krok 3/3
+warps:add.step3.title=§r§l§6✚ Dodaj Warp§r krok 3/3
 warps:add.coords_must_be_number=§r§8[§1WARP§8] §7Współrzędne muszą być liczbą!§r
 warps:add.coords_out_of_range=§r§8[§1WARP§8] §7Współrzędne są poza prawidłowym zakresem!§r
 warps:add.duplicate_name=§r§8[§1WARP§8] §cWarp o nazwie §l%s§r§c już istnieje!§r
@@ -32,15 +32,15 @@ warps:add.select_icon=Wybierz ikonę dla tego warpa:
 warps:add.submit=Zapisz
 warps:add.success=§r§8[§1WARP§8] §7Dodano Warp §l%s§r§7 na pozycji §f(%s,%s,%s)§r§7!§r
 
-warps:teleport_menu.title=§r§l§d✈ Teleportuj się do...§r
-warps:manage_menu.title=§r§l§e☉ Zarządzaj Warpami§r
+warps:teleport_menu.title=§r§l§3✈ Teleportuj się do...§r
+warps:manage_menu.title=§r§l§5❣ Zarządzaj Warpami§r
 
 warps:menu.filter_all=Wszystkie Warpy
 warps:menu.filter_category=%1$s
 warps:menu.filter_select_category=Lub wybierz kategorię:
 
-warps:menu.sort_change_to_alphabetical=§r§3Zmień na sortowanie §lalfabetycznie§r
-warps:menu.sort_change_to_distance=§r§3Zmień na sortowanie wg §ldystansu§r
+warps:menu.sort_change_to_alphabetical=§r§6Zmień na sortowanie §lalfabetycznie§r
+warps:menu.sort_change_to_distance=§r§6Zmień na sortowanie wg §ldystansu§r
 warps:menu.sorting_by_alphabetical_all=§rSortowanie §lalfabetycznie§r:
 warps:menu.sorting_by_alphabetical_cat=§rSortowanie §lalfabetycznie§r w kategorii §l%s§r:
 warps:menu.sorting_by_distance_all=§rSortowanie wg §ldystansu§r:
@@ -51,38 +51,65 @@ warps:warp.not_found=§r§8[§1WARP§8] §cNie znaleziono Warp o nazwie §l%s§r
 warps:menu.no_warps=§r§8[§1WARP§8] §cNie ma żadnych Warp§w!§r
 warps:menu.no_warps_in_category=§r§8[§1WARP§8] §cNie ma żadnych Warp§w w tej kategorii!§r
 
-warps:warp_details.title=§r§l§e☉ Warp§r [%s]
-warps:warp_details.body=Odległość: %6$s metrów\nWspółrzędne: %2$s, %3$s, %4$s\nWymiar: %5$s\nKategoria: %7$s\nIkona: %8$s
-warps:warp_details.options.delete=§r§c☓ Usuń§r
-warps:warp_details.options.edit_name=§r§e⌨ Zmień nazwę§r
-warps:warp_details.options.edit_icon=§r§e⍟ Zmień ikonę§r
-warps:warp_details.options.teleport=§r§d✈ Teleportuj się§r
+warps:warp_details.title=§r§l§5❣ Warp§r §l%s
+warps:warp_details.body_1=Odległość: §l%4$s metr§r\nWspółrzędne: §l%2$s§r\nWymiar: §l%3$s§r\nWłaściciel: §l%5$s§r\nWidoczność: §l%6$s§r\nKategoria: §l%8$s§r\nIkona: §l%9$s§r
+warps:warp_details.body_2=Odległość: §l%4$s metry§r\nWspółrzędne: §l%2$s§r\nWymiar: §l%3$s§r\nWłaściciel: §l%5$s§r\nWidoczność: §l%6$s§r\nKategoria: §l%8$s§r\nIkona: §l%9$s§r
+warps:warp_details.body_5=Odległość: §l%4$s metrów§r\nWspółrzędne: §l%2$s§r\nWymiar: §l%3$s§r\nWłaściciel: §l%5$s§r\nWidoczność: §l%6$s§r\nKategoria: §l%8$s§r\nIkona: §l%9$s§r
+warps:warp_details.options.delete=§r§c✖ Usuń§r
+warps:warp_details.options.edit_name=§r§5✎ Zmień nazwę§r
+warps:warp_details.options.edit_icon=§r§5✯ Zmień ikonę§r
+warps:warp_details.options.change_visibility=§r§5⇨ Zmień widoczność§r
+warps:warp_details.options.teleport=§r§3✈ Teleportuj się§r
 
-warps:warp_details.edit_name.title=§r§l§e⌨ Zmień nazwę§r [%s]
+warps:warp_details.edit_name.title=§r§l§5✎ Zmień nazwę§r §l%s
 warps:warp_details.edit_name.not_found=§r§8[§1WARP§8] §cNie znaleziono warpa!§r
 warps:warp_details.edit_name.success=§r§8[§1WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
 
-warps:warp_details.edit_icon.title=§r§l§e⍟ Zmień ikonę§r [%s]
+warps:warp_details.edit_icon.title=§r§l§5✯ Zmień ikonę§r §l%s
 warps:warp_details.edit_icon.step1.body=Wybierz kategorię, aby wybrać nową ikonę:
-warps:warp_details.edit_icon.step2.body=Wybierz nową ikonę z tej kategorii:
+warps:warp_details.edit_icon.step2.body=Wybierz nową ikonę kategorii §l%s§r:
 warps:warp_details.edit_icon.success=§r§8[§1WARP§8] §7Zmieniono ikonę dla warpa §l%1$s§r§7 na §l%2$s§r§7!§r
 
-warps:warp_details.remove_confirm.title=§r§l§4☓ Usuń§r [%s]
+warps:warp_details.change_visibility.title=§r§l§5⇨ Zmień widoczność§r §l%s
+warps:warp_details.change_visibility.body=Obecna widoczność: %2$s\n\nWybierz nową widoczność:
+warps:warp_details.change_visibility.public_warning.title=§r§l§c⚠ Ostrzeżenie§r
+warps:warp_details.change_visibility.public_warning.body=§cZmiana warpa na publiczny jest trwała i nieodwracalna!\n\nKażdy będzie mógł edytować lub usuwać ten warp.§r
+warps:warp_details.change_visibility.public_warning.confirm=§r§cTak, uczyń publicznym§r
+warps:warp_details.change_visibility.public_warning.cancel=§r§aAnuluj§r
+warps:warp_details.change_visibility.success=§r§8[§1WARP§8] §7Zmieniono widoczność warpa §l%1$s§r§7 z §l%2$s§r§7 na §l%3$s§r§7!§r
+warps:visibility.cannot_change_public=§r§8[§1WARP§8] §cNie można zmienić widoczności publicznych warpa!§r
+
+warps:warp_details.remove_confirm.title=§r§l§4✖ Usuń§r §l%s
 warps:warp_details.remove_confirm.body=§cCzy na pewno chcesz usunąć ten warp na zawsze?§r
 warps:warp_details.remove_confirm.no=§r§aNie§r
 warps:warp_details.remove_confirm.yes=§r§cTak, usuń na zawsze§r
 warps:warp_details.remove.not_deleted=§r§8[§1WARP§8] §aNie usunięto Warp §l%s§r§a!§r
 warps:warp_details.remove.success=§r§8[§1WARP§8] §cUsunięto Warp §l%s§r§c!§r
 
-warps:button_format.long=§r§l%1$s§r §o%6$sm§r %2$s,%3$s,%4$s %5$s
-warps:button_format.short=§r§l%1$s§r %2$s,%3$s,%4$s %5$s
+warps:visibility.state.private.label=§9■ Prywatny§r
+warps:visibility.state.protected.label=§e◆ Zabezpieczony§r
+warps:visibility.state.public.label=§f◎ Publiczny§r
+warps:visibility.state.private.symbol=§9■
+warps:visibility.state.protected.symbol=§e◆
+warps:visibility.state.public.symbol=§f◎
+
+warps:error.no_permission=§r§8[§1WARP§8] §cNie masz uprawnień do modyfikacji tego warpa!§r
+
+warps:add.field.visibility.label=Widoczność
+
+warps:button_format.long_1=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
+warps:button_format.long_2=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
+warps:button_format.long_5=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
+warps:button_format.short_1=%7$s §l%1$s§r %2$s %3$s
+warps:button_format.short_2=%7$s §l%1$s§r %2$s %3$s
+warps:button_format.short_5=%7$s §l%1$s§r %2$s %3$s
 
 warps:common.required_number=(wymagane, liczba)
 warps:common.required_string=(wymagane, tekst)
 
-warps:dimension.nether=§r§cNether§r
-warps:dimension.overworld=§r§2Świat Główny§r
-warps:dimension.the_end=§r§5Kres§r
+warps:dimension.nether=§cNether§r
+warps:dimension.overworld=§2Świat Główny§r
+warps:dimension.the_end=§bKres§r
 
 # === KATEGORIE ===
 warps:category.special=Specjalne
@@ -91,16 +118,16 @@ warps:category.places=Miejsca
 warps:category.landscapes=Krajobrazy
 
 # === MIEJSCA ===
-warps:icon.Desert_Village=Wioska na Pustyni
-warps:icon.Jungle_Temple=Świątynia w Dżungli
-warps:icon.Ocean_Monument=Monument Oceaniczny
-warps:icon.Plains_Village=Wioska na Równinach
-warps:icon.Savanna_Village=Wioska na Sawannie
-warps:icon.Snowy_Village=Śnieżna Wioska
-warps:icon.Swamp_Hut=Chatka na Bagnie
-warps:icon.Taiga_Village=Wioska w Tajdze
+warps:icon.Desert_Village=Wioska na pustyni
+warps:icon.Jungle_Temple=Świątynia w dżungli
+warps:icon.Ocean_Monument=Monument oceaniczny
+warps:icon.Plains_Village=Wioska na równinach
+warps:icon.Savanna_Village=Wioska na sawannie
+warps:icon.Snowy_Village=Śnieżna wioska
+warps:icon.Swamp_Hut=Chatka na bagnie
+warps:icon.Taiga_Village=Wioska w tajdze
 warps:icon.Trial_Chambers=Komnaty Prób
-warps:icon.Woodland_Mansion=Mansja w Lesie
+warps:icon.Woodland_Mansion=Mansja w lesie
 
 # === ZASOBY ===
 warps:icon.Amethyst=Ametyst
@@ -117,42 +144,42 @@ warps:icon.TNT=TNT
 
 # === LOKACJE SPECJALNE ===
 warps:icon.Heart_Full=Serce
-warps:icon.Heart_Absorbing=Serce Absorbujące
-warps:icon.Heart_Frozen=Zamrożone Serce
-warps:icon.Heart_Hardcore=Serce Hardcore
-warps:icon.Marker_Blue=Niebieski Znacznik
-warps:icon.Marker_Red=Czerwony Znacznik
-warps:icon.Marker_White=Biały Znacznik
-warps:icon.Marker_Yellow=Żółty Znacznik
-warps:icon.Target_Point=Punkt Celu
+warps:icon.Heart_Absorbing=Serce absorbujące
+warps:icon.Heart_Frozen=Serce zamrożone
+warps:icon.Heart_Hardcore=Serce hardcore
+warps:icon.Marker_Blue=Niebieski znacznik
+warps:icon.Marker_Red=Czerwony znacznik
+warps:icon.Marker_White=Biały znacznik
+warps:icon.Marker_Yellow=Żółty znacznik
+warps:icon.Target_Point=Punkt celu
 warps:icon.Target_X=Cel X
 
 # === KRAJOBRAZY ===
-warps:icon.Amusement_Park=Park Rozrywki
-warps:icon.Beach_Sea=Plaża i Morze
-warps:icon.Bridge_River=Most i Rzeka
+warps:icon.Amusement_Park=Park rozrywki
+warps:icon.Beach_Sea=Plaża i morze
+warps:icon.Bridge_River=Most i rzeka
 warps:icon.Bushes_Bush=Krzaki
 warps:icon.Landscape_Castle=Zamek
-warps:icon.Cityscape_Futuristic=Futurystyczne Miasto
-warps:icon.Construction_Crane=Żuraw Budowlany
+warps:icon.Cityscape_Futuristic=Futurystyczne miasto
+warps:icon.Construction_Crane=Żuraw budowlany
 warps:icon.Cottage=Chatka
 warps:icon.Desert=Pustynia
 warps:icon.Forest=Las
-warps:icon.Garden_Tree=Drzewo w Ogrodzie
-warps:icon.Industrial_Factory=Fabryka Przemysłowa
+warps:icon.Garden_Tree=Drzewo w ogrodzie
+warps:icon.Industrial_Factory=Fabryka przemysłowa
 warps:icon.Island=Wyspa
 warps:icon.Lake=Jezioro
 warps:icon.Mountains=Góry
 warps:icon.Park=Park
 warps:icon.River=Rzeka
-warps:icon.Rainforest=Las Deszczowy
+warps:icon.Rainforest=Las deszczowy
 warps:icon.Road=Droga
-warps:icon.Ruins_Ancient=Starożytne Ruiny
+warps:icon.Ruins_Ancient=Starożytne ruiny
 warps:icon.Savannah=Sawanna
-warps:icon.Sea_Boat=Morze i Łódź
-warps:icon.Seascape_Lighthouse=Latarnia Morska
+warps:icon.Sea_Boat=Morze i łódź
+warps:icon.Seascape_Lighthouse=Latarnia morska
 warps:icon.Street=Ulica
-warps:icon.Waterfall_River=Wodospad i Rzeka
+warps:icon.Waterfall_River=Wodospad i rzeka
 warps:icon.Antarctic=Antarktyka
-warps:icon.Cityscape=Krajobraz Miejski
-warps:icon.Modern_House=Nowoczesny Dom
+warps:icon.Cityscape=Krajobraz miejski
+warps:icon.Modern_House=Nowoczesny dom
