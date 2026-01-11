@@ -1,6 +1,6 @@
 import * as Minecraft from "@minecraft/server"
 import * as MinecraftUi from "@minecraft/server-ui"
-import {system, CustomCommandParamType, CustomCommandStatus} from "@minecraft/server";
+import {system, CustomCommandParamType, CustomCommandStatus, SignSide} from "@minecraft/server";
 
 
 const WarpIcon = (key, category, path) => {
@@ -23,7 +23,11 @@ export const Warps = () => {
     const COMMAND_WARP_REMOVE = "warps:warps_remove";
     const ITEM_COMPONENT_ID = "warps:warp_menu";
 
-    // Lista dostępnych obrazków dla warps — zorganizowane w kategorie, posortowane alfabetycznie
+    let dataLoaded = false;
+
+    const isDataLoaded = () => dataLoaded;
+
+    // Lista dostępnych obrazków dla warps — zorganizowane w kategorie
     const WARP_ICONS = [
         // === LOKACJE SPECJALNE ===
         // Hearts
@@ -54,38 +58,40 @@ export const Warps = () => {
         WarpIcon("TNT", "resources", "ore/TNT.png"),
 
         // Minecraft Villages
-        WarpIcon("Plains_Village", "places", "village/plains_village.png"),
-        WarpIcon("Desert_Village", "places", "village/desert_village.png"),
-        WarpIcon("Jungle_Temple", "places", "village/jungle_temple.png"),
-        WarpIcon("Savanna_Village", "places", "village/savanna_village.png"),
-        WarpIcon("Snowy_Village", "places", "village/snowy_village.png"),
-        WarpIcon("Taiga_Village", "places", "village/taiga_village.png"),
+        WarpIcon("Plains_Village", "villages", "village/plains_village.png"),
+        WarpIcon("Desert_Village", "villages", "village/desert_village.png"),
+        WarpIcon("Jungle_Temple", "villages", "village/jungle_temple.png"),
+        WarpIcon("Savanna_Village", "villages", "village/savanna_village.png"),
+        WarpIcon("Snowy_Village", "villages", "village/snowy_village.png"),
+        WarpIcon("Taiga_Village", "villages", "village/taiga_village.png"),
 
         // Minecraft Places
-        WarpIcon("Swamp_Hut", "places", "village/swamp_hut.png"),
-        WarpIcon("Ocean_Monument", "places", "village/ocean_monument.png"),
-        WarpIcon("Trial_Chambers", "places", "village/trial_chambers.png"),
-        WarpIcon("Woodland_Mansion", "places", "village/woodland_mansion.png"),
+        WarpIcon("Swamp_Hut", "villages", "village/swamp_hut.png"),
+        WarpIcon("Ocean_Monument", "villages", "village/ocean_monument.png"),
+        WarpIcon("Trial_Chambers", "villages", "village/trial_chambers.png"),
+        WarpIcon("Woodland_Mansion", "villages", "village/woodland_mansion.png"),
+
+        // === DOMY ===
+        WarpIcon("Cottage", "houses", "landscapes-23/cottage.png"),
+        WarpIcon("Modern_House", "houses", "landscapes-23/modern-house.png"),
+        WarpIcon("Ruins_Ancient", "houses", "landscapes-23/ruins-ancient.png"),
+        WarpIcon("Landscape_Castle", "houses", "landscapes-23/castle.png"),
+        WarpIcon("Antarctic", "houses", "landscapes-23/antarctic.png"),
+        WarpIcon("Seascape_Lighthouse", "houses", "landscapes-23/seascape-lighthouse.png"),
+
+        // === MIASTO ===
+        WarpIcon("Cityscape", "city", "landscapes-23/cityscape.png"),
+        WarpIcon("Cityscape_Futuristic", "city", "landscapes-23/cityscape-futuristic.png"),
+        WarpIcon("Industrial_Factory", "city", "landscapes-23/industrial-factory.png"),
+        WarpIcon("Construction_Crane", "city", "landscapes-23/construction-crane.png"),
+        WarpIcon("Garden_Tree", "city", "landscapes-23/garden-tree.png"),
+        WarpIcon("Park", "city", "landscapes-23/park.png"),
+        WarpIcon("Amusement_Park", "city", "landscapes-23/amusement-park.png"),
+        WarpIcon("Road", "city", "landscapes-23/road.png"),
+        WarpIcon("Street", "city", "landscapes-23/street.png"),
+        WarpIcon("Bridge_River", "city", "landscapes-23/bridge-river.png"),
 
         // === KRAJOBRAZY ===
-        // Home
-        WarpIcon("Cottage", "landscapes", "landscapes-23/cottage.png"),
-        WarpIcon("Modern_House", "landscapes", "landscapes-23/modern-house.png"),
-        WarpIcon("Ruins_Ancient", "landscapes", "landscapes-23/ruins-ancient.png"),
-        WarpIcon("Landscape_Castle", "landscapes", "landscapes-23/castle.png"),
-        WarpIcon("Antarctic", "landscapes", "landscapes-23/antarctic.png"),
-
-        // City
-        WarpIcon("Cityscape", "landscapes", "landscapes-23/cityscape.png"),
-        WarpIcon("Cityscape_Futuristic", "landscapes", "landscapes-23/cityscape-futuristic.png"),
-        WarpIcon("Industrial_Factory", "landscapes", "landscapes-23/industrial-factory.png"),
-        WarpIcon("Construction_Crane", "landscapes", "landscapes-23/construction-crane.png"),
-        WarpIcon("Road", "landscapes", "landscapes-23/road.png"),
-        WarpIcon("Street", "landscapes", "landscapes-23/street.png"),
-        WarpIcon("Garden_Tree", "landscapes", "landscapes-23/garden-tree.png"),
-        WarpIcon("Park", "landscapes", "landscapes-23/park.png"),
-        WarpIcon("Amusement_Park", "landscapes", "landscapes-23/amusement-park.png"),
-
         // Nature
         WarpIcon("Bushes_Bush", "landscapes", "landscapes-23/bushes-bush.png"),
         WarpIcon("Desert", "landscapes", "landscapes-23/desert.png"),
@@ -96,13 +102,11 @@ export const Warps = () => {
 
         // Water
         WarpIcon("River", "landscapes", "landscapes-23/river.png"),
-        WarpIcon("Bridge_River", "landscapes", "landscapes-23/bridge-river.png"),
         WarpIcon("Waterfall_River", "landscapes", "landscapes-23/waterfall-river.png"),
         WarpIcon("Lake", "landscapes", "landscapes-23/lake.png"),
 
         // Sea
         WarpIcon("Beach_Sea", "landscapes", "landscapes-23/beach-sea.png"),
-        WarpIcon("Seascape_Lighthouse", "landscapes", "landscapes-23/seascape-lighthouse.png"),
         WarpIcon("Sea_Boat", "landscapes", "landscapes-23/sea-boat.png"),
         WarpIcon("Island", "landscapes", "landscapes-23/island.png"),
     ]
@@ -124,25 +128,58 @@ export const Warps = () => {
     });
 
     ///=================================================================================================================
+    // === Icon Functions ===
+
+    const getCategories = () => {
+        const categories = new Set();
+        WARP_ICONS.forEach(icon => {
+            if (icon && icon.category) {
+                categories.add(icon.category);
+            }
+        });
+        return Array.from(categories);
+    }
+
+    const getIconsByCategory = (category) => {
+        return WARP_ICONS.filter(icon => icon && icon.category === category);
+    }
+
+    const findIconByName = (iconName) => {
+        return WARP_ICONS.find(icon => icon && icon.name === iconName);
+    }
+    ///=================================================================================================================
     // === Data Management Functions ===
     const loadWarps = () => {
         const saved = Minecraft.world.getDynamicProperty(WORLD_PROP)?.toString();
         if (!saved) {
+            if (!isDataLoaded()) {
+                dataLoaded = true;
+            }
             return [];
         }
         try {
             const warps = JSON.parse(saved);
             // Migracja: dodaj owner i visibility do istniejących warpa
-            return warps.map(warp => {
+            const mapped = warps.map(warp => {
                 if (!warp.owner) {
                     warp.owner = ""; // Nieznany właściciel dla starych warpa
                 }
                 if (!warp.visibility) {
-                    warp.visibility = WARP_VISIBILITY.PUBLIC; // Migracja na public
+                    warp.visibility = WARP_VISIBILITY.PUBLIC;
+                }
+                if (warp.facing === undefined || warp.facing === null) {
+                    warp.facing = 0;
                 }
                 return warp;
             });
+            if (!isDataLoaded()) {
+                dataLoaded = true;
+            }
+            return mapped;
         } catch {
+            if (!isDataLoaded()) {
+                dataLoaded = true;
+            }
             return [];
         }
     }
@@ -186,6 +223,32 @@ export const Warps = () => {
         );
     }
 
+///=================================================================================================================
+    // === Player Functions ===
+     const getPlayer = (origin) => {
+        if (origin.sourceType === Minecraft.CustomCommandSource.Entity && origin.sourceEntity.typeId === "minecraft:player") {
+            return origin.sourceEntity;
+        }
+        if (origin.sourceType === Minecraft.CustomCommandSource.NPCDialogue && origin.initiator.typeId === "minecraft:player") {
+            return origin.initiator;
+        }
+        return null;
+    }
+
+    const getPlayerDimension = (player) => player.dimension.id.replace("minecraft:", "");
+
+    const roundLocation = (location) => ({
+        x: Math.round(location.x),
+        y: Math.round(location.y),
+        z: Math.round(location.z)
+    })
+
+    const calculateDistance = (x1, y1, z1, x2, y2, z2) => {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const dz = z2 - z1;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
     ///=================================================================================================================
     // === Warp Functions ===
     const getWarpByName = (warpName) => {
@@ -194,9 +257,7 @@ export const Warps = () => {
         return warp || null;
     }
 
-
     const getWarpDimension = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
-
 
     const getWarpIconTexts = (warp) => {
         if (!warp || !warp.icon) {
@@ -218,34 +279,33 @@ export const Warps = () => {
         };
     }
 
-    const getWarpVisibility = (warp) => (warp.visibility || WARP_VISIBILITY.PUBLIC);
-
     const getWarpDetails = (warp, player, translationKey) => {
-        const playerLocation = player.location;
-        const playerDimension = getPlayerDimension(player);
+        let distanceText = {text: "?"};
+        if (player) {
+            const playerLocation = player.location;
+            if (warp.dimension === getPlayerDimension(player)) {
+                const distance = calculateDistance(
+                    playerLocation.x, playerLocation.y, playerLocation.z,
+                    warp.x, warp.y, warp.z
+                );
 
-        let distance = 0;
-        const warpSameDimension = warp.dimension === playerDimension;
-        if (warpSameDimension) {
-            distance = calculateDistance(
-                playerLocation.x, playerLocation.y, playerLocation.z,
-                warp.x, warp.y, warp.z
-            );
+                const distanceTranslationKeySuffix = (distance === 1)
+                    ? "1"
+                    : (
+                        (1 < distance && distance < 5)
+                            ? "2"
+                            : "5"
+                    );
+
+                distanceText = {
+                    translate: `warps:distance.value_${distanceTranslationKeySuffix}`,
+                    with: {rawtext: [{text: Math.round(distance).toString()}]}
+                }
+            }
+
         }
-
-        const distanceText = warpSameDimension ? Math.round(distance).toString() : "?";
-        const ownerName = warp.owner || "";
-        const visibilityKey = getWarpVisibility(warp);
-        const visibilitySymbol = getVisibilitySymbol(visibilityKey);
+        const visibility = (warp.visibility || WARP_VISIBILITY.PUBLIC);
         const {categoryText, iconText} = getWarpIconTexts(warp);
-
-        if (distance === 1) {
-            translationKey += "_1";
-        } else if (distance < 5) {
-            translationKey += "_2";
-        } else {
-            translationKey += "_5";
-        }
 
         return {
             rawtext: [{
@@ -254,11 +314,13 @@ export const Warps = () => {
                     rawtext: [
                         {text: warp.name},
                         {text: `${warp.x}, ${warp.y}, ${warp.z}`},
-                        {translate: getDimensionTranslationKey(warp.dimension)},
-                        {text: distanceText},
-                        {text: ownerName || "?"},
-                        {translate: `warps:visibility.state.${visibilityKey}.label`},
-                        visibilitySymbol,
+                        {translate: `warps:dimension.${warp.dimension}`},
+                        distanceText,
+                        {text: warp.owner || "?"},
+                        {translate: `warps:visibility.state.${visibility}.label`},
+                        (visibility)
+                            ? {translate: `warps:visibility.state.${visibility}.symbol`}
+                            : {text: ""},
                         categoryText,
                         iconText
                     ]
@@ -266,46 +328,6 @@ export const Warps = () => {
             }]
         };
     }
-
-    ///=================================================================================================================
-    // === Icon Functions ===
-    const getCategories = () => {
-        const categories = new Set();
-        WARP_ICONS.forEach(icon => {
-            if (icon && icon.category) {
-                categories.add(icon.category);
-            }
-        });
-        return Array.from(categories);
-    }
-
-    const getIconsByCategory = (category) => {
-        return WARP_ICONS.filter(icon => icon && icon.category === category);
-    }
-
-    const findIconByName = (iconName) => {
-        return WARP_ICONS.find(icon => icon && icon.name === iconName);
-    }
-
-    ///=================================================================================================================
-    // === Helper Functions ===
-    const getPlayer = (origin) => {
-        if (origin.sourceType === Minecraft.CustomCommandSource.Entity && origin.sourceEntity.typeId === "minecraft:player") {
-            return origin.sourceEntity;
-        }
-        if (origin.sourceType === Minecraft.CustomCommandSource.NPCDialogue && origin.initiator.typeId === "minecraft:player") {
-            return origin.initiator;
-        }
-        return null;
-    }
-
-    const getPlayerDimension = (player) => player.dimension.id.replace("minecraft:", "");
-
-    const roundLocation = (location) => ({
-        x: Math.round(location.x),
-        y: Math.round(location.y),
-        z: Math.round(location.z)
-    })
 
     const getVisibilityIndex = (visibility) => {
         switch (visibility) {
@@ -316,7 +338,7 @@ export const Warps = () => {
             case WARP_VISIBILITY.PUBLIC:
                 return 2;
             default:
-                return 1; // Domyślnie protected
+                return 1;
         }
     }
 
@@ -333,21 +355,109 @@ export const Warps = () => {
         }
     }
 
-    const getVisibilitySymbol = (visibility) => {
-        if (!visibility) return {text: ""};
-        const key = `warps:visibility.state.${visibility}.symbol`;
-        return {translate: key};
+    ///=================================================================================================================
+    // === Standing Sign Functions ===
+
+    const removeWarpSign = (warp) => {
+        try {
+            const warpDimension = getWarpDimension(warp.dimension);
+            if (!warpDimension) return;
+
+            const signLocation = {
+                x: warp.x,
+                y: warp.y,
+                z: warp.z
+            };
+
+            const existingBlock = warpDimension.getBlock(signLocation);
+            if (existingBlock && existingBlock.typeId.includes("standing_sign")) {
+                warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} minecraft:air replace`);
+            }
+        } catch (error) {
+            console.error(`[WARP] Error removing sign for warp ${warp.name}: ${error}`);
+        }
     }
 
-    const getDimensionTranslationKey = (dimension) => {
-        return `warps:dimension.${dimension}`;
+    const updateWarpSign = (warp) => {
+        try {
+            const warpDimension = getWarpDimension(warp.dimension);
+            if (!warpDimension) return;
+
+            const signLocation = {
+                x: warp.x,
+                y: warp.y,
+                z: warp.z
+            };
+
+            const existingBlock = warpDimension.getBlock(signLocation);
+            const isCorrectSign = existingBlock && existingBlock.typeId.includes("standing_sign");
+            const facing = warp.facing !== undefined && warp.facing !== null ? warp.facing : 0;
+            const groundSignDirection = facing * 4;
+
+            if (!isCorrectSign) {
+                const cmd = `setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} standing_sign ${groundSignDirection} replace`;
+                console.info(cmd)
+                warpDimension.runCommand(cmd);
+            }
+
+            [1, 2, 3].forEach((delay, index) => {
+                system.runTimeout(() => {
+                    try {
+                        const placedBlock = warpDimension.getBlock(signLocation);
+                        if (placedBlock && placedBlock.typeId.includes("standing_sign")) {
+                            const signComponent = placedBlock.getComponent("minecraft:sign");
+                            if (signComponent) {
+                                const text = getWarpDetails(warp, null, "warps:standing_sign_text");
+                                signComponent.setText(text, SignSide.Front);
+                                signComponent.setText(text, SignSide.Back);
+                                signComponent.setWaxed(true);
+                            }
+                        }
+                    } catch (err) {
+                        if (index === 2) {
+                            console.error(`[WARP] Error setting sign properties (attempt ${index + 1}) for ${warp.name}: ${err}`);
+                        }
+                    }
+                }, delay);
+            });
+        } catch (error) {
+            console.error(`[WARP] Error updating sign for warp ${warp.name}: ${error}`);
+        }
     }
 
-    const calculateDistance = (x1, y1, z1, x2, y2, z2) => {
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const dz = z2 - z1;
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const updateWarpSigns = () => {
+        if (!isDataLoaded()) return;
+
+        const players = Minecraft.world.getPlayers();
+        if (players.length === 0) return;
+
+        const warps = getValidWarps();
+        const maxDistance = 128;
+        const maxDistanceSquared = maxDistance * maxDistance;
+
+        warps.forEach(warp => {
+            let shouldUpdate = false;
+
+            for (const player of players) {
+                const playerDimension = getPlayerDimension(player);
+                if (warp.dimension !== playerDimension) continue;
+
+                const playerLoc = player.location;
+                const dx = warp.x - playerLoc.x;
+                const dy = warp.y - playerLoc.y;
+                const dz = warp.z - playerLoc.z;
+                const distanceSquared = dx * dx + dy * dy + dz * dz;
+
+                if (distanceSquared <= maxDistanceSquared) {
+                    shouldUpdate = true;
+                    break;
+                }
+            }
+
+            if (shouldUpdate) {
+                updateWarpSign(warp);
+            }
+        });
     }
 
     const sortWarps = (warps, sortBy, player) => {
@@ -764,11 +874,16 @@ export const Warps = () => {
             .label({rawtext: [{translate: "warps:add.field.category.label"}]})
             .label({
                 rawtext: [{
-                    translate: "warps:add.field.category.value", with: {
-                        rawtext: [
-                            {translate: icon.translatedCategory},
-                            {translate: icon.translatedName}
-                        ]
+                    translate: "§l%%s§r", with: {
+                        rawtext: [{translate: icon.translatedCategory}]
+                    }
+                }]
+            })
+            .label({rawtext: [{translate: "warps:add.field.icon.label"}]})
+            .label({
+                rawtext: [{
+                    translate: "§l%%s§r", with: {
+                        rawtext: [{translate: icon.translatedName}]
                     }
                 }]
             })
@@ -793,13 +908,12 @@ export const Warps = () => {
                 return;
             }
 
-            const warpNameIndex = 2;
-            const targetLocationXIndex = 3
-            const targetLocationYIndex = 4
-            const targetLocationZIndex = 5
-            const visibilityIndex = 6
+            const warpNameIndex = 4
+            const targetLocationXIndex = 5
+            const targetLocationYIndex = 6
+            const targetLocationZIndex = 7
+            const visibilityIndex = 8
 
-            // Indeksy formValues: [0]=category label, [1]=category value, [2]=name, [3]=x, [4]=y, [5]=z, [6]=visibility
             if (!res.formValues || !res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex] || res.formValues[visibilityIndex] === undefined) {
                 player.sendMessage({translate: "warps:add.fill_required"});
                 // Ponownie pokaż formularz z wypełnionymi danymi
@@ -872,6 +986,16 @@ export const Warps = () => {
             return;
         }
 
+        const playerLoc = player.location;
+        const dx = targetLocation.x - playerLoc.x;
+        const dz = targetLocation.z - playerLoc.z;
+        let facing;
+        if (Math.abs(dx) > Math.abs(dz)) {
+            facing = dx > 0 ? 1 : 3;
+        } else {
+            facing = dz > 0 ? 2 : 0;
+        }
+
         const newWarp = {
             name: warpName,
             x: targetLocation.x,
@@ -880,7 +1004,8 @@ export const Warps = () => {
             dimension: warpDimensionId,
             icon: icon.name,
             owner: player.name,
-            visibility: visibility
+            visibility: visibility,
+            facing: facing
         };
 
         warps.push(newWarp);
@@ -888,7 +1013,9 @@ export const Warps = () => {
             warpName,
             targetLocation.x.toString(), targetLocation.y.toString(), targetLocation.z.toString()
         ]);
-        player.dimension.runCommand(`particle minecraft:endrod ${targetLocation.x} ${targetLocation.y} ${targetLocation.z}`);
+
+        player.dimension.runCommand(`summon fireworks_rocket ${targetLocation.x} ${targetLocation.y} ${targetLocation.z}`);
+        updateWarpSigns();
     }
 
     ///=================================================================================================================
@@ -970,6 +1097,7 @@ export const Warps = () => {
             oldName,
             newWarpName,
         ]);
+        updateWarpSign(warps[warpIndex]);
         showWarpDetailsMenu(player, warps[warpIndex]);
     }
 
@@ -988,7 +1116,6 @@ export const Warps = () => {
 
         system.run(() => {
             const availableOptions = [];
-            const currentIndex = warp.visibility === WARP_VISIBILITY.PRIVATE ? 0 : 1;
 
             if (warp.visibility === WARP_VISIBILITY.PRIVATE) {
                 // Prywatny może stać się zabezpieczony lub publiczny
@@ -1216,6 +1343,7 @@ export const Warps = () => {
                 saveWarps(updatedWarps, player, "beacon.deactivate", "warps:warp_details.remove.success", [
                     warp.name,
                 ]);
+                removeWarpSign(warp);
             } else {
                 showWarpDetailsMenu(player, warp);
             }
@@ -1448,8 +1576,22 @@ export const Warps = () => {
                     });
                 }
             });
+
         });
     }
+
+    Minecraft.world.afterEvents.worldLoad.subscribe(() => {
+        system.runTimeout(() => {
+            loadWarps();
+        }, 60);
+    });
+
+    system.runTimeout(() => {
+        updateWarpSigns();
+        system.runInterval(() => {
+            updateWarpSigns();
+        }, 600);
+    }, 20);
 
     return {
         init: init
