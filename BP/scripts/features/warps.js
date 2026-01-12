@@ -1104,14 +1104,6 @@ export const Warps = () => {
                     currentZ - 3,
                     currentZ + 3,
                     {defaultValue: currentZ}
-                )
-                .dropdown(
-                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing"}]},
-                    [
-                        {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.north_south"}]},
-                        {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.east_west"}]}
-                    ],
-                    {defaultValueIndex: currentFacing}
                 );
 
             form.show(player).then((res) => {
@@ -1126,9 +1118,9 @@ export const Warps = () => {
                     return;
                 }
 
-                const newX = Math.round(res.formValues[0].toString());
-                const newY = Math.round(res.formValues[1].toString());
-                const newZ = Math.round(res.formValues[2].toString());
+                const newX = Math.round(parseFloat(res.formValues[0].toString()));
+                const newY = Math.round(parseFloat(res.formValues[1].toString()));
+                const newZ = Math.round(parseFloat(res.formValues[2].toString()));
 
                 // Walidacja współrzędnych
                 if (newY < -64 || newY > 320) {
