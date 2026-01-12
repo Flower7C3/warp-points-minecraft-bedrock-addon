@@ -139,12 +139,18 @@ export const Warps = () => {
     });
 
     const SIGN_TYPE = Object.freeze({
+        STANDING: 'standing',
+        WALL: 'wall',
+    });
+
+    const SIGN_MATERIAL = Object.freeze({
         OAK: 'oak',
+        PALE_OAK: 'pale_oak',
+        DARK_OAK: 'darkoak',
         SPRUCE: 'spruce',
         BIRCH: 'birch',
         JUNGLE: 'jungle',
         ACACIA: 'acacia',
-        DARK_OAK: 'darkoak',
         MANGROVE: 'mangrove',
         CHERRY: 'cherry',
         CRIMSON: 'crimson',
@@ -195,8 +201,8 @@ export const Warps = () => {
                 if (warp.facing === undefined || warp.facing === null) {
                     warp.facing = 0;
                 }
-                if (!warp.signType) {
-                    warp.signType = SIGN_TYPE.OAK;
+                if (!warp.signMaterial) {
+                    warp.signMaterial = SIGN_MATERIAL.OAK;
                 }
                 return warp;
             });
@@ -436,91 +442,24 @@ export const Warps = () => {
     ///=================================================================================================================
     // === Standing Sign Functions ===
 
-    const getSignTextColor = (signType) => {
+    const getSignTextColor = (signMaterial) => {
         // Wybierz kolor tekstu dla czytelności na różnych typach tabliczek
-        switch (signType) {
-            case SIGN_TYPE.SPRUCE:
-            case SIGN_TYPE.ACACIA:
-            case SIGN_TYPE.DARK_OAK:
-            case SIGN_TYPE.MANGROVE:
-            case SIGN_TYPE.CRIMSON:
+        switch (signMaterial) {
+            case SIGN_MATERIAL.SPRUCE:
+            case SIGN_MATERIAL.ACACIA:
+            case SIGN_MATERIAL.DARK_OAK:
+            case SIGN_MATERIAL.MANGROVE:
+            case SIGN_MATERIAL.CRIMSON:
+            case SIGN_MATERIAL.WARPED:
                 return DyeColor.White;
+            case SIGN_MATERIAL.OAK:
+            case SIGN_MATERIAL.PALE_OAK:
+            case SIGN_MATERIAL.BIRCH:
+            case SIGN_MATERIAL.JUNGLE:
+            case SIGN_MATERIAL.CHERRY:
+                return DyeColor.Black;
             default:
                 return DyeColor.Black;
-        }
-    }
-
-    const removeWarpSign = (warp) => {
-        try {
-            const warpDimension = getWarpDimension(warp.dimension);
-            if (!warpDimension) return;
-
-            const signLocation = {
-                x: warp.x,
-                y: warp.y,
-                z: warp.z
-            };
-
-            const existingBlock = warpDimension.getBlock(signLocation);
-            if (existingBlock && existingBlock.typeId.includes("standing_sign")) {
-                warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} minecraft:air replace`);
-            }
-        } catch (error) {
-            console.error(`[WARP] Error removing sign for warp ${warp.name}: ${error}`);
-        }
-    }
-
-    const updateWarpSign = (warp) => {
-        try {
-            const warpDimension = getWarpDimension(warp.dimension);
-            if (!warpDimension) return;
-
-            const signLocation = {
-                x: warp.x,
-                y: warp.y,
-                z: warp.z
-            };
-
-            const existingBlock = warpDimension.getBlock(signLocation);
-            const isCorrectSign = existingBlock && existingBlock.typeId.includes("standing_sign");
-            const facing = warp.facing !== undefined && warp.facing !== null ? warp.facing : 0;
-            const groundSignDirection = facing * 4;
-            const signType = warp.signType || SIGN_TYPE.OAK;
-            const signBlockType = signType === SIGN_TYPE.OAK ? `minecraft:standing_sign` : `minecraft:${signType}_standing_sign`;
-            const signTextColor = getSignTextColor(signType);
-            const signTextValue = getWarpDetails(warp, null, "warps:standing_sign_text");
-
-            // Jeśli znak istnieje, usuń go i stwórz nowy
-            if (isCorrectSign) {
-                warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} minecraft:air replace`);
-            }
-
-            // Stwórz nowy znak z właściwym typem i kierunkiem
-            warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} ${signBlockType} ${groundSignDirection} replace`);
-
-            [1, 2, 3].forEach((delay, index) => {
-                system.runTimeout(() => {
-                    try {
-                        const placedBlock = warpDimension.getBlock(signLocation);
-                        if (placedBlock && placedBlock.typeId.includes("standing_sign")) {
-                            const signComponent = placedBlock.getComponent("minecraft:sign");
-                            if (signComponent) {
-                                signComponent.setText(signTextValue, SignSide.Front);
-                                signComponent.setText(signTextValue, SignSide.Back);
-                                signComponent.setTextDyeColor(signTextColor, SignSide.Front)
-                                signComponent.setTextDyeColor(signTextColor, SignSide.Back)
-                                signComponent.setWaxed(true);
-                            }
-                        }
-                    } catch (err) {
-                        if (index === 2) {
-                            console.error(`[WARP] Error setting sign properties (attempt ${index + 1}) for ${warp.name}: ${err}`);
-                        }
-                    }
-                }, delay);
-            });
-        } catch (error) {
-            console.error(`[WARP] Error updating sign for warp ${warp.name}: ${error}`);
         }
     }
 
@@ -557,6 +496,110 @@ export const Warps = () => {
                 updateWarpSign(warp);
             }
         });
+    }
+
+    const updateWarpSign = (warp) => {
+        try {
+            const warpDimension = getWarpDimension(warp.dimension);
+            if (!warpDimension) return;
+
+            const signLocation = {
+                x: warp.x,
+                y: warp.y,
+                z: warp.z
+            };
+
+            const existingBlock = warpDimension.getBlock(signLocation);
+            const isCorrectSign = existingBlock && (existingBlock.typeId.includes("standing_sign") || existingBlock.typeId.includes("wall_sign"));
+            const facing = warp.facing !== undefined && warp.facing !== null ? warp.facing : 0;
+            const signMaterial = warp.signMaterial || SIGN_MATERIAL.OAK;
+
+            // Sprawdź wszystkie 4 kierunki, aby znaleźć blok do doczepienia znaku
+            let signType = SIGN_TYPE.STANDING;
+            let signDirection = facing * 4;
+
+            // Sprawdź kierunki: North (z-1), South (z+1), East (x+1), West (x-1)
+            const directions = [
+                {facing: 2, offset: {x: 0, y: 0, z: 1}, type: SIGN_TYPE.WALL},
+                {facing: 3, offset: {x: 0, y: 0, z: -1}, type: SIGN_TYPE.WALL},
+                {facing: 4, offset: {x: 1, y: 0, z: 0}, type: SIGN_TYPE.WALL},
+                {facing: 5, offset: {x: -1, y: 0, z: 0}, type: SIGN_TYPE.WALL},
+            ];
+
+            for (const dir of directions) {
+                const checkBlock = warpDimension.getBlock({
+                    x: warp.x + dir.offset.x,
+                    y: warp.y + dir.offset.y,
+                    z: warp.z + dir.offset.z
+                });
+
+                if (checkBlock && checkBlock.typeId !== "minecraft:air" && !checkBlock.typeId.includes("sign")) {
+                    signType = dir.type;
+                    signDirection = dir.facing;
+                    break;
+                }
+            }
+
+            const signBlockType = (signMaterial === SIGN_MATERIAL.OAK)
+                ? `minecraft:${signType}_sign`
+                : `minecraft:${signMaterial}_${signType}_sign`;
+            const signTextColor = getSignTextColor(signMaterial);
+            const signTextValue = getWarpDetails(warp, null, "warps:sign_text");
+
+            // Jeśli znak istnieje, usuń go i stwórz nowy
+            if (isCorrectSign) {
+                warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} minecraft:air replace`);
+            }
+
+            // Stwórz nowy znak z właściwym typem i kierunkiem
+            warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} ${signBlockType} ${signDirection} replace`);
+
+            [1, 2, 3].forEach((delay, index) => {
+                system.runTimeout(() => {
+                    try {
+                        const placedBlock = warpDimension.getBlock(signLocation);
+                        if (placedBlock && (existingBlock.typeId.includes("standing_sign") || existingBlock.typeId.includes("wall_sign"))) {
+                            const signComponent = placedBlock.getComponent("minecraft:sign");
+                            if (signComponent) {
+                                signComponent.setText(signTextValue, SignSide.Front);
+                                signComponent.setTextDyeColor(signTextColor, SignSide.Front)
+                                if (signType !== SIGN_TYPE.WALL) {
+                                    signComponent.setText(signTextValue, SignSide.Back);
+                                    signComponent.setTextDyeColor(signTextColor, SignSide.Back)
+                                }
+                                signComponent.setWaxed(true);
+                            }
+                        }
+                    } catch (err) {
+                        if (index === 2) {
+                            console.error(`[WARP] Error setting sign properties (attempt ${index + 1}) for ${warp.name}: ${err}`);
+                        }
+                    }
+                }, delay);
+            });
+        } catch (error) {
+            console.error(`[WARP] Error updating sign for warp ${warp.name}: ${error}`);
+        }
+    }
+
+    const removeWarpSign = (warp) => {
+        try {
+            const warpDimension = getWarpDimension(warp.dimension);
+            if (!warpDimension) return;
+
+            const signLocation = {
+                x: warp.x,
+                y: warp.y,
+                z: warp.z
+            };
+
+            const existingBlock = warpDimension.getBlock(signLocation);
+            if (existingBlock && (existingBlock.typeId.includes("standing_sign") || existingBlock.typeId.includes("wall_sign"))) {
+                warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} minecraft:air replace`);
+            }
+        } catch (error) {
+            console.error(`[WARP] Error removing sign for warp ${warp.name}: ${error}`);
+        }
     }
 
     ///=================================================================================================================
@@ -1008,9 +1051,9 @@ export const Warps = () => {
             .textField({rawtext: [{translate: "warps:add.field.y.label"}]}, {rawtext: [{translate: "warps:add.field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
             .textField({rawtext: [{translate: "warps:add.field.z.label"}]}, {rawtext: [{translate: "warps:add.field.z.placeholder"}]}, {defaultValue: targetLocation.z.toString()})
             .dropdown(
-                {rawtext: [{translate: "warps:warp_details.edit_name.sign_type"}]},
-                Object.values(SIGN_TYPE).map(type => ({
-                    rawtext: [{translate: `warps:sign_type.${type}`}]
+                {rawtext: [{translate: "warps:warp_details.edit_name.sign_material.label"}]},
+                Object.values(SIGN_MATERIAL).map(type => ({
+                    rawtext: [{translate: `warps:sign_material.${type}`}]
                 })),
                 {defaultValueIndex: 0}
             )
@@ -1035,10 +1078,10 @@ export const Warps = () => {
             const targetLocationXIndex = 5
             const targetLocationYIndex = 6
             const targetLocationZIndex = 7
-            const signTypeIndex = 8
+            const signMaterialIndex = 8
             const visibilityIndex = 9
 
-            if (!res.formValues || !res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex] || res.formValues[signTypeIndex] === undefined || res.formValues[visibilityIndex] === undefined) {
+            if (!res.formValues || !res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex] || res.formValues[signMaterialIndex] === undefined || res.formValues[visibilityIndex] === undefined) {
                 player.sendMessage({translate: "warps:add.fill_required"});
                 // Ponownie pokaż formularz z wypełnionymi danymi
                 const currentVisibility = res.formValues && res.formValues[visibilityIndex] !== undefined
@@ -1054,14 +1097,14 @@ export const Warps = () => {
                 y: parseFloat(res.formValues[targetLocationYIndex].toString()),
                 z: parseFloat(res.formValues[targetLocationZIndex].toString())
             };
-            const signTypeOptions = Object.values(SIGN_TYPE);
-            const selectedSignType = signTypeOptions[res.formValues[signTypeIndex]] || SIGN_TYPE.OAK;
+            const signMaterialOptions = Object.values(SIGN_MATERIAL);
+            const selectedSignMaterial = signMaterialOptions[res.formValues[signMaterialIndex]] || SIGN_MATERIAL.OAK;
             const selectedVisibility = getVisibilityByIndex(res.formValues[visibilityIndex]);
-            addWarpItemSave(player, warpName, icon, finalLocation, warpDimensionId, selectedVisibility, selectedSignType);
+            addWarpItemSave(player, warpName, icon, finalLocation, warpDimensionId, selectedVisibility, selectedSignMaterial);
         });
     }
 
-    const addWarpItemSave = (player, warpName, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED, signType = SIGN_TYPE.OAK) => {
+    const addWarpItemSave = (player, warpName, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED, signMaterial = SIGN_MATERIAL.OAK) => {
         // Walidacja ikony
         if (!icon || !icon.name) {
             player.sendMessage({translate: "warps:add.invalid_icon"});
@@ -1122,7 +1165,7 @@ export const Warps = () => {
             owner: player.name,
             visibility: visibility,
             facing: (Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z)) ? 1 : 0,
-            signType: signType
+            signMaterial: signMaterial
         };
 
         warps.push(newWarp);
@@ -1257,9 +1300,9 @@ export const Warps = () => {
         }
 
         const currentFacingOption = normalizeFacingToOption(warp.facing);
-        const currentSignType = warp.signType || SIGN_TYPE.OAK;
-        const signTypeOptions = Object.values(SIGN_TYPE);
-        const currentSignTypeIndex = signTypeOptions.indexOf(currentSignType);
+        const currentSignMaterial = warp.signMaterial || SIGN_MATERIAL.OAK;
+        const signMaterialOptions = Object.values(SIGN_MATERIAL);
+        const currentSignMaterialIndex = signMaterialOptions.indexOf(currentSignMaterial);
 
         new MinecraftUi.ModalFormData()
             .title({
@@ -1282,11 +1325,11 @@ export const Warps = () => {
                 {defaultValueIndex: currentFacingOption}
             )
             .dropdown(
-                {rawtext: [{translate: "warps:warp_details.edit_name.sign_type"}]},
-                signTypeOptions.map(type => ({
-                    rawtext: [{translate: `warps:sign_type.${type}`}]
+                {rawtext: [{translate: "warps:warp_details.edit_name.sign_material.label"}]},
+                signMaterialOptions.map(type => ({
+                    rawtext: [{translate: `warps:sign_material.${type}`}]
                 })),
-                {defaultValueIndex: currentSignTypeIndex >= 0 ? currentSignTypeIndex : 0}
+                {defaultValueIndex: currentSignMaterialIndex >= 0 ? currentSignMaterialIndex : 0}
             )
             .submitButton({rawtext: [{translate: "warps:add.submit"}]})
             .show(player).then((res) => {
@@ -1304,14 +1347,14 @@ export const Warps = () => {
             const newWarpName = res.formValues[0]?.toString().trim();
             const facingOption = res.formValues[1];
             const newFacing = facingOption === 0 ? 0 : 1;
-            const signTypeIndex = res.formValues[2];
-            const newSignType = signTypeOptions[signTypeIndex] || SIGN_TYPE.OAK;
+            const signMaterialIndex = res.formValues[2];
+            const newSignMaterial = signMaterialOptions[signMaterialIndex] || SIGN_MATERIAL.OAK;
 
-            editWarpNameSave(player, warp, newWarpName, newFacing, newSignType);
+            editWarpNameSave(player, warp, newWarpName, newFacing, newSignMaterial);
         });
     }
 
-    const editWarpNameSave = (player, warp, newWarpName, newFacing, newSignType) => {
+    const editWarpNameSave = (player, warp, newWarpName, newFacing, newSignMaterial) => {
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
             return;
@@ -1357,7 +1400,7 @@ export const Warps = () => {
 
         warps[warpIndex].name = newWarpName;
         warps[warpIndex].facing = newFacing;
-        warps[warpIndex].signType = newSignType;
+        warps[warpIndex].signMaterial = newSignMaterial;
         saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_name.success", [
             oldName,
             newWarpName,
@@ -1836,7 +1879,7 @@ export const Warps = () => {
                         console.info(`[WARP] Regenerated ${updated} warp signs`);
                         player.sendMessage({
                             translate: "warps:regen_signs.success",
-                            with: [{text: updated.toString()}]
+                            with: [updated.toString()]
                         });
                     });
                 }
@@ -1910,7 +1953,7 @@ export const Warps = () => {
             if (!player || !block) return;
 
             // Sprawdź czy to standing_sign
-            if (!block.typeId.includes("standing_sign")) return;
+            if (!block.typeId.includes("standing_sign") && !block.typeId.includes("wall_sign")) return;
 
             // Pobierz lokalizację bloku
             const blockLoc = block.location;

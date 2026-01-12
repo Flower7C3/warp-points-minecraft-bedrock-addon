@@ -69,7 +69,7 @@ warps:warp_details.edit_coordinates.facing.north_south=Północ-Południe
 warps:warp_details.edit_coordinates.facing.east_west=Wschód-Zachód
 warps:warp_details.edit_coordinates.fill_required=§r§8[§1❣WARP§8] §7Musisz wypełnić wszystkie pola!§r
 warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Zmieniono współrzędne warpa §l%1$s§r§7 z §f%2$s§r§7 na §f%3$s§r§7!§r
-warps:warp_details.edit_name.sign_type=Typ tabliczki
+warps:warp_details.edit_name.sign_material.label=Materiał tabliczki
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
 warps:regen_signs.success=§r§8[§1❣WARP§8] §7Przegenerowano §l%s§r§7 tabliczek!§r
 
@@ -118,19 +118,21 @@ warps:distance.value_5=%s metrów
 
 warps:button_format.long=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
 warps:button_format.short=%7$s §l%1$s§r %2$s %3$s
-warps:standing_sign_text=❣\n§l%1$s§r\n(%8$s)
+warps:sign_text=❣\n§l%1$s§r\n(%8$s)
 
 # === TYPY TABLICZEK ===
-warps:sign_type.oak=Dąb
-warps:sign_type.spruce=Świerk
-warps:sign_type.birch=Brzoza
-warps:sign_type.jungle=Drzewo tropikalne
-warps:sign_type.acacia=Akacja
-warps:sign_type.darkoak=Ciemny dąb
-warps:sign_type.crimson=Karmazyn
-warps:sign_type.warped=Wypaczona
-warps:sign_type.cherry=Wiśnia
-warps:sign_type.mangrove=Mangrowoc
+warps:sign_material.oak=Dąb
+warps:sign_material.pale_oak=Blady dąb
+warps:sign_material.darkoak=Ciemny dąb
+warps:sign_material.spruce=Świerk
+warps:sign_material.birch=Brzoza
+warps:sign_material.jungle=Drzewo tropikalne
+warps:sign_material.acacia=Akacja
+warps:sign_material.darkoak=Ciemny dąb
+warps:sign_material.crimson=Karmazyn
+warps:sign_material.warped=Wypaczona
+warps:sign_material.cherry=Wiśnia
+warps:sign_material.mangrove=Mangrowoc
 
 # === KATEGORIE ===
 warps:category.special=Specjalne
