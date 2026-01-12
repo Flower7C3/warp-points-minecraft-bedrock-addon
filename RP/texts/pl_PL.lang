@@ -123,9 +123,10 @@ warps:standing_sign_text=❣\n§l%1$s§r\n(%8$s)
 warps:category.special=Specjalne
 warps:category.resources=Zasoby
 warps:category.villages=Wioski
-warps:category.houses=Domy
-warps:category.city=Miasto
-warps:category.landscapes=Krajobrazy
+warps:category.buildings=Budynki
+warps:category.cityscapes=Krajobrazy miejskie
+warps:category.landscapes=Krajobrazy lądowe
+warps:category.waterscapes=Krajobrazy wodne
 
 # === VILLAGES ===
 warps:icon.Desert_Village=Wioska na pustyni
@@ -134,10 +135,7 @@ warps:icon.Ocean_Monument=Monument oceaniczny
 warps:icon.Plains_Village=Wioska na równinach
 warps:icon.Savanna_Village=Wioska na sawannie
 warps:icon.Snowy_Village=Śnieżna wioska
-warps:icon.Swamp_Hut=Chatka na bagnie
 warps:icon.Taiga_Village=Wioska w tajdze
-warps:icon.Trial_Chambers=Komnaty Prób
-warps:icon.Woodland_Mansion=Mansja w lesie
 
 # === ZASOBY ===
 warps:icon.Amethyst=Ametyst
@@ -164,34 +162,47 @@ warps:icon.Marker_Yellow=Żółty znacznik
 warps:icon.Target_Point=Punkt celu
 warps:icon.Target_X=Cel X
 
-# === HOUSES ===
-warps:icon.Cottage=Chatka
-warps:icon.Modern_House=Nowoczesny dom
-warps:icon.Ruins_Ancient=Starożytne ruiny
-warps:icon.Landscape_Castle=Zamek
-warps:icon.Antarctic=Antarktyka
+# === BUDYNKI ===
+warps:icon.Police=Policja
+warps:icon.Fireman=Straż pożarna
+warps:icon.Health-clinic=Przychodnia
+warps:icon.School=Szkoła
+warps:icon.Museum=Muzeum
+warps:icon.Shop=Sklep
+warps:icon.Workplace=Miejsce pracy
+warps:icon.Factory=Fabryka
+warps:icon.Statue=Pomnik
+warps:icon.Lighthouse=Latarnia morska
+warps:icon.Officials=Urzędnicy miejscy
+warps:icon.Home=Dom
+warps:icon.Mansion=Mansja
+warps:icon.Castle=Zamek
+warps:icon.Flat=Mieszkanie
+warps:icon.Skyscraper=Wieżowiec
+warps:icon.Garage=Garaż
+warps:icon.Christian-church=Kościół chrześcijański
+warps:icon.Orthodoxian-church=Kościół prawosławny
+warps:icon.Synagogue=Synagoga
 
-# === CITY ===
-warps:icon.Cityscape=Krajobraz miejski
+# === KRAJOBRAZY MIEJSKIE ===
 warps:icon.Cityscape_Futuristic=Futurystyczne miasto
-warps:icon.Industrial_Factory=Fabryka przemysłowa
-warps:icon.Construction_Crane=Żuraw budowlany
-warps:icon.Garden_Tree=Drzewo w ogrodzie
+warps:icon.Street=Ulica
 warps:icon.Park=Park
 warps:icon.Amusement_Park=Park rozrywki
-warps:icon.Road=Droga
-warps:icon.Street=Ulica
-warps:icon.Bridge_River=Most i rzeka
 
-# === LANDSCAPES ===
-warps:icon.Seascape_Lighthouse=Latarnia morska
-warps:icon.Bushes_Bush=Krzaki
-warps:icon.Desert=Pustynia
+# === KRAJOBRAZY LĄDOWE ===
+warps:icon.Road=Droga
 warps:icon.Forest=Las
-warps:icon.Mountains=Góry
 warps:icon.Rainforest=Las deszczowy
+warps:icon.Bushes_Bush=Krzaki
 warps:icon.Savannah=Sawanna
+warps:icon.Desert=Pustynia
+warps:icon.Mountains=Góry
+warps:icon.Ruins_Ancient=Starożytne ruiny
+
+# === KRAJOBRAZY WODNE ===
 warps:icon.River=Rzeka
+warps:icon.Bridge_River=Most i rzeka
 warps:icon.Waterfall_River=Wodospad i rzeka
 warps:icon.Lake=Jezioro
 warps:icon.Beach_Sea=Plaża i morze

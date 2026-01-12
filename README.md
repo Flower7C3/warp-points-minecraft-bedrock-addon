@@ -65,8 +65,10 @@ The addon includes two subpacks:
 
 ## Icons
 
-Some icons used in this addon are sourced from [SVG Repo - Landscapes 23 Collection
-](https://www.svgrepo.com/collection/landscapes-23/).
+Some icons used in this addon are sourced from:
+- [SVG Repo - Landscapes 23 Collection](https://www.svgrepo.com/collection/landscapes-23/).
+- [SVG Repo - Building 4 Collection
+](https://www.svgrepo.com/collection/building-4/).
 
 ## Technical Details
 

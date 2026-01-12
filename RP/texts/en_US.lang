@@ -123,9 +123,10 @@ warps:standing_sign_text=❣\n§l%1$s§r\n(%8$s)
 warps:category.special=Special
 warps:category.resources=Resources
 warps:category.villages=Villages
-warps:category.houses=Houses
-warps:category.city=City
+warps:category.buildings=Buildings
+warps:category.cityscapes=Cityscapes
 warps:category.landscapes=Landscapes
+warps:category.waterscapes=Waterscapes
 
 # === VILLAGES ===
 warps:icon.Desert_Village=Desert village
@@ -134,10 +135,7 @@ warps:icon.Ocean_Monument=Ocean monument
 warps:icon.Plains_Village=Plains village
 warps:icon.Savanna_Village=Savanna village
 warps:icon.Snowy_Village=Snowy village
-warps:icon.Swamp_Hut=Swamp hut
 warps:icon.Taiga_Village=Taiga village
-warps:icon.Trial_Chambers=Trial chambers
-warps:icon.Woodland_Mansion=Woodland mansion
 
 # === RESOURCES ===
 warps:icon.Amethyst=Amethyst
@@ -164,34 +162,47 @@ warps:icon.Marker_Yellow=Yellow marker
 warps:icon.Target_Point=Target point
 warps:icon.Target_X=Target X
 
-# === HOUSES ===
-warps:icon.Cottage=Cottage
-warps:icon.Modern_House=Modern house
-warps:icon.Ruins_Ancient=Ancient ruins
-warps:icon.Landscape_Castle=Castle
-warps:icon.Antarctic=Antarctic
+# === BUILDINGS ===
+warps:icon.Police=Police
+warps:icon.Fireman=Fire station
+warps:icon.Health-clinic=Health clinic
+warps:icon.School=School
+warps:icon.Museum=Museum
+warps:icon.Shop=Shop
+warps:icon.Workplace=Workplace
+warps:icon.Factory=Factory
+warps:icon.Statue=Statue
+warps:icon.Lighthouse=Lighthouse
+warps:icon.Officials=City officials
+warps:icon.Home=Home
+warps:icon.Mansion=Mansion
+warps:icon.Castle=Castle
+warps:icon.Flat=Flat
+warps:icon.Skyscraper=Skyscraper
+warps:icon.Garage=Garage
+warps:icon.Christian-church=Christian church
+warps:icon.Orthodoxian-church=Orthodoxian church
+warps:icon.Synagogue=Synagogue
 
-# === CITY ===
-warps:icon.Cityscape=Cityscape
+# === CITYSCAPES ===
 warps:icon.Cityscape_Futuristic=Futuristic cityscape
-warps:icon.Industrial_Factory=Industrial factory
-warps:icon.Construction_Crane=Construction crane
-warps:icon.Garden_Tree=Garden tree
+warps:icon.Street=Street
 warps:icon.Park=Park
 warps:icon.Amusement_Park=Amusement park
-warps:icon.Road=Road
-warps:icon.Street=Street
-warps:icon.Bridge_River=Bridge & river
 
 # === LANDSCAPES ===
-warps:icon.Seascape_Lighthouse=Seascape lighthouse
-warps:icon.Bushes_Bush=Bushes
-warps:icon.Desert=Desert
+warps:icon.Road=Road
 warps:icon.Forest=Forest
-warps:icon.Mountains=Mountains
 warps:icon.Rainforest=Rainforest
+warps:icon.Bushes_Bush=Bushes
 warps:icon.Savannah=Savannah
+warps:icon.Desert=Desert
+warps:icon.Mountains=Mountains
+warps:icon.Ruins_Ancient=Ancient ruins
+
+# === WATERSCAPES ===
 warps:icon.River=River
+warps:icon.Bridge_River=Bridge & river
 warps:icon.Waterfall_River=Waterfall & river
 warps:icon.Lake=Lake
 warps:icon.Beach_Sea=Beach & sea

@@ -44,6 +44,69 @@ export const Warps = () => {
         WarpIcon("Target_Point", "special", "map/target_point.png"),
         WarpIcon("Target_X", "special", "map/target_x.png"),
 
+        // Minecraft Villages
+        WarpIcon("Plains_Village", "villages", "village/plains_village.png"),
+        WarpIcon("Desert_Village", "villages", "village/desert_village.png"),
+        WarpIcon("Jungle_Temple", "villages", "village/jungle_temple.png"),
+        WarpIcon("Savanna_Village", "villages", "village/savanna_village.png"),
+        WarpIcon("Snowy_Village", "villages", "village/snowy_village.png"),
+        WarpIcon("Taiga_Village", "villages", "village/taiga_village.png"),
+
+        // Minecraft Places
+        WarpIcon("Ocean_Monument", "villages", "village/ocean_monument.png"),
+
+        // === BUDYNKI ===
+        WarpIcon("Police", "buildings", "buildings/city/police.png"),
+        WarpIcon("Fireman", "buildings", "buildings/city/fireman.png"),
+        WarpIcon("Health-clinic", "buildings", "buildings/city/health-clinic.png"),
+        WarpIcon("Officials", "buildings", "buildings/city/officials.png"),
+        WarpIcon("School", "buildings", "buildings/city/school.png"),
+        WarpIcon("Museum", "buildings", "buildings/city/museum.png"),
+        WarpIcon("Shop", "buildings", "buildings/city/shop.png"),
+        WarpIcon("Workplace", "buildings", "buildings/city/workplace.png"),
+        WarpIcon("Factory", "buildings", "buildings/city/factory.png"),
+        WarpIcon("Statue", "buildings", "buildings/city/statue.png"),
+        WarpIcon("Lighthouse", "buildings", "buildings/city/lighthouse.png"),
+
+        WarpIcon("Home", "buildings", "buildings/houses/home.png"),
+        WarpIcon("Mansion", "buildings", "buildings/houses/mansion.png"),
+        WarpIcon("Castle", "buildings", "buildings/houses/castle.png"),
+        WarpIcon("Flat", "buildings", "buildings/houses/flat.png"),
+        WarpIcon("Skyscraper", "buildings", "buildings/houses/skyscraper.png"),
+        WarpIcon("Garage", "buildings", "buildings/houses/garage.png"),
+
+        WarpIcon("Christian-church", "buildings", "buildings/religion/christian-church.png"),
+        WarpIcon("Orthodoxian-church", "buildings", "buildings/religion/orthodoxian-church.png"),
+        WarpIcon("Synagogue", "buildings", "buildings/religion/synagogue.png"),
+
+        // === MIASTO ===
+        WarpIcon("Cityscape_Futuristic", "cityscapes", "landscapes-23/cityscape-futuristic.png"),
+        WarpIcon("Street", "cityscapes", "landscapes-23/street.png"),
+        WarpIcon("Park", "cityscapes", "landscapes-23/park.png"),
+        WarpIcon("Amusement_Park", "cityscapes", "landscapes-23/amusement-park.png"),
+
+        // === KRAJOBRAZY ===
+        // Nature
+        WarpIcon("Road", "cityscapes", "landscapes-23/road.png"),
+        WarpIcon("Forest", "landscapes", "landscapes-23/forest.png"),
+        WarpIcon("Rainforest", "landscapes", "landscapes-23/rainforest.png"),
+        WarpIcon("Bushes_Bush", "landscapes", "landscapes-23/bushes-bush.png"),
+        WarpIcon("Savannah", "landscapes", "landscapes-23/savannah.png"),
+        WarpIcon("Desert", "landscapes", "landscapes-23/desert.png"),
+        WarpIcon("Mountains", "landscapes", "landscapes-23/mountains-mountain.png"),
+        WarpIcon("Ruins_Ancient", "landscapes", "landscapes-23/ruins-ancient.png"),
+
+        // Water
+        WarpIcon("River", "waterscapes", "landscapes-23/river.png"),
+        WarpIcon("Bridge_River", "waterscapes", "landscapes-23/bridge-river.png"),
+        WarpIcon("Waterfall_River", "waterscapes", "landscapes-23/waterfall-river.png"),
+        WarpIcon("Lake", "waterscapes", "landscapes-23/lake.png"),
+
+        // Sea
+        WarpIcon("Beach_Sea", "waterscapes", "landscapes-23/beach-sea.png"),
+        WarpIcon("Sea_Boat", "waterscapes", "landscapes-23/sea-boat.png"),
+        WarpIcon("Island", "waterscapes", "landscapes-23/island.png"),
+
         // === ZASOBY === (posortowane od najpospolitszych do najrzadszych)
         WarpIcon("Coal", "resources", "ore/Coal.png"),
         WarpIcon("Copper", "resources", "ore/Copper.png"),
@@ -56,59 +119,6 @@ export const Warps = () => {
         WarpIcon("Diamond", "resources", "ore/Diamond.png"),
         WarpIcon("Amethyst", "resources", "ore/Amethyst.png"),
         WarpIcon("TNT", "resources", "ore/TNT.png"),
-
-        // Minecraft Villages
-        WarpIcon("Plains_Village", "villages", "village/plains_village.png"),
-        WarpIcon("Desert_Village", "villages", "village/desert_village.png"),
-        WarpIcon("Jungle_Temple", "villages", "village/jungle_temple.png"),
-        WarpIcon("Savanna_Village", "villages", "village/savanna_village.png"),
-        WarpIcon("Snowy_Village", "villages", "village/snowy_village.png"),
-        WarpIcon("Taiga_Village", "villages", "village/taiga_village.png"),
-
-        // Minecraft Places
-        WarpIcon("Swamp_Hut", "villages", "village/swamp_hut.png"),
-        WarpIcon("Ocean_Monument", "villages", "village/ocean_monument.png"),
-        WarpIcon("Trial_Chambers", "villages", "village/trial_chambers.png"),
-        WarpIcon("Woodland_Mansion", "villages", "village/woodland_mansion.png"),
-
-        // === DOMY ===
-        WarpIcon("Cottage", "houses", "landscapes-23/cottage.png"),
-        WarpIcon("Modern_House", "houses", "landscapes-23/modern-house.png"),
-        WarpIcon("Ruins_Ancient", "houses", "landscapes-23/ruins-ancient.png"),
-        WarpIcon("Landscape_Castle", "houses", "landscapes-23/castle.png"),
-        WarpIcon("Antarctic", "houses", "landscapes-23/antarctic.png"),
-        WarpIcon("Seascape_Lighthouse", "houses", "landscapes-23/seascape-lighthouse.png"),
-
-        // === MIASTO ===
-        WarpIcon("Cityscape", "city", "landscapes-23/cityscape.png"),
-        WarpIcon("Cityscape_Futuristic", "city", "landscapes-23/cityscape-futuristic.png"),
-        WarpIcon("Industrial_Factory", "city", "landscapes-23/industrial-factory.png"),
-        WarpIcon("Construction_Crane", "city", "landscapes-23/construction-crane.png"),
-        WarpIcon("Garden_Tree", "city", "landscapes-23/garden-tree.png"),
-        WarpIcon("Park", "city", "landscapes-23/park.png"),
-        WarpIcon("Amusement_Park", "city", "landscapes-23/amusement-park.png"),
-        WarpIcon("Road", "city", "landscapes-23/road.png"),
-        WarpIcon("Street", "city", "landscapes-23/street.png"),
-        WarpIcon("Bridge_River", "city", "landscapes-23/bridge-river.png"),
-
-        // === KRAJOBRAZY ===
-        // Nature
-        WarpIcon("Bushes_Bush", "landscapes", "landscapes-23/bushes-bush.png"),
-        WarpIcon("Desert", "landscapes", "landscapes-23/desert.png"),
-        WarpIcon("Forest", "landscapes", "landscapes-23/forest.png"),
-        WarpIcon("Mountains", "landscapes", "landscapes-23/mountains-mountain.png"),
-        WarpIcon("Rainforest", "landscapes", "landscapes-23/rainforest.png"),
-        WarpIcon("Savannah", "landscapes", "landscapes-23/savannah.png"),
-
-        // Water
-        WarpIcon("River", "landscapes", "landscapes-23/river.png"),
-        WarpIcon("Waterfall_River", "landscapes", "landscapes-23/waterfall-river.png"),
-        WarpIcon("Lake", "landscapes", "landscapes-23/lake.png"),
-
-        // Sea
-        WarpIcon("Beach_Sea", "landscapes", "landscapes-23/beach-sea.png"),
-        WarpIcon("Sea_Boat", "landscapes", "landscapes-23/sea-boat.png"),
-        WarpIcon("Island", "landscapes", "landscapes-23/island.png"),
     ]
 
     const WARP_MENU = Object.freeze({
