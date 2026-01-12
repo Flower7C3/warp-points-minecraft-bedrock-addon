@@ -20,5 +20,4 @@ jobs:
     with:
       project_name: "Warp Places"
       has_test_workflow: true
-      total_blocks: true
     secrets: inherit

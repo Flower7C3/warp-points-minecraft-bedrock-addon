@@ -5,6 +5,9 @@ A Minecraft Bedrock Edition addon that allows you to create, manage, and telepor
 - BP files: {{ bp_files }}
 - RP files: {{ rp_files }}
 - Total blocks: {{ total_blocks }}
+- Total items: {{ total_items }}
+- Total models: {{ total_models }}
+- Configured locales: {{ locales_list }}
 
 ## Installation
 
