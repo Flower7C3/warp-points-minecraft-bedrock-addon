@@ -257,6 +257,17 @@ export const Warps = () => {
         return warp || null;
     }
 
+    const getWarpByLocation = (x, y, z, dimensionId) => {
+        const warps = getValidWarps();
+        const warp = warps.find(w => 
+            w.x === x && 
+            w.y === y && 
+            w.z === z && 
+            w.dimension === dimensionId
+        );
+        return warp || null;
+    }
+
     const getWarpDimension = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
 
     const getWarpIconTexts = (warp) => {
@@ -1584,6 +1595,34 @@ export const Warps = () => {
         system.runTimeout(() => {
             loadWarps();
         }, 60);
+    });
+
+    Minecraft.world.afterEvents.playerInteractWithBlock.subscribe((event) => {
+        system.run(() => {
+            const player = event.player;
+            const block = event.block;
+            
+            if (!player || !block) return;
+            
+            // Sprawdź czy to standing_sign
+            if (!block.typeId.includes("standing_sign")) return;
+            
+            // Pobierz lokalizację bloku
+            const blockLoc = block.location;
+            const dimensionId = getPlayerDimension(player);
+            
+            // Znajdź warp na podstawie lokalizacji
+            const warp = getWarpByLocation(
+                Math.round(blockLoc.x),
+                Math.round(blockLoc.y),
+                Math.round(blockLoc.z),
+                dimensionId
+            );
+            
+            if (warp) {
+                showWarpDetailsMenu(player, warp);
+            }
+        });
     });
 
     system.runTimeout(() => {
