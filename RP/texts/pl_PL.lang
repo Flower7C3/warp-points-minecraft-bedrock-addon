@@ -45,7 +45,8 @@ warps:menu.sorting_by_distance_all=§rSortowanie wg §ldystansu§r:
 warps:menu.sorting_by_distance_cat=§rSortowanie wg §ldystansu§r w kategorii §l%s§r:
 
 warps:teleport.error=§r§8[§1❣WARP§8] §cBłąd podczas teleportacji do Warp §l%s§r§c!§r
-warps:warp.not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
+warps:error:warp_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
+warps:error:warp_not_foundfound=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
 warps:menu.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w!§r
 warps:menu.no_warps_in_category=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w w tej kategorii!§r
 
@@ -66,10 +67,8 @@ warps:warp_details.edit_coordinates.z.label=Współrzędna Z
 warps:warp_details.edit_coordinates.facing=Orientacja
 warps:warp_details.edit_coordinates.facing.north_south=Północ-Południe
 warps:warp_details.edit_coordinates.facing.east_west=Wschód-Zachód
-warps:warp_details.edit_coordinates.not_found=§r§8[§1❣WARP§8] §cNie znaleziono warpa!§r
 warps:warp_details.edit_coordinates.fill_required=§r§8[§1❣WARP§8] §7Musisz wypełnić wszystkie pola!§r
 warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Zmieniono współrzędne warpa §l%1$s§r§7 z §f%2$s§r§7 na §f%3$s§r§7!§r
-warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cNie znaleziono warpa!§r
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
 
 warps:warp_details.edit_icon.title=§r§l§5✯ Zmień ikonę§r §l%s

@@ -45,7 +45,8 @@ warps:menu.sorting_by_distance_all=§rSorting by §ldistance§r:
 warps:menu.sorting_by_distance_cat=§rSorting by §ldistance§r in §l%s§r category:
 
 warps:teleport.error=§r§8[§1❣WARP§8] §cError teleporting to Warp §l%s§r§c!§r
-warps:warp.not_found=§r§8[§1❣WARP§8] §cWarp with name §l%s§r§c not found!§r
+warps:error:warp_name_not_found=§r§8[§1❣WARP§8] §cWarp with name §l%s§r§c not found!§r
+warps:error:warp_not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
 warps:menu.no_warps=§r§8[§1❣WARP§8] §cThere are no Warps§r
 warps:menu.no_warps_in_category=§r§8[§1❣WARP§8] §cThere are no Warps in this category!§r
 
@@ -66,10 +67,8 @@ warps:warp_details.edit_coordinates.z.label=Z coordinate
 warps:warp_details.edit_coordinates.facing=Orientation
 warps:warp_details.edit_coordinates.facing.north_south=North-South
 warps:warp_details.edit_coordinates.facing.east_west=East-West
-warps:warp_details.edit_coordinates.not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
 warps:warp_details.edit_coordinates.fill_required=§r§8[§1❣WARP§8] §7You need to fill up all fields!§r
 warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Changed coordinates for warp §l%1$s§r§7 from §f%2$s§r§7 to §f%3$s§r§7!§r
-warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
 
 warps:warp_details.edit_icon.title=§r§l§5✯ Change icon§r §l%s

@@ -195,10 +195,39 @@ export const Warps = () => {
         }
     }
 
-    const saveWarps = (warps, player, soundId, translateKey, translateParams = []) => {
+    const SAVE_ACTION = Object.freeze({
+        CREATE: 'create',
+        UPDATE: 'update',
+        DELETE: 'delete'
+    })
+
+    const saveWarps = (player, action, warps, warp, translateKey, translateParams = []) => {
         const json = JSON.stringify(warps);
         Minecraft.world.setDynamicProperty(WORLD_PROP, json);
-        player.dimension.playSound(soundId, player.location);
+
+        let soundId;
+        switch (action) {
+            case SAVE_ACTION.CREATE:
+                soundId = "beacon.activate"
+                player.dimension.runCommand(`summon fireworks_rocket ${warp.x} ${warp.y} ${warp.z}`);
+                updateWarpSigns();
+                break;
+            case SAVE_ACTION.UPDATE:
+                soundId = "beacon.power"
+                player.dimension.runCommand(`particle minecraft:witchspell_emitter ${warp.x} ${warp.y} ${warp.z}`);
+                updateWarpSign(warp);
+                showWarpDetailsMenu(player, warp);
+                break;
+            case SAVE_ACTION.DELETE:
+                soundId = "beacon.deactivate"
+                player.dimension.runCommand(`particle minecraft:critical_hit_emitter ${warp.x} ${warp.y} ${warp.z}`);
+                removeWarpSign(warp);
+                break;
+        }
+
+        if (soundId) {
+            player.dimension.playSound(soundId, player.location);
+        }
 
         // Formatuj parametry dla rawtext
         const formattedParams = translateParams.map(param => {
@@ -581,10 +610,7 @@ export const Warps = () => {
         const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
 
         if (!warp) {
-            return player.sendMessage({
-                translate: "warps:warp.not_found",
-                with: [warpName]
-            });
+            return player.sendMessage({translate: "warps:error:warp_name_not_found", with: [warpName]});
         }
 
         teleportToWarp(player, warp);
@@ -1057,94 +1083,94 @@ export const Warps = () => {
         };
 
         warps.push(newWarp);
-        saveWarps(warps, player, "beacon.activate", "warps:add.success", [
+        saveWarps(player, SAVE_ACTION.CREATE, warps, newWarp, "warps:add.success", [
             warpName,
             targetLocation.x.toString(), targetLocation.y.toString(), targetLocation.z.toString()
         ]);
-
-        player.dimension.runCommand(`summon fireworks_rocket ${targetLocation.x} ${targetLocation.y} ${targetLocation.z}`);
-        updateWarpSigns();
     }
 
     ///=================================================================================================================
     // === WARP EDIT ===
 
     const editWarpCoordinatesForm = (player, warp) => {
-        system.run(() => {
-            if (!warp) {
-                player.sendMessage({translate: "warps:warp_details.edit_coordinates.not_found"});
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        if (!warp) {
+            player.sendMessage({translate: "warps:error:warp_not_found"});
+            return;
+        }
+
+        const currentX = warp.x;
+        const currentY = warp.y;
+        const currentZ = warp.z;
+
+        const form = new MinecraftUi.ModalFormData()
+            .title({
+                rawtext: [{
+                    translate: "warps:warp_details.edit_coordinates.title",
+                    with: {rawtext: [{text: warp.name}]}
+                }]
+            })
+            .slider(
+                {rawtext: [{translate: "warps:warp_details.edit_coordinates.x.label"}]},
+                currentX - 3,
+                currentX + 3,
+                {defaultValue: currentX}
+            )
+            .slider(
+                {rawtext: [{translate: "warps:warp_details.edit_coordinates.y.label"}]},
+                currentY - 3,
+                currentY + 3,
+                {defaultValue: currentY}
+            )
+            .slider(
+                {rawtext: [{translate: "warps:warp_details.edit_coordinates.z.label"}]},
+                currentZ - 3,
+                currentZ + 3,
+                {defaultValue: currentZ}
+            );
+
+        form.show(player).then((res) => {
+            if (res.canceled) {
+                showWarpDetailsMenu(player, warp);
                 return;
             }
 
-            const currentX = warp.x;
-            const currentY = warp.y;
-            const currentZ = warp.z;
+            if (!res.formValues || res.formValues.length < 3) {
+                player.sendMessage({translate: "warps:warp_details.edit_coordinates.fill_required"});
+                editWarpCoordinatesForm(player, warp);
+                return;
+            }
 
-            const form = new MinecraftUi.ModalFormData()
-                .title({
-                    rawtext: [{
-                        translate: "warps:warp_details.edit_coordinates.title",
-                        with: {rawtext: [{text: warp.name}]}
-                    }]
-                })
-                .slider(
-                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.x.label"}]},
-                    currentX - 3,
-                    currentX + 3,
-                    {defaultValue: currentX}
-                )
-                .slider(
-                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.y.label"}]},
-                    currentY - 3,
-                    currentY + 3,
-                    {defaultValue: currentY}
-                )
-                .slider(
-                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.z.label"}]},
-                    currentZ - 3,
-                    currentZ + 3,
-                    {defaultValue: currentZ}
-                );
+            const newX = Math.round(parseFloat(res.formValues[0].toString()));
+            const newY = Math.round(parseFloat(res.formValues[1].toString()));
+            const newZ = Math.round(parseFloat(res.formValues[2].toString()));
 
-            form.show(player).then((res) => {
-                if (res.canceled) {
-                    showWarpDetailsMenu(player, warp);
-                    return;
-                }
-
-                if (!res.formValues || res.formValues.length < 3) {
-                    player.sendMessage({translate: "warps:warp_details.edit_coordinates.fill_required"});
-                    editWarpCoordinatesForm(player, warp);
-                    return;
-                }
-
-                const newX = Math.round(parseFloat(res.formValues[0].toString()));
-                const newY = Math.round(parseFloat(res.formValues[1].toString()));
-                const newZ = Math.round(parseFloat(res.formValues[2].toString()));
-
-                // Walidacja współrzędnych
-                if (newY < -64 || newY > 320) {
-                    player.sendMessage({translate: "warps:add.coords_out_of_range"});
-                    editWarpCoordinatesForm(player, warp);
-                    return;
-                }
-
-                editWarpCoordinatesSave(player, warp, newX, newY, newZ);
-            });
+            editWarpCoordinatesSave(player, warp, newX, newY, newZ);
         });
     }
 
     const editWarpCoordinatesSave = (player, warp, newX, newY, newZ) => {
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        // Walidacja współrzędnych
+        if (newY < -64 || newY > 320) {
+            player.sendMessage({translate: "warps:add.coords_out_of_range"});
+            editWarpCoordinatesForm(player, warp);
+            return;
+        }
+
         const warps = loadWarps();
         const warpIndex = warps.findIndex(w => w.name === warp.name);
 
         if (warpIndex === -1) {
-            player.sendMessage({translate: "warps:warp_details.edit_coordinates.not_found"});
-            return;
-        }
-
-        if (!canPlayerEditWarp(player, warp)) {
-            player.sendMessage({translate: "warps:error.no_permission"});
+            player.sendMessage({translate: "warps:error:warp_not_found"});
             return;
         }
 
@@ -1166,61 +1192,67 @@ export const Warps = () => {
         warps[warpIndex].x = newX;
         warps[warpIndex].y = newY;
         warps[warpIndex].z = newZ;
-        warps[warpIndex].facing = newFacing;
 
-        saveWarps(warps, player, "beacon.power", "warps:warp_details.edit_coordinates.success", [
+        saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_coordinates.success", [
             {text: warp.name},
             {text: `${oldX}, ${oldY}, ${oldZ}`},
             {text: `${newX}, ${newY}, ${newZ}`}
         ]);
 
-        updateWarpSign(warps[warpIndex]);
-        showWarpDetailsMenu(player, warps[warpIndex]);
     }
 
     const editWarpNameForm = (player, warp) => {
-        system.run(() => {
-            const currentFacingOption = normalizeFacingToOption(warp.facing);
 
-            new MinecraftUi.ModalFormData()
-                .title({
-                    rawtext: [{
-                        translate: "warps:warp_details.edit_name.title",
-                        with: {rawtext: [{text: warp.name}]}
-                    }]
-                })
-                .textField(
-                    {rawtext: [{translate: "warps:add.field.name.label"}]},
-                    {rawtext: [{translate: "warps:add.field.name.placeholder"}]},
-                    {defaultValue: warp.name}
-                )
-                .dropdown(
-                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing"}]},
-                    [
-                        {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.north_south"}]},
-                        {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.east_west"}]}
-                    ],
-                    {defaultValueIndex: currentFacingOption}
-                )
-                .submitButton({rawtext: [{translate: "warps:add.submit"}]})
-                .show(player).then((res) => {
-                if (res.canceled) {
-                    showWarpDetailsMenu(player, warp);
-                    return;
-                }
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
 
-                if (!res.formValues || res.formValues.length < 2) {
-                    player.sendMessage({translate: "warps:add.fill_required"});
-                    editWarpNameForm(player, warp);
-                    return;
-                }
+        if (!warp) {
+            player.sendMessage({translate: "warps:warp_details.edit_name.not_found"});
+            return;
+        }
 
-                const newWarpName = res.formValues[0]?.toString().trim();
-                const facingOption = res.formValues[1];
-                const newFacing = facingOption === 0 ? 0 : 1;
+        const currentFacingOption = normalizeFacingToOption(warp.facing);
 
-                editWarpNameSave(player, warp, newWarpName, newFacing);
-            });
+        new MinecraftUi.ModalFormData()
+            .title({
+                rawtext: [{
+                    translate: "warps:warp_details.edit_name.title",
+                    with: {rawtext: [{text: warp.name}]}
+                }]
+            })
+            .textField(
+                {rawtext: [{translate: "warps:add.field.name.label"}]},
+                {rawtext: [{translate: "warps:add.field.name.placeholder"}]},
+                {defaultValue: warp.name}
+            )
+            .dropdown(
+                {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing"}]},
+                [
+                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.north_south"}]},
+                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.east_west"}]}
+                ],
+                {defaultValueIndex: currentFacingOption}
+            )
+            .submitButton({rawtext: [{translate: "warps:add.submit"}]})
+            .show(player).then((res) => {
+            if (res.canceled) {
+                showWarpDetailsMenu(player, warp);
+                return;
+            }
+
+            if (!res.formValues || res.formValues.length < 2) {
+                player.sendMessage({translate: "warps:add.fill_required"});
+                editWarpNameForm(player, warp);
+                return;
+            }
+
+            const newWarpName = res.formValues[0]?.toString().trim();
+            const facingOption = res.formValues[1];
+            const newFacing = facingOption === 0 ? 0 : 1;
+
+            editWarpNameSave(player, warp, newWarpName, newFacing);
         });
     }
 
@@ -1270,17 +1302,20 @@ export const Warps = () => {
 
         warps[warpIndex].name = newWarpName;
         warps[warpIndex].facing = newFacing;
-        saveWarps(warps, player, "beacon.power", "warps:warp_details.edit_name.success", [
+        saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_name.success", [
             oldName,
             newWarpName,
         ]);
-        updateWarpSign(warps[warpIndex]);
-        showWarpDetailsMenu(player, warps[warpIndex]);
     }
 
     const editWarpVisibilityForm = (player, warp) => {
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        if (!warp) {
+            player.sendMessage({translate: "warps:error:warp_not_found"});
             return;
         }
 
@@ -1381,17 +1416,21 @@ export const Warps = () => {
         }
 
         warps[warpIndex].visibility = newVisibility;
-        saveWarps(warps, player, "beacon.power", "warps:warp_details.change_visibility.success", [
+        saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.change_visibility.success", [
             warp.name,
             {translate: `warps:visibility.state.${warp.visibility}.label`},
             {translate: `warps:visibility.${newVisibility.toString()}.label`}
         ]);
-        showWarpDetailsMenu(player, warps[warpIndex]);
     }
 
     const editWarpIconFormStep1 = (player, warp) => {
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        if (!warp) {
+            player.sendMessage({translate: "warps:warps:error:warp_not_found"});
             return;
         }
 
@@ -1458,28 +1497,31 @@ export const Warps = () => {
                 return;
             }
 
-            // Sprawdź uprawnienia przed zapisem
-            if (!canPlayerEditWarp(player, warp)) {
-                player.sendMessage({translate: "warps:error.no_permission"});
-                return;
-            }
-
-            // Zapisz zmianę ikony
-            const warps = loadWarps();
-            const warpIndex = warps.findIndex(w => w.name === warp.name);
-
-            if (warpIndex === -1) {
-                player.sendMessage({translate: "warps:warp_details.edit_name.not_found"});
-                return;
-            }
-
-            warps[warpIndex].icon = selectedIcon.name;
-            saveWarps(warps, player, "beacon.power", "warps:warp_details.edit_icon.success", [
-                {text: warp.name},
-                {translate: selectedIcon.translatedName}
-            ]);
-            showWarpDetailsMenu(player, warps[warpIndex]);
+            editWarpIconSave(player, warp, selectedIcon);
         });
+    }
+
+    const editWarpIconSave = (player, warp, selectedIcon) => {
+        // Sprawdź uprawnienia przed zapisem
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        // Zapisz zmianę ikony
+        const warps = loadWarps();
+        const warpIndex = warps.findIndex(w => w.name === warp.name);
+
+        if (warpIndex === -1) {
+            player.sendMessage({translate: "warps:warp_details.edit_name.not_found"});
+            return;
+        }
+
+        warps[warpIndex].icon = selectedIcon.name;
+        saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_icon.success", [
+            {text: warp.name},
+            {translate: selectedIcon.translatedName}
+        ]);
     }
 
     ///=================================================================================================================
@@ -1488,6 +1530,11 @@ export const Warps = () => {
     const removeWarpItemForm = (player, warp) => {
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        if (!warp) {
+            player.sendMessage({translate: "warps:warps:error:warp_not_found"});
             return;
         }
 
@@ -1517,10 +1564,9 @@ export const Warps = () => {
                         w.z === warp.z &&
                         w.dimension === warp.dimension)
                 );
-                saveWarps(updatedWarps, player, "beacon.deactivate", "warps:warp_details.remove.success", [
+                saveWarps(player, SAVE_ACTION.DELETE, updatedWarps, warp, "warps:warp_details.remove.success", [
                     warp.name,
                 ]);
-                removeWarpSign(warp);
             } else {
                 showWarpDetailsMenu(player, warp);
             }
@@ -1664,7 +1710,7 @@ export const Warps = () => {
                             const warp = getWarpByName(oldWarpName);
                             if (!warp) {
                                 return player.sendMessage({
-                                    translate: "warps:warp.not_found",
+                                    translate: "warps:error:warp_name_not_found",
                                     with: [oldWarpName]
                                 });
                             }
@@ -1695,7 +1741,7 @@ export const Warps = () => {
                             const warp = getWarpByName(warpName);
                             if (!warp) {
                                 return player.sendMessage({
-                                    translate: "warps:warp.not_found",
+                                    translate: "warps:error:warp_name_not_found",
                                     with: [warpName]
                                 });
                             }
