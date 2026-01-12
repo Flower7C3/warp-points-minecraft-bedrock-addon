@@ -127,6 +127,7 @@ export const Warps = () => {
         PUBLIC: 'public'
     });
 
+
     ///=================================================================================================================
     // === Icon Functions ===
 
@@ -144,7 +145,7 @@ export const Warps = () => {
         return WARP_ICONS.filter(icon => icon && icon.category === category);
     }
 
-    const findIconByName = (iconName) => {
+    const getIconByName = (iconName) => {
         return WARP_ICONS.find(icon => icon && icon.name === iconName);
     }
     ///=================================================================================================================
@@ -223,9 +224,9 @@ export const Warps = () => {
         );
     }
 
-///=================================================================================================================
+    ///=================================================================================================================
     // === Player Functions ===
-     const getPlayer = (origin) => {
+    const getPlayer = (origin) => {
         if (origin.sourceType === Minecraft.CustomCommandSource.Entity && origin.sourceEntity.typeId === "minecraft:player") {
             return origin.sourceEntity;
         }
@@ -251,6 +252,13 @@ export const Warps = () => {
     }
     ///=================================================================================================================
     // === Warp Functions ===
+
+    // Konwertuj facing (0-3) na opcję dropdown (0-1): 0,2 -> 0 (North-South), 1,3 -> 1 (East-West)
+    const normalizeFacingToOption = (facing) => {
+        const normalizedFacing = facing !== undefined && facing !== null ? facing : 0;
+        return (normalizedFacing === 0 || normalizedFacing === 2) ? 0 : 1;
+    }
+
     const getWarpByName = (warpName) => {
         const warps = getValidWarps();
         const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
@@ -259,10 +267,10 @@ export const Warps = () => {
 
     const getWarpByLocation = (x, y, z, dimensionId) => {
         const warps = getValidWarps();
-        const warp = warps.find(w => 
-            w.x === x && 
-            w.y === y && 
-            w.z === z && 
+        const warp = warps.find(w =>
+            w.x === x &&
+            w.y === y &&
+            w.z === z &&
             w.dimension === dimensionId
         );
         return warp || null;
@@ -277,7 +285,7 @@ export const Warps = () => {
                 iconText: {text: "?"}
             };
         }
-        const icon = findIconByName(warp.icon);
+        const icon = getIconByName(warp.icon);
         if (!icon) {
             return {
                 categoryText: {text: "?"},
@@ -339,6 +347,9 @@ export const Warps = () => {
             }]
         };
     }
+
+    ///=================================================================================================================
+    // === Visibility Functions ===
 
     const getVisibilityIndex = (visibility) => {
         switch (visibility) {
@@ -405,11 +416,17 @@ export const Warps = () => {
             const facing = warp.facing !== undefined && warp.facing !== null ? warp.facing : 0;
             const groundSignDirection = facing * 4;
 
-            if (!isCorrectSign) {
-                const cmd = `setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} standing_sign ${groundSignDirection} replace`;
-                console.info(cmd)
-                warpDimension.runCommand(cmd);
+            // Jeśli znak istnieje, ale facing się zmienił, usuń go i stwórz nowy
+            if (isCorrectSign) {
+                // Sprawdź aktualny kierunek znaku (możemy to zrobić przez usunięcie i utworzenie na nowo)
+                // Lub po prostu zawsze usuń i stwórz na nowo, jeśli znak istnieje
+                warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} minecraft:air replace`);
             }
+
+            // Stwórz nowy znak z właściwym kierunkiem
+            const cmd = `setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} standing_sign ${groundSignDirection} replace`;
+            console.info(cmd)
+            warpDimension.runCommand(cmd);
 
             [1, 2, 3].forEach((delay, index) => {
                 system.runTimeout(() => {
@@ -471,6 +488,9 @@ export const Warps = () => {
         });
     }
 
+    ///=================================================================================================================
+    // === Filter & Sort Functions ===
+
     const sortWarps = (warps, sortBy, player) => {
         const sorted = [...warps];
         switch (sortBy) {
@@ -501,7 +521,7 @@ export const Warps = () => {
         const allCategories = getCategories();
         return allCategories.filter(category => {
             return warps.some(warp => {
-                const icon = findIconByName(warp.icon);
+                const icon = getIconByName(warp.icon);
                 return icon && icon.category === category;
             });
         });
@@ -510,7 +530,7 @@ export const Warps = () => {
     const filterWarpsByCategory = (warps, category) => {
         if (!category) return warps;
         return warps.filter(warp => {
-            const icon = findIconByName(warp.icon);
+            const icon = getIconByName(warp.icon);
             return icon && icon.category === category;
         });
     }
@@ -541,6 +561,7 @@ export const Warps = () => {
 
     ///=================================================================================================================
     // === Teleport Functions ===
+
     const teleportToWarpByName = (player, warpName) => {
         if (!player || !warpName) {
             return;
@@ -574,7 +595,8 @@ export const Warps = () => {
     }
 
     ///=================================================================================================================
-    // === WARP DETAILS ===
+    // === Menu Functions ===
+
     const showCategoriesListMenu = (player, mode = WARP_MENU.TELEPORT) => {
         const allWarps = getValidWarps();
         const warps = filterWarpsByVisibility(allWarps, player);
@@ -648,23 +670,31 @@ export const Warps = () => {
     }
 
     const showWarpsListMenuWithOptions = (player, warps, sortBy, selectedCategory = null, mode = WARP_MENU.TELEPORT) => {
-        // Tytuł formularza
-        const actionFormTitleKey = (mode === WARP_MENU.TELEPORT)
-            ? "warps:teleport_menu.title"
-            : "warps:manage_menu.title";
+        const actionForm = new MinecraftUi.ActionFormData()
+            .title({
+                rawtext: [{
+                    translate: (mode === WARP_MENU.TELEPORT)
+                        ? "warps:teleport_menu.title"
+                        : "warps:manage_menu.title"
+                }]
+            })
+            .body("");
 
-        // Przycisk do zmiany sortowania na pierwszej pozycji
-        const sortButtonTextKey = sortBy === SORT_BY.DISTANCE
-            ? "warps:menu.sort_change_to_alphabetical"
-            : "warps:menu.sort_change_to_distance";
+
+        const BUTTON_CHANGE_SORT = 0;
+        actionForm
+            .button({
+                rawtext: [{
+                    translate: sortBy === SORT_BY.DISTANCE
+                        ? "warps:menu.sort_change_to_alphabetical"
+                        : "warps:menu.sort_change_to_distance"
+                }]
+            })
+
         const sortLabelTextKey = sortBy === SORT_BY.DISTANCE
             ? "warps:menu.sorting_by_distance"
             : "warps:menu.sorting_by_alphabetical";
-
-        const actionForm = new MinecraftUi.ActionFormData()
-            .title({rawtext: [{translate: actionFormTitleKey}]})
-            .body("")
-            .button({rawtext: [{translate: sortButtonTextKey}]})
+        actionForm
             .label(selectedCategory
                 ? {
                     rawtext: [{
@@ -687,7 +717,7 @@ export const Warps = () => {
                     ? "warps:button_format.long"
                     : "warps:button_format.short";
 
-                const icon = findIconByName(warp.icon);
+                const icon = getIconByName(warp.icon);
                 actionForm.button(
                     getWarpDetails(warp, player, buttonTranslationKey),
                     icon && icon.path ? icon.path : ""
@@ -702,14 +732,12 @@ export const Warps = () => {
                 return;
             }
 
-            // Jeśli wybrano przycisk zmiany sortowania (indeks 0)
-            if (res.selection === 0) {
+            if (res.selection === BUTTON_CHANGE_SORT) {
                 const newSortBy = sortBy === SORT_BY.DISTANCE ? SORT_BY.ALPHABETICAL : SORT_BY.DISTANCE;
                 showWarpsListMenuWithOptions(player, warps, newSortBy, selectedCategory, mode);
                 return;
             }
 
-            // Jeśli wybrano warp (indeks > 0, ale trzeba odjąć 1 bo pierwszy to przycisk sortowania)
             const warpIndex = res.selection - 1;
             if (warpIndex >= 0 && warpIndex < sortedWarps.length) {
                 const selectedWarp = sortedWarps[warpIndex];
@@ -722,9 +750,8 @@ export const Warps = () => {
         });
     }
 
-    // Wrapper functions for compatibility
     const showWarpDetailsMenu = (player, warp) => {
-        const icon = findIconByName(warp.icon);
+        const icon = getIconByName(warp.icon);
         const optionsForm = new MinecraftUi.ActionFormData()
             .title({
                 rawtext: [{
@@ -740,67 +767,77 @@ export const Warps = () => {
                 getWarpDetails(warp, player, "warps:warp_details.body")
             );
         const canEdit = canPlayerEditWarp(player, warp);
+
+        const BUTTON_TELEPORT = 0;
         let buttonIndex = 1;
 
         if (canEdit) {
+            const BUTTON_EDIT_NAME = buttonIndex++;
+            const BUTTON_EDIT_COORDINATES = buttonIndex++;
+            const BUTTON_EDIT_ICON = buttonIndex++;
+            const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
+            const BUTTON_CHANGE_VISIBILITY = hasVisibilityButton ? buttonIndex++ : -1;
+            const BUTTON_DELETE = buttonIndex++;
+
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.edit_name"}]
             });
-            buttonIndex++;
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.edit_coordinates"}]
+            });
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.edit_icon"}]
             });
-            buttonIndex++;
-            if (warp.visibility !== WARP_VISIBILITY.PUBLIC) {
+            if (hasVisibilityButton) {
                 optionsForm.button({
                     rawtext: [{translate: "warps:warp_details.options.change_visibility"}]
                 });
-                buttonIndex++;
             }
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.delete"}]
             });
-            buttonIndex++;
-        }
 
-        optionsForm.show(player).then((res) => {
-            if (res.canceled) {
-                return;
-            }
+            optionsForm.show(player).then((res) => {
+                if (res.canceled) {
+                    return;
+                }
 
-            if (res.selection === 0) {
-                // Teleportuj
-                teleportToWarp(player, warp);
-                return;
-            }
+                if (res.selection === BUTTON_TELEPORT) {
+                    teleportToWarp(player, warp);
+                    return;
+                }
 
-            if (!canEdit) {
-                player.sendMessage({translate: "warps:error.no_permission"});
-                return;
-            }
-
-            let actionIndex = res.selection - 1;
-            const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
-
-            switch (actionIndex) {
-                case 0: // Zmień nazwę
-                    editWarpNameForm(player, warp);
-                    break;
-                case 1: // Zmień ikonę
-                    editWarpIconFormStep1(player, warp);
-                    break;
-                case 2: // Zmień visibility lub Usuń
-                    if (hasVisibilityButton) {
+                switch (res.selection) {
+                    case BUTTON_EDIT_NAME:
+                        editWarpNameForm(player, warp);
+                        break;
+                    case BUTTON_EDIT_COORDINATES:
+                        editWarpCoordinatesForm(player, warp);
+                        break;
+                    case BUTTON_EDIT_ICON:
+                        editWarpIconFormStep1(player, warp);
+                        break;
+                    case BUTTON_CHANGE_VISIBILITY:
                         editWarpVisibilityForm(player, warp);
-                    } else {
+                        break;
+                    case BUTTON_DELETE:
                         removeWarpItemForm(player, warp);
-                    }
-                    break;
-                case 3: // Usuń (gdy visibility button jest widoczny)
-                    removeWarpItemForm(player, warp);
-                    break;
-            }
-        });
+                        break;
+                }
+            });
+        } else {
+            optionsForm.show(player).then((res) => {
+                if (res.canceled) {
+                    return;
+                }
+
+                if (res.selection === BUTTON_TELEPORT) {
+                    teleportToWarp(player, warp);
+                } else {
+                    player.sendMessage({translate: "warps:error.no_permission"});
+                }
+            });
+        }
     }
 
 
@@ -997,16 +1034,6 @@ export const Warps = () => {
             return;
         }
 
-        const playerLoc = player.location;
-        const dx = targetLocation.x - playerLoc.x;
-        const dz = targetLocation.z - playerLoc.z;
-        let facing;
-        if (Math.abs(dx) > Math.abs(dz)) {
-            facing = dx > 0 ? 1 : 3;
-        } else {
-            facing = dz > 0 ? 2 : 0;
-        }
-
         const newWarp = {
             name: warpName,
             x: targetLocation.x,
@@ -1016,7 +1043,7 @@ export const Warps = () => {
             icon: icon.name,
             owner: player.name,
             visibility: visibility,
-            facing: facing
+            facing: (Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z)) ? 1 : 0
         };
 
         warps.push(newWarp);
@@ -1032,8 +1059,127 @@ export const Warps = () => {
     ///=================================================================================================================
     // === WARP EDIT ===
 
+    const editWarpCoordinatesForm = (player, warp) => {
+        system.run(() => {
+            if (!warp) {
+                player.sendMessage({translate: "warps:warp_details.edit_coordinates.not_found"});
+                return;
+            }
+
+            const currentX = warp.x;
+            const currentY = warp.y;
+            const currentZ = warp.z;
+
+            const form = new MinecraftUi.ModalFormData()
+                .title({
+                    rawtext: [{
+                        translate: "warps:warp_details.edit_coordinates.title",
+                        with: {rawtext: [{text: warp.name}]}
+                    }]
+                })
+                .slider(
+                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.x.label"}]},
+                    currentX - 3,
+                    currentX + 3,
+                    {defaultValue: currentX}
+                )
+                .slider(
+                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.y.label"}]},
+                    currentY - 3,
+                    currentY + 3,
+                    {defaultValue: currentY}
+                )
+                .slider(
+                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.z.label"}]},
+                    currentZ - 3,
+                    currentZ + 3,
+                    {defaultValue: currentZ}
+                )
+                .dropdown(
+                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing"}]},
+                    [
+                        {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.north_south"}]},
+                        {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.east_west"}]}
+                    ],
+                    {defaultValueIndex: currentFacing}
+                );
+
+            form.show(player).then((res) => {
+                if (res.canceled) {
+                    showWarpDetailsMenu(player, warp);
+                    return;
+                }
+
+                if (!res.formValues || res.formValues.length < 3) {
+                    player.sendMessage({translate: "warps:warp_details.edit_coordinates.fill_required"});
+                    editWarpCoordinatesForm(player, warp);
+                    return;
+                }
+
+                const newX = Math.round(res.formValues[0].toString());
+                const newY = Math.round(res.formValues[1].toString());
+                const newZ = Math.round(res.formValues[2].toString());
+
+                // Walidacja współrzędnych
+                if (newY < -64 || newY > 320) {
+                    player.sendMessage({translate: "warps:add.coords_out_of_range"});
+                    editWarpCoordinatesForm(player, warp);
+                    return;
+                }
+
+                editWarpCoordinatesSave(player, warp, newX, newY, newZ);
+            });
+        });
+    }
+
+    const editWarpCoordinatesSave = (player, warp, newX, newY, newZ) => {
+        const warps = loadWarps();
+        const warpIndex = warps.findIndex(w => w.name === warp.name);
+
+        if (warpIndex === -1) {
+            player.sendMessage({translate: "warps:warp_details.edit_coordinates.not_found"});
+            return;
+        }
+
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        const oldX = warps[warpIndex].x;
+        const oldY = warps[warpIndex].y;
+        const oldZ = warps[warpIndex].z;
+
+        // Usuń stary znak, jeśli lokalizacja się zmieniła (przed aktualizacją współrzędnych)
+        if (oldX !== newX || oldY !== newY || oldZ !== newZ) {
+            const oldWarp = {
+                ...warps[warpIndex],
+                x: oldX,
+                y: oldY,
+                z: oldZ
+            };
+            removeWarpSign(oldWarp);
+        }
+
+        warps[warpIndex].x = newX;
+        warps[warpIndex].y = newY;
+        warps[warpIndex].z = newZ;
+        warps[warpIndex].facing = newFacing;
+
+        saveWarps(warps, player, "beacon.power", "warps:warp_details.edit_coordinates.success", [
+            {text: warp.name},
+            {text: `${oldX}, ${oldY}, ${oldZ}`},
+            {text: `${newX}, ${newY}, ${newZ}`}
+        ]);
+
+        updateWarpSign(warps[warpIndex]);
+        showWarpDetailsMenu(player, warps[warpIndex]);
+    }
+
     const editWarpNameForm = (player, warp) => {
         system.run(() => {
+            const currentFacingOption = normalizeFacingToOption(warp.facing);
+
             new MinecraftUi.ModalFormData()
                 .title({
                     rawtext: [{
@@ -1042,9 +1188,17 @@ export const Warps = () => {
                     }]
                 })
                 .textField(
-                    {rawtext: [{translate: "warps:add.field.new_name.label"}]},
+                    {rawtext: [{translate: "warps:add.field.name.label"}]},
                     {rawtext: [{translate: "warps:add.field.name.placeholder"}]},
                     {defaultValue: warp.name}
+                )
+                .dropdown(
+                    {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing"}]},
+                    [
+                        {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.north_south"}]},
+                        {rawtext: [{translate: "warps:warp_details.edit_coordinates.facing.east_west"}]}
+                    ],
+                    {defaultValueIndex: currentFacingOption}
                 )
                 .submitButton({rawtext: [{translate: "warps:add.submit"}]})
                 .show(player).then((res) => {
@@ -1053,20 +1207,22 @@ export const Warps = () => {
                     return;
                 }
 
-                if (!res.formValues || res.formValues.length === 0) {
+                if (!res.formValues || res.formValues.length < 2) {
                     player.sendMessage({translate: "warps:add.fill_required"});
                     editWarpNameForm(player, warp);
                     return;
                 }
 
                 const newWarpName = res.formValues[0]?.toString().trim();
+                const facingOption = res.formValues[1];
+                const newFacing = facingOption === 0 ? 0 : 1;
 
-                editWarpNameSave(player, warp, newWarpName);
+                editWarpNameSave(player, warp, newWarpName, newFacing);
             });
         });
     }
 
-    const editWarpNameSave = (player, warp, newWarpName) => {
+    const editWarpNameSave = (player, warp, newWarpName, newFacing) => {
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
             return;
@@ -1103,7 +1259,15 @@ export const Warps = () => {
         }
 
         const oldName = warp.name;
+        const normalizedOldFacing = normalizeFacingToOption(warps[warpIndex].facing);
+
+        // Usuń stary znak, jeśli nazwa lub facing się zmieniły
+        if (oldName !== newWarpName || normalizedOldFacing !== newFacing) {
+            removeWarpSign(warps[warpIndex]);
+        }
+
         warps[warpIndex].name = newWarpName;
+        warps[warpIndex].facing = newFacing;
         saveWarps(warps, player, "beacon.power", "warps:warp_details.edit_name.success", [
             oldName,
             newWarpName,
@@ -1363,17 +1527,20 @@ export const Warps = () => {
 
     ///=================================================================================================================
     // === Main Menu ===
-    const mainMenu = (player) => {
+    const showMainMenu = (player) => {
         const menuForm = new MinecraftUi.ActionFormData()
             .title({rawtext: [{translate: "warps:main_menu.title"}]})
             .body({rawtext: [{translate: "warps:main_menu.body"}]});
 
+        const BUTTON_TELEPORT = 0;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.teleport"}]
         });
+        const BUTTON_MANAGEMENT = 1;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.manage"}]
         });
+        const BUTTON_ADD = 2;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.add"}]
         });
@@ -1384,13 +1551,13 @@ export const Warps = () => {
             }
 
             switch (res.selection) {
-                case 0: // Teleportuj
+                case BUTTON_TELEPORT:
                     showCategoriesListMenu(player, WARP_MENU.TELEPORT);
                     break;
-                case 1: // Zarządzaj
+                case BUTTON_MANAGEMENT:
                     showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
                     break;
-                case 2: // Dodaj
+                case BUTTON_ADD:
                     addWarpItemFormStep1(player, {
                         targetLocation: roundLocation(player.location),
                         warpDimensionId: getPlayerDimension(player)
@@ -1460,7 +1627,7 @@ export const Warps = () => {
                         const targetLocation = roundLocation(location || player.location);
                         const warpDimensionId = getPlayerDimension(player);
                         if (warpName && iconName && targetLocation) {
-                            const icon = findIconByName(iconName);
+                            const icon = getIconByName(iconName);
                             addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId);
                         } else {
                             addWarpItemFormStep1(player, {
@@ -1499,7 +1666,8 @@ export const Warps = () => {
                                     with: [oldWarpName]
                                 });
                             }
-                            editWarpNameSave(player, warp, newWarpName);
+                            const normalizedFacing = normalizeFacingToOption(warp.facing);
+                            editWarpNameSave(player, warp, newWarpName, normalizedFacing);
                         } else {
                             showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
                         }
@@ -1583,7 +1751,7 @@ export const Warps = () => {
                     system.run(() => {
                         const player = event.source && event.source.typeId === "minecraft:player" ? event.source : null;
                         if (!player || player.isSneaking) return;
-                        mainMenu(player);
+                        showMainMenu(player);
                     });
                 }
             });
@@ -1601,16 +1769,16 @@ export const Warps = () => {
         system.run(() => {
             const player = event.player;
             const block = event.block;
-            
+
             if (!player || !block) return;
-            
+
             // Sprawdź czy to standing_sign
             if (!block.typeId.includes("standing_sign")) return;
-            
+
             // Pobierz lokalizację bloku
             const blockLoc = block.location;
             const dimensionId = getPlayerDimension(player);
-            
+
             // Znajdź warp na podstawie lokalizacji
             const warp = getWarpByLocation(
                 Math.round(blockLoc.x),
@@ -1618,7 +1786,7 @@ export const Warps = () => {
                 Math.round(blockLoc.z),
                 dimensionId
             );
-            
+
             if (warp) {
                 showWarpDetailsMenu(player, warp);
             }

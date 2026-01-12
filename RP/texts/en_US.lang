@@ -15,7 +15,6 @@ warps:add.duplicate_name=§r§8[§1❣WARP§8] §cA warp with name §l%s§r§c a
 warps:add.field.category.label=Category
 warps:add.field.icon.label=Icon
 warps:add.field.name.label=Place name
-warps:add.field.new_name.label=New place name
 warps:add.field.name.placeholder=Place name (required, string)
 warps:add.field.x.label=X coordinate
 warps:add.field.x.placeholder=%s (required, number)
@@ -54,20 +53,31 @@ warps:warp_details.title=§r§l§5❣ Warp§r §l%s
 warps:warp_details.body=Distance: §l%6$s§r\nCoordinates: §l%2$s§r\nDimension: §l%3$s§r\nOwner: §l%5$s§r\nVisibility: §l%6$s§r\nCategory: §l%8$s§r\nIcon: §l%9$s§r
 warps:warp_details.options.delete=§r§c✖ Delete§r
 warps:warp_details.options.edit_name=§r§5✎ Rename§r
-warps:warp_details.options.edit_icon=§r§5✯ Change Icon§r
-warps:warp_details.options.change_visibility=§r§5⇨ Change Visibility§r
+warps:warp_details.options.edit_coordinates=§r§5⌖ Change coordinates§r
+warps:warp_details.options.edit_icon=§r§5✯ Change icon§r
+warps:warp_details.options.change_visibility=§r§5⇨ Change visibility§r
 warps:warp_details.options.teleport=§r§3✈ Teleport to§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Rename§r §l%s
+warps:warp_details.edit_coordinates.title=§r§l§5⌖ Change coordinates§r §l%s
+warps:warp_details.edit_coordinates.x.label=X coordinate
+warps:warp_details.edit_coordinates.y.label=Y coordinate
+warps:warp_details.edit_coordinates.z.label=Z coordinate
+warps:warp_details.edit_coordinates.facing=Orientation
+warps:warp_details.edit_coordinates.facing.north_south=North-South
+warps:warp_details.edit_coordinates.facing.east_west=East-West
+warps:warp_details.edit_coordinates.not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
+warps:warp_details.edit_coordinates.fill_required=§r§8[§1❣WARP§8] §7You need to fill up all fields!§r
+warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Changed coordinates for warp §l%1$s§r§7 from §f%2$s§r§7 to §f%3$s§r§7!§r
 warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
 
-warps:warp_details.edit_icon.title=§r§l§5✯ Change Icon§r §l%s
+warps:warp_details.edit_icon.title=§r§l§5✯ Change icon§r §l%s
 warps:warp_details.edit_icon.step1.body=Select a category to choose a new icon:
 warps:warp_details.edit_icon.step2.body=Select a new icon from §l%s§r category:
 warps:warp_details.edit_icon.success=§r§8[§1❣WARP§8] §7Changed icon for warp §l%1$s§r§7 to §l%2$s§r§7!§r
 
-warps:warp_details.change_visibility.title=§r§l§5⇨ Change Visibility§r §l%s
+warps:warp_details.change_visibility.title=§r§l§5⇨ Change visibility§r §l%s
 warps:warp_details.change_visibility.body=Current visibility: %2$s\n\nSelect new visibility:
 warps:warp_details.change_visibility.public_warning.title=§r§l§c⚠ Warning§r
 warps:warp_details.change_visibility.public_warning.body=§cMaking a warp public is permanent and cannot be reversed!\n\nAnyone will be able to edit or delete this warp.§r
@@ -107,7 +117,7 @@ warps:distance.value_5=%s meters
 
 warps:button_format.long=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
 warps:button_format.short=%7$s §l%1$s§r %2$s %3$s
-warps:standing_sign_text=❣ §l%1$s§r\n(%8$s)
+warps:standing_sign_text=❣\n§l%1$s§r\n(%8$s)
 
 # === CATEGORIES ===
 warps:category.special=Special

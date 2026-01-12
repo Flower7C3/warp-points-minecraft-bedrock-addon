@@ -15,7 +15,6 @@ warps:add.duplicate_name=§r§8[§1❣WARP§8] §cWarp o nazwie §l%s§r§c już
 warps:add.field.category.label=Kategoria
 warps:add.field.icon.label=Ikona
 warps:add.field.name.label=Nazwa miejsca
-warps:add.field.new_name.label=Nowa nazwa miejsca
 warps:add.field.name.placeholder=Nazwa miejsca (wymagane, tekst)
 warps:add.field.x.label=Współrzędna X
 warps:add.field.x.placeholder=%s (wymagane, liczba)
@@ -54,11 +53,22 @@ warps:warp_details.title=§r§l§5❣ Warp§r §l%s
 warps:warp_details.body=Odległość: §l%4$s§r\nWspółrzędne: §l%2$s§r\nWymiar: §l%3$s§r\nWłaściciel: §l%5$s§r\nWidoczność: §l%6$s§r\nKategoria: §l%8$s§r\nIkona: §l%9$s§r
 warps:warp_details.options.delete=§r§c✖ Usuń§r
 warps:warp_details.options.edit_name=§r§5✎ Zmień nazwę§r
+warps:warp_details.options.edit_coordinates=§r§5⌖ Zmień współrzędne§r
 warps:warp_details.options.edit_icon=§r§5✯ Zmień ikonę§r
 warps:warp_details.options.change_visibility=§r§5⇨ Zmień widoczność§r
 warps:warp_details.options.teleport=§r§3✈ Teleportuj się§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Zmień nazwę§r §l%s
+warps:warp_details.edit_coordinates.title=§r§l§5⌖ Zmień współrzędne§r §l%s
+warps:warp_details.edit_coordinates.x.label=Współrzędna X
+warps:warp_details.edit_coordinates.y.label=Współrzędna Y
+warps:warp_details.edit_coordinates.z.label=Współrzędna Z
+warps:warp_details.edit_coordinates.facing=Orientacja
+warps:warp_details.edit_coordinates.facing.north_south=Północ-Południe
+warps:warp_details.edit_coordinates.facing.east_west=Wschód-Zachód
+warps:warp_details.edit_coordinates.not_found=§r§8[§1❣WARP§8] §cNie znaleziono warpa!§r
+warps:warp_details.edit_coordinates.fill_required=§r§8[§1❣WARP§8] §7Musisz wypełnić wszystkie pola!§r
+warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Zmieniono współrzędne warpa §l%1$s§r§7 z §f%2$s§r§7 na §f%3$s§r§7!§r
 warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cNie znaleziono warpa!§r
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
 
@@ -107,7 +117,7 @@ warps:distance.value_5=%s metrów
 
 warps:button_format.long=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
 warps:button_format.short=%7$s §l%1$s§r %2$s %3$s
-warps:standing_sign_text=❣ §l%1$s§r\n(%8$s)
+warps:standing_sign_text=❣\n§l%1$s§r\n(%8$s)
 
 # === KATEGORIE ===
 warps:category.special=Specjalne
