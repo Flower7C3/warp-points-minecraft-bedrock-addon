@@ -69,7 +69,9 @@ warps:warp_details.edit_coordinates.facing.north_south=North-South
 warps:warp_details.edit_coordinates.facing.east_west=East-West
 warps:warp_details.edit_coordinates.fill_required=§r§8[§1❣WARP§8] §7You need to fill up all fields!§r
 warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Changed coordinates for warp §l%1$s§r§7 from §f%2$s§r§7 to §f%3$s§r§7!§r
+warps:warp_details.edit_name.sign_type=Sign type
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
+warps:regen_signs.success=§r§8[§1❣WARP§8] §7Regenerated §l%s§r§7 warp signs!§r
 
 warps:warp_details.edit_icon.title=§r§l§5✯ Change icon§r §l%s
 warps:warp_details.edit_icon.step1.body=Select a category to choose a new icon:
@@ -117,6 +119,18 @@ warps:distance.value_5=%s meters
 warps:button_format.long=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
 warps:button_format.short=%7$s §l%1$s§r %2$s %3$s
 warps:standing_sign_text=❣\n§l%1$s§r\n(%8$s)
+
+# === SIGN TYPES ===
+warps:sign_type.oak=Oak
+warps:sign_type.spruce=Spruce
+warps:sign_type.birch=Birch
+warps:sign_type.jungle=Jungle
+warps:sign_type.acacia=Acacia
+warps:sign_type.darkoak=Dark Oak
+warps:sign_type.crimson=Crimson
+warps:sign_type.warped=Warped
+warps:sign_type.cherry=Cherry
+warps:sign_type.mangrove=Mangrove
 
 # === CATEGORIES ===
 warps:category.special=Special

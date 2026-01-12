@@ -1,6 +1,6 @@
 import * as Minecraft from "@minecraft/server"
 import * as MinecraftUi from "@minecraft/server-ui"
-import {system, CustomCommandParamType, CustomCommandStatus, SignSide} from "@minecraft/server";
+import {system, CustomCommandParamType, CustomCommandStatus, SignSide, DyeColor} from "@minecraft/server";
 
 
 const WarpIcon = (key, category, path) => {
@@ -21,6 +21,7 @@ export const Warps = () => {
     const COMMAND_WARPS_ADD = "warps:warps_add";
     const COMMAND_WARP_RENAME = "warps:warps_rename";
     const COMMAND_WARP_REMOVE = "warps:warps_remove";
+    const COMMAND_WARPS_REGEN_SIGNS = "warps:regen_signs";
     const ITEM_COMPONENT_ID = "warps:warp_menu";
 
     let dataLoaded = false;
@@ -137,6 +138,19 @@ export const Warps = () => {
         PUBLIC: 'public'
     });
 
+    const SIGN_TYPE = Object.freeze({
+        OAK: 'oak',
+        SPRUCE: 'spruce',
+        BIRCH: 'birch',
+        JUNGLE: 'jungle',
+        ACACIA: 'acacia',
+        DARK_OAK: 'darkoak',
+        MANGROVE: 'mangrove',
+        CHERRY: 'cherry',
+        CRIMSON: 'crimson',
+        WARPED: 'warped',
+    });
+
 
     ///=================================================================================================================
     // === Icon Functions ===
@@ -180,6 +194,9 @@ export const Warps = () => {
                 }
                 if (warp.facing === undefined || warp.facing === null) {
                     warp.facing = 0;
+                }
+                if (!warp.signType) {
+                    warp.signType = SIGN_TYPE.OAK;
                 }
                 return warp;
             });
@@ -419,6 +436,20 @@ export const Warps = () => {
     ///=================================================================================================================
     // === Standing Sign Functions ===
 
+    const getSignTextColor = (signType) => {
+        // Wybierz kolor tekstu dla czytelności na różnych typach tabliczek
+        switch (signType) {
+            case SIGN_TYPE.SPRUCE:
+            case SIGN_TYPE.ACACIA:
+            case SIGN_TYPE.DARK_OAK:
+            case SIGN_TYPE.MANGROVE:
+            case SIGN_TYPE.CRIMSON:
+                return DyeColor.White;
+            default:
+                return DyeColor.Black;
+        }
+    }
+
     const removeWarpSign = (warp) => {
         try {
             const warpDimension = getWarpDimension(warp.dimension);
@@ -454,18 +485,18 @@ export const Warps = () => {
             const isCorrectSign = existingBlock && existingBlock.typeId.includes("standing_sign");
             const facing = warp.facing !== undefined && warp.facing !== null ? warp.facing : 0;
             const groundSignDirection = facing * 4;
+            const signType = warp.signType || SIGN_TYPE.OAK;
+            const signBlockType = signType === SIGN_TYPE.OAK ? `minecraft:standing_sign` : `minecraft:${signType}_standing_sign`;
+            const signTextColor = getSignTextColor(signType);
+            const signTextValue = getWarpDetails(warp, null, "warps:standing_sign_text");
 
-            // Jeśli znak istnieje, ale facing się zmienił, usuń go i stwórz nowy
+            // Jeśli znak istnieje, usuń go i stwórz nowy
             if (isCorrectSign) {
-                // Sprawdź aktualny kierunek znaku (możemy to zrobić przez usunięcie i utworzenie na nowo)
-                // Lub po prostu zawsze usuń i stwórz na nowo, jeśli znak istnieje
                 warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} minecraft:air replace`);
             }
 
-            // Stwórz nowy znak z właściwym kierunkiem
-            const cmd = `setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} standing_sign ${groundSignDirection} replace`;
-            console.info(cmd)
-            warpDimension.runCommand(cmd);
+            // Stwórz nowy znak z właściwym typem i kierunkiem
+            warpDimension.runCommand(`setblock ${signLocation.x} ${signLocation.y} ${signLocation.z} ${signBlockType} ${groundSignDirection} replace`);
 
             [1, 2, 3].forEach((delay, index) => {
                 system.runTimeout(() => {
@@ -474,9 +505,10 @@ export const Warps = () => {
                         if (placedBlock && placedBlock.typeId.includes("standing_sign")) {
                             const signComponent = placedBlock.getComponent("minecraft:sign");
                             if (signComponent) {
-                                const text = getWarpDetails(warp, null, "warps:standing_sign_text");
-                                signComponent.setText(text, SignSide.Front);
-                                signComponent.setText(text, SignSide.Back);
+                                signComponent.setText(signTextValue, SignSide.Front);
+                                signComponent.setText(signTextValue, SignSide.Back);
+                                signComponent.setTextDyeColor(signTextColor, SignSide.Front)
+                                signComponent.setTextDyeColor(signTextColor, SignSide.Back)
                                 signComponent.setWaxed(true);
                             }
                         }
@@ -976,6 +1008,13 @@ export const Warps = () => {
             .textField({rawtext: [{translate: "warps:add.field.y.label"}]}, {rawtext: [{translate: "warps:add.field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
             .textField({rawtext: [{translate: "warps:add.field.z.label"}]}, {rawtext: [{translate: "warps:add.field.z.placeholder"}]}, {defaultValue: targetLocation.z.toString()})
             .dropdown(
+                {rawtext: [{translate: "warps:warp_details.edit_name.sign_type"}]},
+                Object.values(SIGN_TYPE).map(type => ({
+                    rawtext: [{translate: `warps:sign_type.${type}`}]
+                })),
+                {defaultValueIndex: 0}
+            )
+            .dropdown(
                 {rawtext: [{translate: "warps:add.field.visibility.label"}]},
                 [
                     {rawtext: [{translate: "warps:visibility.state.private.label"}]},
@@ -996,9 +1035,10 @@ export const Warps = () => {
             const targetLocationXIndex = 5
             const targetLocationYIndex = 6
             const targetLocationZIndex = 7
-            const visibilityIndex = 8
+            const signTypeIndex = 8
+            const visibilityIndex = 9
 
-            if (!res.formValues || !res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex] || res.formValues[visibilityIndex] === undefined) {
+            if (!res.formValues || !res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex] || res.formValues[signTypeIndex] === undefined || res.formValues[visibilityIndex] === undefined) {
                 player.sendMessage({translate: "warps:add.fill_required"});
                 // Ponownie pokaż formularz z wypełnionymi danymi
                 const currentVisibility = res.formValues && res.formValues[visibilityIndex] !== undefined
@@ -1014,12 +1054,14 @@ export const Warps = () => {
                 y: parseFloat(res.formValues[targetLocationYIndex].toString()),
                 z: parseFloat(res.formValues[targetLocationZIndex].toString())
             };
+            const signTypeOptions = Object.values(SIGN_TYPE);
+            const selectedSignType = signTypeOptions[res.formValues[signTypeIndex]] || SIGN_TYPE.OAK;
             const selectedVisibility = getVisibilityByIndex(res.formValues[visibilityIndex]);
-            addWarpItemSave(player, warpName, icon, finalLocation, warpDimensionId, selectedVisibility);
+            addWarpItemSave(player, warpName, icon, finalLocation, warpDimensionId, selectedVisibility, selectedSignType);
         });
     }
 
-    const addWarpItemSave = (player, warpName, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED) => {
+    const addWarpItemSave = (player, warpName, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED, signType = SIGN_TYPE.OAK) => {
         // Walidacja ikony
         if (!icon || !icon.name) {
             player.sendMessage({translate: "warps:add.invalid_icon"});
@@ -1079,7 +1121,8 @@ export const Warps = () => {
             icon: icon.name,
             owner: player.name,
             visibility: visibility,
-            facing: (Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z)) ? 1 : 0
+            facing: (Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z)) ? 1 : 0,
+            signType: signType
         };
 
         warps.push(newWarp);
@@ -1214,6 +1257,9 @@ export const Warps = () => {
         }
 
         const currentFacingOption = normalizeFacingToOption(warp.facing);
+        const currentSignType = warp.signType || SIGN_TYPE.OAK;
+        const signTypeOptions = Object.values(SIGN_TYPE);
+        const currentSignTypeIndex = signTypeOptions.indexOf(currentSignType);
 
         new MinecraftUi.ModalFormData()
             .title({
@@ -1235,6 +1281,13 @@ export const Warps = () => {
                 ],
                 {defaultValueIndex: currentFacingOption}
             )
+            .dropdown(
+                {rawtext: [{translate: "warps:warp_details.edit_name.sign_type"}]},
+                signTypeOptions.map(type => ({
+                    rawtext: [{translate: `warps:sign_type.${type}`}]
+                })),
+                {defaultValueIndex: currentSignTypeIndex >= 0 ? currentSignTypeIndex : 0}
+            )
             .submitButton({rawtext: [{translate: "warps:add.submit"}]})
             .show(player).then((res) => {
             if (res.canceled) {
@@ -1242,7 +1295,7 @@ export const Warps = () => {
                 return;
             }
 
-            if (!res.formValues || res.formValues.length < 2) {
+            if (!res.formValues || res.formValues.length < 3) {
                 player.sendMessage({translate: "warps:add.fill_required"});
                 editWarpNameForm(player, warp);
                 return;
@@ -1251,12 +1304,14 @@ export const Warps = () => {
             const newWarpName = res.formValues[0]?.toString().trim();
             const facingOption = res.formValues[1];
             const newFacing = facingOption === 0 ? 0 : 1;
+            const signTypeIndex = res.formValues[2];
+            const newSignType = signTypeOptions[signTypeIndex] || SIGN_TYPE.OAK;
 
-            editWarpNameSave(player, warp, newWarpName, newFacing);
+            editWarpNameSave(player, warp, newWarpName, newFacing, newSignType);
         });
     }
 
-    const editWarpNameSave = (player, warp, newWarpName, newFacing) => {
+    const editWarpNameSave = (player, warp, newWarpName, newFacing, newSignType) => {
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
             return;
@@ -1302,6 +1357,7 @@ export const Warps = () => {
 
         warps[warpIndex].name = newWarpName;
         warps[warpIndex].facing = newFacing;
+        warps[warpIndex].signType = newSignType;
         saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_name.success", [
             oldName,
             newWarpName,
@@ -1750,6 +1806,39 @@ export const Warps = () => {
                             showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
                         }
                     })
+                }
+            )
+
+            event.customCommandRegistry.registerCommand(
+                {
+                    name: COMMAND_WARPS_REGEN_SIGNS,
+                    description: "Regenerate all warp signs",
+                    permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
+                },
+                (origin) => {
+                    system.run(() => {
+                        const player = getPlayer(origin);
+                        if (!player) return;
+
+                        console.info("[WARP] Regenerating all warp signs...");
+                        const warps = getValidWarps();
+                        let updated = 0;
+
+                        warps.forEach(warp => {
+                            try {
+                                updateWarpSign(warp);
+                                updated++;
+                            } catch (error) {
+                                console.error(`[WARP] Error regenerating sign for warp ${warp.name}: ${error}`);
+                            }
+                        });
+
+                        console.info(`[WARP] Regenerated ${updated} warp signs`);
+                        player.sendMessage({
+                            translate: "warps:regen_signs.success",
+                            with: [{text: updated.toString()}]
+                        });
+                    });
                 }
             )
 
