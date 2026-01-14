@@ -4,6 +4,21 @@ warps:main_menu.teleport=§r§3✈ Teleport§r
 warps:main_menu.manage=§r§5❣ Manage Warps§r
 warps:main_menu.add=§r§6✚ Add Warp§r
 
+warps:field.category.label=Category
+warps:field.icon.label=Icon
+warps:field.name.label=Place name
+warps:field.name.placeholder=Place name (required, string)
+warps:field.x.label=X coordinate (West to East)
+warps:field.x.placeholder=%s (required, number)
+warps:field.y.label=Y coordinate (Down to Up)
+warps:field.y.placeholder=%s (required, number)
+warps:field.z.label=Z coordinate (North to South)
+warps:field.z.placeholder=%s (required, number)
+warps:field.sign_facing.label=Sign facing direction
+warps:field.sign_facing.value.north_south=North-South
+warps:field.sign_facing.value.east_west=East-West
+warps:field.sign_material.label=Sign material
+
 warps:add.step1.title=§r§l§6✚ Add Warp§r step 1/3
 warps:add.step1.body=Select a category for the warp icon:
 warps:add.step2.title=§r§l§6✚ Add Warp§r step 2/3
@@ -12,17 +27,6 @@ warps:add.step3.title=§r§l§6✚ Add Warp§r step 3/3
 warps:add.coords_must_be_number=§r§8[§1❣WARP§8] §7The Coordinates must be a Number!§r
 warps:add.coords_out_of_range=§r§8[§1❣WARP§8] §7The Coordinates are out of valid range!§r
 warps:add.duplicate_name=§r§8[§1❣WARP§8] §cA warp with name §l%s§r§c already exists!§r
-warps:add.field.category.label=Category
-warps:add.field.icon.label=Icon
-warps:add.field.name.label=Place name
-warps:add.field.name.placeholder=Place name (required, string)
-warps:add.field.x.label=X coordinate
-warps:add.field.x.placeholder=%s (required, number)
-warps:add.field.y.label=Y coordinate
-warps:add.field.y.placeholder=%s (required, number)
-warps:add.field.z.label=Z coordinate
-warps:add.field.z.placeholder=%s (required, number)
-warps:add.fill_required=§r§8[§1❣WARP§8] §7You need to fill up everything what is required!§r
 warps:add.invalid_icon=§r§8[§1❣WARP§8] §7Invalid icon selected! Please try again.§r
 warps:add.name_too_long=§r§8[§1❣WARP§8] §7The warp name is too long (max 50 characters)!§r
 warps:add.select_category=Select a category:
@@ -45,8 +49,9 @@ warps:menu.sorting_by_distance_all=§rSorting by §ldistance§r:
 warps:menu.sorting_by_distance_cat=§rSorting by §ldistance§r in §l%s§r category:
 
 warps:teleport.error=§r§8[§1❣WARP§8] §cError teleporting to Warp §l%s§r§c!§r
-warps:error:warp_name_not_found=§r§8[§1❣WARP§8] §cWarp with name §l%s§r§c not found!§r
-warps:error:warp_not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
+warps:error.warp_name_not_found=§r§8[§1❣WARP§8] §cWarp with name §l%s§r§c not found!§r
+warps:error.warp_not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
+warps:warps:error.warp_not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
 warps:menu.no_warps=§r§8[§1❣WARP§8] §cThere are no Warps§r
 warps:menu.no_warps_in_category=§r§8[§1❣WARP§8] §cThere are no Warps in this category!§r
 
@@ -61,15 +66,7 @@ warps:warp_details.options.teleport=§r§3✈ Teleport to§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Rename§r §l%s
 warps:warp_details.edit_coordinates.title=§r§l§5⌖ Change coordinates§r §l%s
-warps:warp_details.edit_coordinates.x.label=X coordinate
-warps:warp_details.edit_coordinates.y.label=Y coordinate
-warps:warp_details.edit_coordinates.z.label=Z coordinate
-warps:warp_details.edit_coordinates.facing=Orientation
-warps:warp_details.edit_coordinates.facing.north_south=North-South
-warps:warp_details.edit_coordinates.facing.east_west=East-West
-warps:warp_details.edit_coordinates.fill_required=§r§8[§1❣WARP§8] §7You need to fill up all fields!§r
 warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Changed coordinates for warp §l%1$s§r§7 from §f%2$s§r§7 to §f%3$s§r§7!§r
-warps:warp_details.edit_name.sign_material.label=Sign material
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
 warps:regen_signs.success=§r§8[§1❣WARP§8] §7Regenerated §l%s§r§7 warp signs!§r
 
@@ -101,9 +98,10 @@ warps:visibility.state.private.symbol=§9■§r
 warps:visibility.state.protected.symbol=§e◆§r
 warps:visibility.state.public.symbol=§f◎§r
 
+warps:error.fill_required=§r§8[§1❣WARP§8] §7You need to fill up everything what is required!§r
 warps:error.no_permission=§r§8[§1❣WARP§8] §cYou don't have permission to modify this warp!§r
 
-warps:add.field.visibility.label=Visibility
+warps:field.visibility.label=Visibility
 
 warps:common.required_number=(required, number)
 warps:common.required_string=(required, string)
@@ -123,12 +121,11 @@ warps:sign_text=❣\n§l%1$s§r\n(%8$s)
 # === SIGN TYPES ===
 warps:sign_material.oak=Oak
 warps:sign_material.pale_oak=Pale Oak
-warps:sign_material.darkoak=Dark Oak
 warps:sign_material.spruce=Spruce
 warps:sign_material.birch=Birch
 warps:sign_material.jungle=Jungle
 warps:sign_material.acacia=Acacia
-warps:sign_material.darkoak=Dark Oak
+warps:sign_material.dark_oak=Dark Oak
 warps:sign_material.crimson=Crimson
 warps:sign_material.warped=Warped
 warps:sign_material.cherry=Cherry

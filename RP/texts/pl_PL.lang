@@ -4,6 +4,21 @@ warps:main_menu.teleport=§r§3✈ Teleportuj§r
 warps:main_menu.manage=§r§5❣ Zarządzaj Warpami§r
 warps:main_menu.add=§r§6✚ Dodaj Warp§r
 
+warps:field.category.label=Kategoria
+warps:field.icon.label=Ikona
+warps:field.name.label=Nazwa miejsca
+warps:field.name.placeholder=Nazwa miejsca (wymagane, tekst)
+warps:field.x.label=Współrzędna X (od zachodu do wschodu)
+warps:field.x.placeholder=%s (wymagane, liczba)
+warps:field.y.label=Współrzędna Y (z dołu do góry)
+warps:field.y.placeholder=%s (wymagane, liczba)
+warps:field.z.label=Współrzędna Z (z północy na południe)
+warps:field.z.placeholder=%s (wymagane, liczba)
+warps:field.sign_facing.label=Orientacja tabliczki
+warps:field.sign_facing.value.north_south=Północ-Południe
+warps:field.sign_facing.value.east_west=Wschód-Zachód
+warps:field.sign_material.label=Materiał tabliczki
+
 warps:add.step1.title=§r§l§6✚ Dodaj Warp§r krok 1/3
 warps:add.step1.body=Wybierz kategorię dla ikony warpa:
 warps:add.step2.title=§r§l§6✚ Dodaj Warp§r krok 2/3
@@ -12,17 +27,6 @@ warps:add.step3.title=§r§l§6✚ Dodaj Warp§r krok 3/3
 warps:add.coords_must_be_number=§r§8[§1❣WARP§8] §7Współrzędne muszą być liczbą!§r
 warps:add.coords_out_of_range=§r§8[§1❣WARP§8] §7Współrzędne są poza prawidłowym zakresem!§r
 warps:add.duplicate_name=§r§8[§1❣WARP§8] §cWarp o nazwie §l%s§r§c już istnieje!§r
-warps:add.field.category.label=Kategoria
-warps:add.field.icon.label=Ikona
-warps:add.field.name.label=Nazwa miejsca
-warps:add.field.name.placeholder=Nazwa miejsca (wymagane, tekst)
-warps:add.field.x.label=Współrzędna X
-warps:add.field.x.placeholder=%s (wymagane, liczba)
-warps:add.field.y.label=Współrzędna Y
-warps:add.field.y.placeholder=%s (wymagane, liczba)
-warps:add.field.z.label=Współrzędna Z
-warps:add.field.z.placeholder=%s (wymagane, liczba)
-warps:add.fill_required=§r§8[§1❣WARP§8] §7Musisz wypełnić wszystkie wymagane pola!§r
 warps:add.invalid_icon=§r§8[§1❣WARP§8] §7Wybrano nieprawidłową ikonę! Spróbuj ponownie.§r
 warps:add.name_too_long=§r§8[§1❣WARP§8] §7Nazwa warpa jest za długa (maksymalnie 50 znaków)!§r
 warps:add.select_category=Wybierz kategorię:
@@ -45,8 +49,9 @@ warps:menu.sorting_by_distance_all=§rSortowanie wg §ldystansu§r:
 warps:menu.sorting_by_distance_cat=§rSortowanie wg §ldystansu§r w kategorii §l%s§r:
 
 warps:teleport.error=§r§8[§1❣WARP§8] §cBłąd podczas teleportacji do Warp §l%s§r§c!§r
-warps:error:warp_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
-warps:error:warp_not_foundfound=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
+warps:error.warp_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
+warps:error.warp_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
+warps:warps:error.warp_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
 warps:menu.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w!§r
 warps:menu.no_warps_in_category=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w w tej kategorii!§r
 
@@ -60,16 +65,9 @@ warps:warp_details.options.change_visibility=§r§5⇨ Zmień widoczność§r
 warps:warp_details.options.teleport=§r§3✈ Teleportuj się§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Zmień nazwę§r §l%s
+warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
 warps:warp_details.edit_coordinates.title=§r§l§5⌖ Zmień współrzędne§r §l%s
-warps:warp_details.edit_coordinates.x.label=Współrzędna X
-warps:warp_details.edit_coordinates.y.label=Współrzędna Y
-warps:warp_details.edit_coordinates.z.label=Współrzędna Z
-warps:warp_details.edit_coordinates.facing=Orientacja
-warps:warp_details.edit_coordinates.facing.north_south=Północ-Południe
-warps:warp_details.edit_coordinates.facing.east_west=Wschód-Zachód
-warps:warp_details.edit_coordinates.fill_required=§r§8[§1❣WARP§8] §7Musisz wypełnić wszystkie pola!§r
 warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Zmieniono współrzędne warpa §l%1$s§r§7 z §f%2$s§r§7 na §f%3$s§r§7!§r
-warps:warp_details.edit_name.sign_material.label=Materiał tabliczki
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
 warps:regen_signs.success=§r§8[§1❣WARP§8] §7Przegenerowano §l%s§r§7 tabliczek!§r
 
@@ -101,9 +99,10 @@ warps:visibility.state.private.symbol=§9■
 warps:visibility.state.protected.symbol=§e◆
 warps:visibility.state.public.symbol=§f◎
 
+warps:error.fill_required=§r§8[§1❣WARP§8] §7Musisz wypełnić wszystkie wymagane pola!§r
 warps:error.no_permission=§r§8[§1❣WARP§8] §cNie masz uprawnień do modyfikacji tego warpa!§r
 
-warps:add.field.visibility.label=Widoczność
+warps:field.visibility.label=Widoczność
 
 warps:common.required_number=(wymagane, liczba)
 warps:common.required_string=(wymagane, tekst)
@@ -123,12 +122,11 @@ warps:sign_text=❣\n§l%1$s§r\n(%8$s)
 # === TYPY TABLICZEK ===
 warps:sign_material.oak=Dąb
 warps:sign_material.pale_oak=Blady dąb
-warps:sign_material.darkoak=Ciemny dąb
 warps:sign_material.spruce=Świerk
 warps:sign_material.birch=Brzoza
 warps:sign_material.jungle=Drzewo tropikalne
 warps:sign_material.acacia=Akacja
-warps:sign_material.darkoak=Ciemny dąb
+warps:sign_material.dark_oak=Ciemny dąb
 warps:sign_material.crimson=Karmazyn
 warps:sign_material.warped=Wypaczona
 warps:sign_material.cherry=Wiśnia
