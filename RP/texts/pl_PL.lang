@@ -122,15 +122,16 @@ warps:sign_text=❣\n§l%1$s§r\n(%8$s)
 # === TYPY TABLICZEK ===
 warps:sign_material.oak=Dąb
 warps:sign_material.pale_oak=Blady dąb
+warps:sign_material.dark_oak=Ciemny dąb
 warps:sign_material.spruce=Świerk
 warps:sign_material.birch=Brzoza
 warps:sign_material.jungle=Drzewo tropikalne
 warps:sign_material.acacia=Akacja
-warps:sign_material.dark_oak=Ciemny dąb
-warps:sign_material.crimson=Karmazyn
-warps:sign_material.warped=Wypaczona
-warps:sign_material.cherry=Wiśnia
 warps:sign_material.mangrove=Mangrowoc
+warps:sign_material.cherry=Wiśnia
+warps:sign_material.crimson=Karmazyn
+warps:sign_material.bamboo=Bambus
+warps:sign_material.warped=Wypaczona
 
 # === KATEGORIE ===
 warps:category.special=Specjalne

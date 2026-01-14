@@ -121,15 +121,16 @@ warps:sign_text=❣\n§l%1$s§r\n(%8$s)
 # === SIGN TYPES ===
 warps:sign_material.oak=Oak
 warps:sign_material.pale_oak=Pale Oak
+warps:sign_material.dark_oak=Dark Oak
 warps:sign_material.spruce=Spruce
 warps:sign_material.birch=Birch
 warps:sign_material.jungle=Jungle
 warps:sign_material.acacia=Acacia
-warps:sign_material.dark_oak=Dark Oak
-warps:sign_material.crimson=Crimson
-warps:sign_material.warped=Warped
-warps:sign_material.cherry=Cherry
 warps:sign_material.mangrove=Mangrove
+warps:sign_material.cherry=Cherry
+warps:sign_material.crimson=Crimson
+warps:sign_material.bamboo=Bamboo
+warps:sign_material.warped=Warped
 
 # === CATEGORIES ===
 warps:category.special=Special
