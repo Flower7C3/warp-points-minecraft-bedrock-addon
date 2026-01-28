@@ -123,7 +123,7 @@ warps:distance.value_1=%s meter
 warps:distance.value_2=%s meters
 warps:distance.value_5=%s meters
 
-warps:button_format.long=%7$s §l%1$s§r §o%4$sm§r %2$s %3$s
+warps:button_format.long=%7$s §l%1$s§r §o%4$s§r %2$s %3$s
 warps:button_format.short=%7$s §l%1$s§r %2$s %3$s
 warps:sign_text=❣\n§l%1$s§r\n(%8$s)
 

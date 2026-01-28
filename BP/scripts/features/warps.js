@@ -708,9 +708,7 @@ const Warps = () => {
 
     const getIconsWithWarps = (warps) => {
         const iconNames = [...new Set(warps.map(w => w.icon).filter(Boolean))];
-        const icons = iconNames.map(name => getIconByName(name)).filter(Boolean);
-        icons.sort((a, b) => (a.translatedName || a.name).localeCompare(b.translatedName || b.name));
-        return icons;
+        return iconNames.map(name => getIconByName(name)).filter(Boolean);
     }
 
     const filterWarpsByIcon = (warps, iconName) => {
@@ -885,7 +883,12 @@ const Warps = () => {
             });
         }
 
+        let categoryName = null;
         iconsWithWarps.forEach(icon => {
+            if(icon.category !== categoryName && !selectedCategory) {
+                subForm.label({rawtext: [{translate: `warps:category.${icon.category}`}]});
+                categoryName = icon.category;
+            }
             subForm.button({
                 rawtext: [{translate: icon.translatedName}]
             }, icon.path || "");
