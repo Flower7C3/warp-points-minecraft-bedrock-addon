@@ -315,42 +315,51 @@ const Warps = () => {
         return Array.from(categories);
     }
 
-    const getIconsByCategory = (category) => {
-        return WARP_ICONS.filter(icon => icon && icon.category === category);
+    const getIcons = () => {
+        const icons = new Set();
+        WARP_ICONS.forEach(icon => {
+            if (icon) {
+                icons.add(icon);
+            }
+        });
+        return Array.from(icons);
     }
 
-    const getIconByName = (iconName) => {
-        return WARP_ICONS.find(icon => icon && icon.name === iconName);
+    const getIconsByCategory = (categoryKey) => {
+        return WARP_ICONS.filter(icon => icon && icon.category === categoryKey);
     }
 
-    const getCategoriesWithWarps = (warps) => {
-        const allCategories = getCategories();
-        return allCategories.filter(category =>
+    const getIconByName = (iconKey) => {
+        return WARP_ICONS.find(icon => icon && icon.name === iconKey);
+    }
+
+    const getCategoriesWithWarps = (warps) => getCategories()
+        .filter(categoryKey =>
             warps.some(warp => {
                 const icon = getIconByName(warp.icon);
-                return icon && icon.category === category;
+                return icon && icon.category === categoryKey;
             })
         );
-    }
 
-    const getIconsWithWarps = (warps) => {
-        const iconNames = [...new Set(warps.map(w => w.icon).filter(Boolean))];
-        return iconNames.map(name => getIconByName(name)).filter(Boolean);
-    }
+
+    const getIconsWithWarps = (warps) => getIcons()
+        .filter(icon =>
+            warps.some(warp => warp.icon === icon.name)
+        );
 
     ///=================================================================================================================
     // === Warp Functions ===
-    const filterWarpsByCategory = (warps, category) => {
-        if (!category) return warps;
+    const filterWarpsByCategory = (warps, categoryKey) => {
+        if (!categoryKey) return warps;
         return warps.filter(warp => {
             const icon = getIconByName(warp.icon);
-            return icon && icon.category === category;
+            return icon && icon.category === categoryKey;
         });
     }
 
-    const filterWarpsByIcon = (warps, iconName) => {
-        if (!iconName) return warps;
-        return warps.filter(warp => warp.icon === iconName);
+    const filterWarpsByIcon = (warps, iconKey) => {
+        if (!iconKey) return warps;
+        return warps.filter(warp => warp.icon === iconKey);
     }
 
     const filterWarpsByVisibility = (warps, player) => {
@@ -628,14 +637,14 @@ const Warps = () => {
 
             // Default sorting: distance for teleport, alphabetical for management
             const defaultSortBy = mode === WARP_MENU.TELEPORT ? SORT_BY.DISTANCE : SORT_BY.ALPHABETICAL;
-            showWarpsListMenuWithOptions(player, filteredWarps, defaultSortBy, selectedCategory, mode);
+            showWarpsListMenuWithOptions(player, filteredWarps, defaultSortBy, mode, selectedCategory);
         });
     }
 
-    const showSubcategoriesMenu = (player, warps, sortBy, selectedCategory, mode = WARP_MENU.TELEPORT, selectedIcon = null) => {
+    const showSubcategoriesMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon = null) => {
         const iconsWithWarps = getIconsWithWarps(warps);
         if (iconsWithWarps.length === 0) {
-            showWarpsListMenuWithOptions(player, warps, sortBy, selectedCategory, mode, selectedIcon, null);
+            showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, null);
             return;
         }
 
@@ -685,19 +694,19 @@ const Warps = () => {
                 return;
             }
             if (selectedCategory && subRes.selection === BUTTON_ALL_IN_CATEGORY) {
-                showWarpsListMenuWithOptions(player, warps, sortBy, selectedCategory, mode, null, null);
+                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null);
                 return;
             }
             const iconIndex = selectedCategory ? subRes.selection - 1 : subRes.selection;
             if (iconIndex >= 0 && iconIndex < iconsWithWarps.length) {
                 const chosenIcon = iconsWithWarps[iconIndex];
                 const filteredWarps = filterWarpsByIcon(warps, chosenIcon.name);
-                showWarpsListMenuWithOptions(player, filteredWarps, sortBy, selectedCategory, mode, chosenIcon, warps);
+                showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, selectedCategory, chosenIcon, warps);
             }
         });
     }
 
-    const showWarpsListMenuWithOptions = (player, warps, sortBy, selectedCategory = null, mode = WARP_MENU.TELEPORT, selectedIcon = null, categoryWarps = null) => {
+    const showWarpsListMenuWithOptions = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory = null, selectedIcon = null, categoryWarps = null) => {
         const actionForm = new MinecraftUi.ActionFormData()
             .title({
                 rawtext: [{
@@ -781,13 +790,13 @@ const Warps = () => {
 
             if (res.selection === BUTTON_CHANGE_SORT) {
                 const newSortBy = sortBy === SORT_BY.DISTANCE ? SORT_BY.ALPHABETICAL : SORT_BY.DISTANCE;
-                showWarpsListMenuWithOptions(player, warps, newSortBy, selectedCategory, mode, selectedIcon, categoryWarps);
+                showWarpsListMenuWithOptions(player, warps, newSortBy, mode, selectedCategory, selectedIcon, categoryWarps);
                 return;
             }
 
             if (res.selection === BUTTON_SHOW_SUBCATEGORIES) {
                 const warpsForIcons = categoryWarps !== null ? categoryWarps : warps;
-                showSubcategoriesMenu(player, warpsForIcons, sortBy, selectedCategory, mode, selectedIcon);
+                showSubcategoriesMenu(player, warpsForIcons, sortBy, mode, selectedCategory, selectedIcon);
                 return;
             }
 
