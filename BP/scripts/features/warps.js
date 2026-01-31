@@ -25,6 +25,7 @@ const Warps = () => {
     // === Constants (module scope) ===
     const WORLD_PROP = "warps:data";
     const COMMAND_WARPS_TP = "warps:warps_tp";
+    const COMMAND_WARPS_LIST = "warps:warps_list";
     const COMMAND_WARPS_ADD = "warps:warps_add";
     const COMMAND_WARP_RENAME = "warps:warps_rename";
     const COMMAND_WARP_REMOVE = "warps:warps_remove";
@@ -1914,6 +1915,26 @@ const Warps = () => {
                         } else {
                             showCategoriesListMenu(player, WARP_MENU.TELEPORT);
                         }
+                    });
+                    return {
+                        status: CustomCommandStatus.Success,
+                    };
+                }
+            )
+
+            event.customCommandRegistry.registerCommand(
+                {
+                    name: COMMAND_WARPS_LIST,
+                    description: "List all Warps",
+                    permissionLevel: Minecraft.CommandPermissionLevel.Any,
+                },
+                (origin, warpName = "") => {
+                    system.run(() => {
+                        const player = getPlayer(origin)
+                        player.sendMessage({translate: "warps:menu.filter_all"});
+                        getValidWarps().forEach(warp => player.sendMessage(
+                            getWarpDetails(warp, player, "warps:button_format.short")
+                        ))
                     });
                     return {
                         status: CustomCommandStatus.Success,
