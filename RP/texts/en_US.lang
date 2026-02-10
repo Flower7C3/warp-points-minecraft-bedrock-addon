@@ -65,7 +65,10 @@ warps:menu.no_warps=§r§8[§1❣WARP§8] §cThere are no Warps§r
 warps:menu.no_warps_in_category=§r§8[§1❣WARP§8] §cThere are no Warps in this category!§r
 
 warps:warp_details.title=§r§l§5❣ Warp§r §l%s
-warps:warp_details.body=Distance: §l%6$s§r\nCoordinates: §l%2$s§r\nDimension: §l%3$s§r\nOwner: §l%5$s§r\nVisibility: §l%6$s§r\nCategory: §l%8$s§r\nIcon: §l%9$s§r
+warps:warp_details.body=%2$s%3$sOwner: §l%4$s§r\nVisibility: §l%5$s§r\n%7$s
+warps:warp_details.body.location=Coordinates: §l%1$s§r\nDimension: §l%2$s§r\n
+warps:warp_details.body.distance=Distance: §l%1$s§r (%3$s)\nDirection: §l%4$s§r %5$s\n
+warps:warp_details.body.category=Category: §l%1$s§r\nIcon: §l%2$s§r\n
 warps:warp_details.options.delete=§r§c✖ Delete§r
 warps:warp_details.options.edit_name=§r§5✎ Rename§r
 warps:warp_details.options.edit_coordinates=§r§5⌖ Change coordinates§r
@@ -74,6 +77,7 @@ warps:warp_details.options.change_visibility=§r§5⇨ Change visibility§r
 warps:warp_details.options.teleport=§r§3✈ Teleport to§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Rename§r §l%s
+warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
 warps:warp_details.edit_coordinates.title=§r§l§5⌖ Change coordinates§r §l%s
 warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Changed coordinates for warp §l%1$s§r§7 from §f%2$s§r§7 to §f%3$s§r§7!§r
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Changed warp name from §l%1$s§r§7 to §l%2$s§r§7!§r
@@ -119,13 +123,33 @@ warps:dimension.nether=§cNether§r
 warps:dimension.overworld=§2Overworld§r
 warps:dimension.the_end=§bThe End§r
 
-warps:distance.value_1=%s meter
-warps:distance.value_2=%s meters
-warps:distance.value_5=%s meters
+warps:distance.value_1=%1$s metre
+warps:distance.value_2=%1$s metres
+warps:distance.value_5=%1$s metres
+warps:distance.value_m=%1$sm
+warps:distance.value_km=%1$skm
 
-warps:button_format.long=%7$s §l%1$s§r §o%4$s§r %2$s %3$s
-warps:button_format.short=%7$s §l%1$s§r %2$s %3$s
-warps:sign_text=❣\n§l%1$s§r\n(%8$s)
+warps:direction.value_N=north
+warps:direction.value_NE=north-east
+warps:direction.value_E=east
+warps:direction.value_SE=south-east
+warps:direction.value_S=south
+warps:direction.value_SW=south-west
+warps:direction.value_W=west
+warps:direction.value_NW=north-west
+
+warps:button_format.long=%6$s §l%1$s§r %3$s %2$s
+warps:button_format.long.location=%2$s
+warps:button_format.long.distance=%2$s to %4$s §l%5$s§r
+warps:button_format.long.category=
+warps:button_format.short=%6$s §l%1$s§r %2$s
+warps:button_format.short.location=%1$s %2$s
+warps:button_format.short.category=
+warps:button_format.short.distance=
+warps:sign_text=❣\n§l%1$s§r\n(%7$s)
+warps:sign_text.location=%1$s %2$s
+warps:sign_text.distance=
+warps:sign_text.category=%1$s
 
 # === SIGN TYPES ===
 warps:sign_material.oak=Oak

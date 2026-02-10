@@ -65,7 +65,10 @@ warps:menu.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w!§r
 warps:menu.no_warps_in_category=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w w tej kategorii!§r
 
 warps:warp_details.title=§r§l§5❣ Warp§r §l%s
-warps:warp_details.body=Odległość: §l%4$s§r\nWspółrzędne: §l%2$s§r\nWymiar: §l%3$s§r\nWłaściciel: §l%5$s§r\nWidoczność: §l%6$s§r\nKategoria: §l%8$s§r\nIkona: §l%9$s§r
+warps:warp_details.body=%2$s%3$sWłaściciel: §l%4$s§r\nWidoczność: §l%5$s§r\n%7$s
+warps:warp_details.body.location=Współrzędne: §l%1$s§r\nWymiar: §l%2$s§r\n
+warps:warp_details.body.distance=Odległość: §l%1$s§r (%3$s)\nKierunek: §l%4$s§r %5$s\n
+warps:warp_details.body.category=Kategoria: §l%1$s§r\nIkona: §l%2$s§r\n
 warps:warp_details.options.delete=§r§c✖ Usuń§r
 warps:warp_details.options.edit_name=§r§5✎ Zmień nazwę§r
 warps:warp_details.options.edit_coordinates=§r§5⌖ Zmień współrzędne§r
@@ -120,13 +123,33 @@ warps:dimension.nether=§cNether§r
 warps:dimension.overworld=§2Świat Główny§r
 warps:dimension.the_end=§bKres§r
 
-warps:distance.value_1=%s metr
-warps:distance.value_2=%s metry
-warps:distance.value_5=%s metrów
+warps:distance.value_1=%1$s metr
+warps:distance.value_2=%1$s metry
+warps:distance.value_5=%1$s metrów
+warps:distance.value_m=%1$sm
+warps:distance.value_km=%1$skm
 
-warps:button_format.long=%7$s §l%1$s§r §o%4$s§r %2$s %3$s
-warps:button_format.short=%7$s §l%1$s§r %2$s %3$s
-warps:sign_text=❣\n§l%1$s§r\n(%8$s)
+warps:direction.value_N=północ
+warps:direction.value_NE=północny-wschód
+warps:direction.value_E=wschód
+warps:direction.value_SE=południowy-wschód
+warps:direction.value_S=południe
+warps:direction.value_SW=południowy-zachód
+warps:direction.value_W=zachód
+warps:direction.value_NW=północny-zachód
+
+warps:button_format.long=%6$s §l%1$s§r %3$s %2$s
+warps:button_format.long.location=%2$s
+warps:button_format.long.distance=%2$s na %4$s §l%5$s§r
+warps:button_format.long.category=
+warps:button_format.short=%6$s §l%1$s§r %2$s
+warps:button_format.short.location=%1$s %2$s
+warps:button_format.short.distance=
+warps:button_format.short.category=
+warps:sign_text=❣\n§l%1$s§r\n(%7$s)
+warps:sign_text.location=%1$s %2$s
+warps:sign_text.distance=
+warps:sign_text.category=%1$s
 
 # === TYPY TABLICZEK ===
 warps:sign_material.oak=Dąb
