@@ -4,8 +4,15 @@ warps:main_menu.manage=§r§5❣ Zarządzaj Warpami§r
 warps:main_menu.add=§r§6✚ Dodaj Warp§r
 
 warps:field.category_icon.label=Kategoria / Ikona
+warps:field.category.label=Kategoria
+warps:field.icon.label=Ikona
 warps:field.name.label=Nazwa miejsca
 warps:field.name.placeholder=Nazwa miejsca (wymagane, tekst)
+warps:field.coords.label=Współrzędne
+warps:field.dimension.label=Wymiar
+warps:field.owner.label=Właściciel
+warps:field.distance.label=Odległość
+warps:field.direction.label=Kierunek
 warps:field.x.label=Współrzędna X (od zachodu do wschodu)
 warps:field.x.placeholder=%s (wymagane, liczba)
 warps:field.y.label=Współrzędna Y (z dołu do góry)
@@ -31,7 +38,7 @@ warps:field.sign_material.value.spruce=Świerk
 warps:field.sign_material.value.birch=Brzoza
 warps:field.sign_material.value.jungle=Drzewo tropikalne
 warps:field.sign_material.value.acacia=Akacja
-warps:field.sign_material.value.mangrove=Mangrowoc
+warps:field.sign_material.value.mangrove=Mangrove
 warps:field.sign_material.value.cherry=Wiśnia
 warps:field.sign_material.value.crimson=Karmazyn
 warps:field.sign_material.value.bamboo=Bambus
@@ -73,18 +80,13 @@ warps:teleport.error=§r§8[§1❣WARP§8] §cBłąd podczas teleportacji do War
 warps:error.warp_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
 warps:error.warp_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
 warps:error.icon_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono ikony o nazwie §l%s§r§c!§r
-warps:menu.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w!§r
+warps:menu.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych warpów!§r
 
 warps:search_results.title=§r§l§3✈ Wyniki wyszukiwania§r %s
 warps:search_results.select_icon=Wybierz ikonę, aby przefiltrować wyniki:
 warps:search_results.no_icons_in_results=§r§8[§1❣WARP§8] §7W wynikach nie ma warpów z ikonami.§r
 
 warps:warp_details.title=§r§l§5❣ Warp§r §l%s
-warps:warp_details.body=%2$s%3$sWłaściciel: §l%4$s§r\nWidoczność: §l%5$s§r\n%7$s%8$s
-warps:warp_details.body.location=Współrzędne: §l%1$s§r\nWymiar: §l%2$s§r\n
-warps:warp_details.body.distance=Odległość: §l%1$s§r (%3$s)\nKierunek: §l%4$s§r %5$s\n
-warps:warp_details.body.category=Kategoria: §l%1$s§r\nIkona: §l%2$s§r\n
-warps:warp_details.body.sign=Typ tabliczki: §l%1$s§r\nMateriał tabliczki: §l%2$s§r\n
 warps:warp_details.options.delete=§r§c✖ Usuń§r
 warps:warp_details.options.edit_name=§r§5✎ Zmień nazwę§r
 warps:warp_details.options.edit_coordinates=§r§5⌖ Zmień współrzędne§r
@@ -111,13 +113,13 @@ warps:warp_details.change_visibility.public_warning.body=§cZmiana warpa na publ
 warps:warp_details.change_visibility.public_warning.confirm=§r§cTak, uczyń publicznym§r
 warps:warp_details.change_visibility.public_warning.cancel=§r§aAnuluj§r
 warps:warp_details.change_visibility.success=§r§8[§1❣WARP§8] §7Zmieniono widoczność warpa §l%1$s§r§7 z §l%2$s§r§7 na §l%3$s§r§7!§r
-warps:visibility.cannot_change_public=§r§8[§1❣WARP§8] §cNie można zmienić widoczności publicznych warpa!§r
+warps:visibility.cannot_change_public=§r§8[§1❣WARP§8] §cNie można zmienić widoczności publicznych warpów!§r
 
 warps:warp_details.remove_confirm.title=§r§l§4✖ Usuń§r §l%s
 warps:warp_details.remove_confirm.body=§cCzy na pewno chcesz usunąć ten warp na zawsze?§r
 warps:warp_details.remove_confirm.no=§r§aNie§r
 warps:warp_details.remove_confirm.yes=§r§cTak, usuń na zawsze§r
-warps:warp_details.remove.not_deleted=§r§8[§1❣WARP§8] §aNie usunięto Warp §l%s§r§a!§r
+warps:warp_details.remove.not_deleted=§r§8[§1❣WARP§8] §aWarp §l%s§r§a nie został usunięty.§r
 warps:warp_details.remove.success=§r§8[§1❣WARP§8] §cUsunięto Warp §l%s§r§c!§r
 
 warps:visibility.state.private.label=§9■ Prywatny§r
@@ -143,8 +145,10 @@ warps:distance.value_1=%1$s metr
 warps:distance.value_2=%1$s metry
 warps:distance.value_5=%1$s metrów
 warps:distance.value_m=%1$sm
+warps:distance_direction.value_m=%1$sm na %2$s
 warps:distance.value_km=%1$skm
 
+warps:direction.value_on_place=na miejscu
 warps:direction.value_N=północ
 warps:direction.value_NE=północny-wschód
 warps:direction.value_E=wschód
@@ -153,25 +157,6 @@ warps:direction.value_S=południe
 warps:direction.value_SW=południowy-zachód
 warps:direction.value_W=zachód
 warps:direction.value_NW=północny-zachód
-
-warps:list_all=%6$s §l%1$s§r %2$s
-warps:list_all.location=%1$s %2$s
-warps:list_all.distance=
-warps:list_all.category=
-warps:list_all.sign=
-warps:button_format.long=%6$s §l%1$s§r %3$s %2$s
-warps:button_format.long.location=%2$s
-warps:button_format.long.distance=%2$s na %4$s §l%5$s§r
-warps:button_format.long.category=
-warps:button_format.long.sign=
-warps:button_format.short=%6$s §l%1$s§r %2$s
-warps:button_format.short.location=%1$s %2$s
-warps:button_format.short.distance=
-warps:button_format.short.category=
-warps:button_format.short.sign=
-warps:sign_text=❣\n§l%1$s§r\n(%5$s)
-warps:sign_text.location=%1$s %2$s
-warps:sign_text.category=%1$s
 
 # === KATEGORIE ===
 warps:category.special=Specjalne

@@ -60,6 +60,14 @@ const Warps = () => {
         return vals[0];
     };
 
+    const TRANSLATION_PATTERN = Object.freeze({
+        BODY: "[coordsLabel]: §l[coordsValue]§r\n[dimensionLabel]: §l[dimensionName]§r\n[distanceLabel]: §l[distanceKmValue]§r (§l[distanceMetersLocale]§r)\n[directionLabel]: §l[directionText] [directionSign]§r\n[ownerLabel]: §l[ownerName]§r\n[visibilityLabel]: §l[visibilityName]§r\n[categoryLabel]: §l[categoryName]§r\n[iconLabel]: §l[iconName]§r\n[signModeLabel]: §l[signModeValue]§r\n[signMaterialLabel]: §l[signMaterialValue]§r",
+        SIGN_TEXT: "❣ §l[warpName]§r ([categoryName])",
+        BUTTON_LONG: "[visibilitySymbol] §l[warpName]§r [distanceDirectionValue] [directionSign]",
+        BUTTON_SHORT: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName]",
+        LIST_ALL: "[visibilitySymbol] §l[warpName]§r [coordsValue [dimensionName]",
+    })
+
     // List of available images for warps — organized by categories
     const WARP_ICONS = [
         // === SPECIAL LOCATIONS ===
@@ -442,115 +450,116 @@ const Warps = () => {
 
     const getWarpDimension = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
 
-    const getWarpDetails = (warp, player, translationKey, simplifiedData) => {
+    const getWarpDetails = (warp, player, pattern) => {
         const visibility = (warp.visibility === null || warp.visibility === "" || warp.visibility === undefined)
             ? WARP_VISIBILITY.PUBLIC
             : warp.visibility;
 
-        const getWarpDetailsLocationTexts = (warpArg) => {
-            const coords = `${warpArg.x ?? "?"}, ${warpArg.y ?? "?"}, ${warpArg.z ?? "?"}`;
-            const dim = (warpArg.dimension != null && String(warpArg.dimension)) ? String(warpArg.dimension) : "overworld";
-            return {
-                translate: `${translationKey}.location`,
-                with: {rawtext: [{text: coords}, {translate: `warps:dimension.${dim}`}]}
-            };
-        };
-        const DIRECTION_NAMES = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-        const DIRECTION_ARROWS = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
-        const getPlayerToWarpDistanceTexts = (playerArg, warpArg) => {
-            if (!playerArg) return {text: ""};
-            if (warpArg.dimension !== getPlayerDimension(playerArg)) return {text: ""};
-            const playerLocation = playerArg.location;
-            const distance = calculateDistance(playerLocation.x, playerLocation.y, playerLocation.z, warpArg.x, warpArg.y, warpArg.z);
-            const suffix = (distance === 1) ? "1" : ((1 < distance && distance < 5) ? "2" : "5");
-            const dx = warpArg.x - playerLocation.x;
-            const dz = warpArg.z - playerLocation.z;
+        const iconKey = (warp && typeof warp.icon === "string") ? warp.icon : null;
+        const icon = getIconByName(iconKey);
+
+
+        const dim = (warp.dimension != null && String(warp.dimension)) ? String(warp.dimension) : "overworld";
+
+        const keys = {
+            nameLabel: {translate: `warps:field.name.label`},
+            warpName: {text: (warp.name != null ? String(warp.name) : "?")},
+            coordsLabel: {translate: `warps:field.coords.label`},
+            coordsValue: {text: `${warp.x ?? "?"}, ${warp.y ?? "?"}, ${warp.z ?? "?"}`},
+            dimensionLabel: {translate: `warps:field.dimension.label`},
+            dimensionName: {translate: `warps:dimension.${dim}`},
+            ownerLabel: {translate: `warps:field.owner.label`},
+            ownerName: (warp.owner === null || warp.owner === "" || warp.owner === undefined)
+                ? {text: "?"}
+                : {text: warp.owner},
+            visibilityLabel: {translate: `warps:field.visibility.label`},
+            visibilityName: {translate: `warps:visibility.state.${visibility}.label`},
+            visibilitySymbol: visibility
+                ? {translate: `warps:visibility.state.${visibility}.symbol`}
+                : {text: ""},
+            categoryLabel: {translate: `warps:field.category.label`},
+            categoryName: (icon.translatedCategory && typeof icon.translatedCategory === "string")
+                ? {translate: icon.translatedCategory}
+                : {text: "?"},
+            iconLabel: {translate: `warps:field.icon.label`},
+            iconName: (icon.translatedName && typeof icon.translatedName === "string")
+                ? {translate: icon.translatedName}
+                : {text: iconKey},
+            signModeLabel: {translate: "warps:field.sign_mode.label"},
+            signModeValue: {translate: `warps:field.sign_mode.value.${getWarpSignMode(warp)}`},
+            signMaterialLabel: {translate: "warps:field.sign_material.label"},
+            signMaterialValue: {translate: `warps:field.sign_material.value.${getWarpSignMaterial(warp)}`},
+        }
+
+        if (player && warp.dimension === getPlayerDimension(player)) {
+            const DIRECTION_NAMES = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+            const DIRECTION_ARROWS = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
+            const playerLocation = player.location;
+            const distance = calculateDistance(playerLocation.x, playerLocation.y, playerLocation.z, warp.x, warp.y, warp.z);
+            const suffix = (distance >= 5) ? "5" : ((5 > distance && distance > 1) ? "2" : "1");
+            const dx = warp.x - playerLocation.x;
+            const dz = warp.z - playerLocation.z;
             let angleToWarp = (Math.atan2(dx, -dz) * 180 / Math.PI);
             if (angleToWarp < 0) angleToWarp += 360;
-            const directionText = DIRECTION_NAMES[Math.round(angleToWarp / 45) % 8];
-            const rotation = playerArg.getRotation();
+            const playerAtWarpLocation = (-1 < dx && dx < 1 && -1 < dz && dz < 1);
+            const directionText = playerAtWarpLocation
+                ? "warps:direction.value_on_place"
+                : `warps:direction.value_${DIRECTION_NAMES[Math.round(angleToWarp / 45) % 8]}`;
+            const rotation = player.getRotation();
             const playerYaw = (typeof rotation.y === "number") ? rotation.y : 0;
             const playerFacingDeg = (180 + playerYaw + 360) % 360;
             const relativeDeg = (angleToWarp - playerFacingDeg + 360) % 360;
-            const directionSign = DIRECTION_ARROWS[Math.round(relativeDeg / 45) % 8];
-            return {
-                translate: `${translationKey}.distance`, with: {
-                    rawtext: [
-                        {
-                            translate: `warps:distance.value_km`,
-                            with: {rawtext: [{text: (distance / 1000).toFixed(2).toString()}]}
-                        },
-                        {
-                            translate: `warps:distance.value_m`,
-                            with: {rawtext: [{text: Math.round(distance).toString()}]}
-                        },
-                        {
-                            translate: `warps:distance.value_${suffix}`,
-                            with: {rawtext: [{text: Math.round(distance).toString()}]}
-                        },
-                        (dx === 0 && dz === 0) ? {text: "·"} : {translate: `warps:direction.value_${directionText}`},
-                        {text: (dx === 0 && dz === 0) ? "·" : directionSign},
-                    ]
-                }
-            };
-        };
-        const getWarpIconTexts = (warpArg) => {
-            const iconKey = (warpArg && typeof warpArg.icon === "string") ? warpArg.icon : null;
-            const rawtext = !iconKey
-                ? [{text: "?"}, {text: "?"}]
-                : (() => {
-                    const icon = getIconByName(iconKey);
-                    if (!icon) {
-                        return [{text: "?"}, {text: iconKey}];
-                    }
-                    return [
-                        (icon.translatedCategory && typeof icon.translatedCategory === "string")
-                            ? {translate: icon.translatedCategory} : {text: "?"},
-                        (icon.translatedName && typeof icon.translatedName === "string")
-                            ? {translate: icon.translatedName} : {text: iconKey}
-                    ];
-                })();
-            return {translate: `${translationKey}.category`, with: {rawtext}};
-        };
-        const getWarpSignTexts = (warpArg) => ({
-            translate: `${translationKey}.sign`,
-            with: {
-                rawtext: [
-                    {translate: `warps:field.sign_mode.value.${getWarpSignMode(warpArg)}`},
-                    {translate: `warps:field.sign_material.value.${getWarpSignMaterial(warpArg)}`}
-                ]
-            }
-        });
+            const directionSign = playerAtWarpLocation
+                ? "·"
+                : DIRECTION_ARROWS[Math.round(relativeDeg / 45) % 8];
 
-        let rawText;
-        if (simplifiedData) {
-            rawText = [
-                {text: (warp.name != null ? String(warp.name) : "?")},
-                getWarpDetailsLocationTexts(warp),
-                {translate: `warps:visibility.state.${visibility}.label`},
-                visibility ? {translate: `warps:visibility.state.${visibility}.symbol`} : {text: ""},
-                getWarpIconTexts(warp),
-            ];
-        } else {
-            rawText = [
-                {text: (warp.name != null ? String(warp.name) : "?")},
-                getWarpDetailsLocationTexts(warp),
-                getPlayerToWarpDistanceTexts(player, warp),
-                {text: String((warp.owner === null || warp.owner === "" || warp.owner === undefined) ? "?" : warp.owner)},
-                {translate: `warps:visibility.state.${visibility}.label`},
-                visibility ? {translate: `warps:visibility.state.${visibility}.symbol`} : {text: ""},
-                getWarpIconTexts(warp),
-                getWarpSignTexts(warp),
-            ];
+            keys.distanceLabel = {translate: `warps:field.distance.label`};
+            keys.distanceKmValue = {
+                translate: `warps:distance.value_km`,
+                with: {rawtext: [{text: (distance / 1000).toFixed(2).toString()}]}
+            };
+            keys.distanceMetersValue = {
+                translate: `warps:distance.value_m`,
+                with: {rawtext: [{text: Math.round(distance).toString()}]}
+            };
+            keys.distanceMetersLocale = {
+                translate: `warps:distance.value_${suffix}`,
+                with: {rawtext: [{text: Math.round(distance).toString()}]}
+            };
+            keys.distanceDirectionValue = {
+                translate: `warps:distance_direction.value_m`,
+                with: {rawtext: [{text: Math.round(distance).toString()}, {translate: directionText}]}
+            };
+            keys.directionLabel = {translate: `warps:field.direction.label`};
+            keys.directionText = {translate: directionText};
+            keys.directionSign = {text: directionSign};
         }
-        return {
-            rawtext: [{
-                translate: translationKey,
-                with: {
-                    rawtext: rawText
+
+        const parts = [];
+        const regex = /\[([^\]]+)\]/g;
+        let lastEnd = 0;
+        let m;
+        while ((m = regex.exec(pattern)) !== null) {
+            if (m.index > lastEnd) {
+                const literal = pattern.slice(lastEnd, m.index);
+                if (literal.length > 0) {
+                    parts.push({text: literal});
                 }
-            }]
+            }
+            const key = m[1];
+            if (keys[key] !== undefined) {
+                parts.push(keys[key]);
+            }
+            lastEnd = m.index + m[0].length;
         }
+        if (lastEnd < pattern.length) {
+            const literal = pattern.slice(lastEnd);
+            if (literal.length > 0) {
+                parts.push({text: literal});
+            }
+        }
+
+        return {rawtext: parts};
     }
 
     ///=================================================================================================================
@@ -874,10 +883,10 @@ const Warps = () => {
 
         sortedWarps.forEach(warp => {
             try {
-                const buttonTranslationKey = sortBy === SORT_BY.DISTANCE ? "warps:button_format.long" : "warps:button_format.short";
+                const buttonTranslationPattern = sortBy === SORT_BY.DISTANCE ? TRANSLATION_PATTERN.BUTTON_LONG : TRANSLATION_PATTERN.BUTTON_SHORT;
                 const icon = getIconByName(warp.icon);
                 actionForm.button(
-                    getWarpDetails(warp, player, buttonTranslationKey),
+                    getWarpDetails(warp, player, buttonTranslationPattern),
                     icon && icon.path ? icon.path : ""
                 );
             } catch (error) {
@@ -935,7 +944,7 @@ const Warps = () => {
                 rawtext: [{translate: "warps:warp_details.options.teleport"}]
             }, icon ? icon.path : "")
             .label(
-                getWarpDetails(warp, player, "warps:warp_details.body", false)
+                getWarpDetails(warp, player, TRANSLATION_PATTERN.BODY)
             );
         const canEdit = canPlayerEditWarp(player, warp);
 
@@ -1163,7 +1172,7 @@ const Warps = () => {
             blockProperties: blockProperties(signType, signDirection),
             isDoubleSide: signType !== SIGN_TYPE.WALL,
             textColor: getSignTextColor(signMaterial),
-            text: getWarpDetails(warp, null, "warps:sign_text", true),
+            text: getWarpDetails(warp, null, TRANSLATION_PATTERN.SIGN_TEXT),
         }
     }
 
@@ -2119,7 +2128,7 @@ const Warps = () => {
                         const player = getPlayer(origin)
                         player.sendMessage({translate: "warps:menu.filter_all"});
                         getValidWarps().forEach(warp => player.sendMessage(
-                            getWarpDetails(warp, player, "warps:list_all", false)
+                            getWarpDetails(warp, player, TRANSLATION_PATTERN.LIST_ALL)
                         ))
                     });
                     return {

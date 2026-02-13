@@ -4,7 +4,14 @@ warps:main_menu.manage=§r§5❣ Manage Warps§r
 warps:main_menu.add=§r§6✚ Add Warp§r
 
 warps:field.category_icon.label=Category / Icon
+warps:field.category.label=Category
+warps:field.icon.label=Icon
 warps:field.name.label=Place name
+warps:field.coords.label=Coordinates
+warps:field.dimension.label=Dimension
+warps:field.owner.label=Owner
+warps:field.distance.label=Distance
+warps:field.direction.label=Direction
 warps:field.name.placeholder=Place name (required, string)
 warps:field.x.label=X coordinate (West to East)
 warps:field.x.placeholder=%s (required, number)
@@ -13,7 +20,7 @@ warps:field.y.placeholder=%s (required, number)
 warps:field.z.label=Z coordinate (North to South)
 warps:field.z.placeholder=%s (required, number)
 warps:field.sign_type.label=Sign type
-warps:field.sign_mode.label=Sign facing direction (for automatic if standing or hanging)
+warps:field.sign_mode.label=Sign facing (automatic when standing or hanging)
 warps:field.sign_mode.value.north_south=Automatic: north-south (standing/hanging) or wall attached
 warps:field.sign_mode.value.east_west=Automatic: east-west (standing/hanging) or wall attached
 warps:field.sign_mode.value.standing_north_south=Standing: north-south
@@ -41,10 +48,10 @@ warps:field.sign_material.value.warped=Warped
 warps:add.step1.title=§r§l§6✚ Add Warp§r step 1/3
 warps:add.step1.body=Select a category for the warp icon:
 warps:add.step2.title=§r§l§6✚ Add Warp§r step 2/3
-warps:add.step2.body=Select an icon from §l%s§r category:
+warps:add.step2.body=Select an icon from the §l%s§r category:
 warps:add.step3.title=§r§l§6✚ Add Warp§r step 3/3
-warps:add.coords_must_be_number=§r§8[§1❣WARP§8] §7The Coordinates must be a Number!§r
-warps:add.coords_out_of_range=§r§8[§1❣WARP§8] §7The Coordinates are out of valid range!§r
+warps:add.coords_must_be_number=§r§8[§1❣WARP§8] §7Coordinates must be numbers.§r
+warps:add.coords_out_of_range=§r§8[§1❣WARP§8] §7Coordinates are out of valid range.§r
 warps:add.duplicate_name=§r§8[§1❣WARP§8] §cA warp with name §l%s§r§c already exists!§r
 warps:add.invalid_icon=§r§8[§1❣WARP§8] §7Invalid icon selected! Please try again.§r
 warps:add.name_too_long=§r§8[§1❣WARP§8] §7The warp name is too long (max 50 characters)!§r
@@ -81,11 +88,6 @@ warps:search_results.select_icon=Select an icon to filter the results:
 warps:search_results.no_icons_in_results=§r§8[§1❣WARP§8] §7No warps with icons in the results.§r
 
 warps:warp_details.title=§r§l§5❣ Warp§r §l%s
-warps:warp_details.body=%2$s%3$sOwner: §l%4$s§r\nVisibility: §l%5$s§r\n%7$s%8$s
-warps:warp_details.body.location=Coordinates: §l%1$s§r\nDimension: §l%2$s§r\n
-warps:warp_details.body.distance=Distance: §l%1$s§r (%3$s)\nDirection: §l%4$s§r %5$s\n
-warps:warp_details.body.category=Category: §l%1$s§r\nIcon: §l%2$s§r\n
-warps:warp_details.body.sign=Sign type: §l%1$s§r\nSign material: §l%2$s§r\n
 warps:warp_details.options.delete=§r§c✖ Delete§r
 warps:warp_details.options.edit_name=§r§5✎ Rename§r
 warps:warp_details.options.edit_coordinates=§r§5⌖ Change coordinates§r
@@ -102,7 +104,7 @@ warps:regen_signs.success=§r§8[§1❣WARP§8] §7Regenerated §l%s§r§7 warp 
 
 warps:warp_details.edit_icon.title=§r§l§5✯ Change icon§r §l%s
 warps:warp_details.edit_icon.step1.body=Select a category to choose a new icon:
-warps:warp_details.edit_icon.step2.body=Select a new icon from §l%s§r category:
+warps:warp_details.edit_icon.step2.body=Select a new icon from the §l%s§r category:
 warps:warp_details.edit_icon.success=§r§8[§1❣WARP§8] §7Changed icon for warp §l%1$s§r§7 to §l%2$s§r§7!§r
 
 warps:warp_details.change_visibility.title=§r§l§5⇨ Change visibility§r §l%s
@@ -118,7 +120,7 @@ warps:warp_details.remove_confirm.title=§r§l§4✖ Delete Warp§r §l%s
 warps:warp_details.remove_confirm.body=§cAre you sure you want to delete this warp permanently?§r
 warps:warp_details.remove_confirm.no=§r§aNo§r
 warps:warp_details.remove_confirm.yes=§r§cYes, delete permanently§r
-warps:warp_details.remove.not_deleted=§r§8[§1❣WARP§8] §aNot deleted Warp §l%s§r§a!§r
+warps:warp_details.remove.not_deleted=§r§8[§1❣WARP§8] §aWarp §l%s§r§a was not deleted.§r
 warps:warp_details.remove.success=§r§8[§1❣WARP§8] §cDeleted Warp §l%s§r§c!§r
 
 warps:visibility.state.private.label=§9■ Private§r
@@ -128,7 +130,7 @@ warps:visibility.state.private.symbol=§9■§r
 warps:visibility.state.protected.symbol=§e◆§r
 warps:visibility.state.public.symbol=§f◎§r
 
-warps:error.fill_required=§r§8[§1❣WARP§8] §7You need to fill up everything what is required!§r
+warps:error.fill_required=§r§8[§1❣WARP§8] §7Please fill in all required fields.§r
 warps:error.no_permission=§r§8[§1❣WARP§8] §cYou don't have permission to modify this warp!§r
 
 warps:field.visibility.label=Visibility
@@ -144,8 +146,10 @@ warps:distance.value_1=%1$s metre
 warps:distance.value_2=%1$s metres
 warps:distance.value_5=%1$s metres
 warps:distance.value_m=%1$sm
+warps:distance_direction.value_m=%1$sm to %2$s
 warps:distance.value_km=%1$skm
 
+warps:direction.value_on_place=on place
 warps:direction.value_N=north
 warps:direction.value_NE=north-east
 warps:direction.value_E=east
@@ -154,25 +158,6 @@ warps:direction.value_S=south
 warps:direction.value_SW=south-west
 warps:direction.value_W=west
 warps:direction.value_NW=north-west
-
-warps:list_all=%6$s §l%1$s§r %2$s
-warps:list_all.location=%1$s %2$s
-warps:list_all.distance=
-warps:list_all.category=
-warps:list_all.sign=
-warps:button_format.long=%6$s §l%1$s§r %3$s %2$s
-warps:button_format.long.location=%2$s
-warps:button_format.long.distance=%2$s to %4$s §l%5$s§r
-warps:button_format.long.category=
-warps:button_format.long.sign=
-warps:button_format.short=%6$s §l%1$s§r %2$s
-warps:button_format.short.location=%1$s %2$s
-warps:button_format.short.category=
-warps:button_format.short.distance=
-warps:button_format.short.sign=
-warps:sign_text=❣\n§l%1$s§r\n(%5$s)
-warps:sign_text.location=%1$s %2$s
-warps:sign_text.category=%1$s
 
 # === CATEGORIES ===
 warps:category.special=Special
@@ -236,7 +221,7 @@ warps:icon.Flat=Flat
 warps:icon.Skyscraper=Skyscraper
 warps:icon.Garage=Garage
 warps:icon.Christian-church=Christian church
-warps:icon.Orthodoxian-church=Orthodoxian church
+warps:icon.Orthodoxian-church=Orthodox church
 warps:icon.Synagogue=Synagogue
 
 # === CITYSCAPES ===
