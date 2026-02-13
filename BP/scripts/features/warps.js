@@ -850,12 +850,22 @@ const Warps = () => {
         const BUTTON_FILTER_ICON = 1;
         const BUTTON_SORT = 2;
         const categoryButtonText = selectedCategory
-            ? { rawtext: [{ translate: "warps:menu.button_category_current", with: { rawtext: [{ translate: categoryKey }] } }] }
-            : { rawtext: [{ translate: "warps:menu.filter_by_category" }] };
+            ? {
+                rawtext: [{
+                    translate: "warps:menu.button_category_current",
+                    with: {rawtext: [{translate: categoryKey}]}
+                }]
+            }
+            : {rawtext: [{translate: "warps:menu.filter_by_category"}]};
         const iconButtonText = selectedIcon && iconObj
-            ? { rawtext: [{ translate: "warps:menu.button_icon_current", with: { rawtext: [{ translate: iconObj.translatedName }] } }] }
-            : { rawtext: [{ translate: "warps:menu.filter_by_icon" }] };
-        const sortButtonText = { rawtext: [{ translate: sortBy === SORT_BY.DISTANCE ? "warps:menu.meta_sort_distance" : "warps:menu.meta_sort_alphabetical" }] };
+            ? {
+                rawtext: [{
+                    translate: "warps:menu.button_icon_current",
+                    with: {rawtext: [{translate: iconObj.translatedName}]}
+                }]
+            }
+            : {rawtext: [{translate: "warps:menu.filter_by_icon"}]};
+        const sortButtonText = {rawtext: [{translate: sortBy === SORT_BY.DISTANCE ? "warps:menu.meta_sort_distance" : "warps:menu.meta_sort_alphabetical"}]};
         actionForm
             .button(categoryButtonText)
             .button(iconButtonText)
@@ -1344,19 +1354,14 @@ const Warps = () => {
 
         new MinecraftUi.ModalFormData()
             .title({rawtext: [{translate: "warps:add.step3.title"}]})
-            .label({rawtext: [{translate: "warps:field.category.label"}]})
+            .label({rawtext: [{translate: "warps:field.category_icon.label"}]})
             .label({
                 rawtext: [{
-                    translate: "§l%%s§r", with: {
-                        rawtext: [{translate: icon.translatedCategory}]
-                    }
-                }]
-            })
-            .label({rawtext: [{translate: "warps:field.icon.label"}]})
-            .label({
-                rawtext: [{
-                    translate: "§l%%s§r", with: {
-                        rawtext: [{translate: icon.translatedName}]
+                    translate: "§l%%s§r / §l%%s§r", with: {
+                        rawtext: [
+                            {translate: icon.translatedCategory},
+                            {translate: icon.translatedName},
+                        ]
                     }
                 }]
             })
@@ -1395,13 +1400,14 @@ const Warps = () => {
                 return;
             }
 
-            const warpNameIndex = 4
-            const targetLocationXIndex = 5
-            const targetLocationYIndex = 6
-            const targetLocationZIndex = 7
-            const signModeIndex = 8
-            const signMaterialIndex = 9
-            const visibilityIndex = 10
+            let index = 3;
+            const warpNameIndex = index++;
+            const targetLocationXIndex = index++;
+            const targetLocationYIndex = index++;
+            const targetLocationZIndex = index++;
+            const signModeIndex = index++;
+            const signMaterialIndex = index++;
+            const visibilityIndex = index++;
 
             if (!res.formValues || !res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex] || res.formValues[signModeIndex] === undefined || res.formValues[signMaterialIndex] === undefined || res.formValues[visibilityIndex] === undefined) {
                 player.sendMessage({translate: "warps:error.fill_required"});
@@ -1553,10 +1559,15 @@ const Warps = () => {
                 return;
             }
 
-            const newWarpName = res.formValues[0]?.toString().trim();
-            const newSignModeIndex = res.formValues[1];
+            let index = 0;
+            const warpNameIndex = index++;
+            const signModeIndex = index++;
+            const signMaterialIndex = index++;
+
+            const newWarpName = res.formValues[warpNameIndex]?.toString().trim();
+            const newSignModeIndex = res.formValues[signModeIndex];
             const newSignMode = Object.values(SIGN_MODE)[newSignModeIndex] || Object.values(SIGN_MODE)[0];
-            const newSignMaterialIndex = res.formValues[2];
+            const newSignMaterialIndex = res.formValues[signMaterialIndex];
             const newSignMaterial = Object.values(SIGN_MATERIAL)[newSignMaterialIndex] || Object.values(SIGN_MATERIAL)[0];
 
             editWarpNameSave(player, warp, newWarpName, newSignMode, newSignMaterial);
@@ -2007,7 +2018,7 @@ const Warps = () => {
     const showMainMenu = (player) => {
         const menuForm = new MinecraftUi.ActionFormData()
             .title({rawtext: [{translate: "warps:main_menu.title"}]})
-            .body({rawtext: [{translate: "warps:main_menu.body"}]});
+            .body("");
 
         const BUTTON_TELEPORT = 0;
         menuForm.button({
