@@ -59,31 +59,28 @@ warps:teleport_menu.title=§r§l§3✈ Teleport to...§r
 warps:manage_menu.title=§r§l§5❣ Manage Warps§r
 
 warps:menu.filter_all=All Warps
-warps:menu.filter_all_in_category=§r§6All warps in category §l%1$s§r
+warps:menu.filter_all_in_category=All warps in category §l%1$s§r
 warps:menu.filter_category=%1$s
-warps:menu.filter.or_select_category=Or select category:
 warps:menu.filter.select_icon=Select an icon:
-warps:menu.filter.or_select_icon=Or select an icon:
 warps:menu.filter.or_select_icon_from_category=Or select an icon from category §l%1$s§r:
 
-warps:menu.show_subcategories=§r§6Filter by icon§r
-warps:menu.sort_change_to_alphabetical=§r§6Change sort to §lalphabetical§r
-warps:menu.sort_change_to_distance=§r§6Change sort to §ldistance§r
-warps:menu.sorting_by_alphabetical_all=§rSorting by §lalphabetical§r order:
-warps:menu.sorting_by_alphabetical_cat=§rSorting by §lalphabetical§r order in §l%s§r category:
-warps:menu.sorting_by_alphabetical_cat_icon=§rSorting by §lalphabetical§r order in category §l%1$s§r and icon §l%2$s§r:
-warps:menu.sorting_by_alphabetical_icon=§rSorting by §lalphabetical§r order — icon §l%s§r:
-warps:menu.sorting_by_distance_all=§rSorting by §ldistance§r:
-warps:menu.sorting_by_distance_cat=§rSorting by §ldistance§r in §l%s§r category:
-warps:menu.sorting_by_distance_cat_icon=§rSorting by §ldistance§r in category §l%1$s§r and icon §l%2$s§r:
-warps:menu.sorting_by_distance_icon=§rSorting by §ldistance§r — icon §l%s§r:
+warps:menu.or_select_category_from_list=Or select a category from the list:
+warps:menu.filter_by_category=Filter by category
+warps:menu.filter_by_icon=Filter by icon
+warps:menu.button_category_current=Category: %s
+warps:menu.button_icon_current=Icon: %s
+warps:menu.meta_sort_distance=Sort: by distance
+warps:menu.meta_sort_alphabetical=Sort: alphabetical
 
 warps:teleport.error=§r§8[§1❣WARP§8] §cError teleporting to Warp §l%s§r§c!§r
 warps:error.warp_name_not_found=§r§8[§1❣WARP§8] §cWarp with name §l%s§r§c not found!§r
 warps:error.warp_not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
 warps:error.icon_name_not_found=§r§8[§1❣WARP§8] §cIcon with name §l%s§r§c not found!§r
 warps:menu.no_warps=§r§8[§1❣WARP§8] §cThere are no Warps§r
-warps:menu.no_warps_in_category=§r§8[§1❣WARP§8] §cThere are no Warps in this category!§r
+
+warps:search_results.title=§r§l§3✈ Search results§r %s
+warps:search_results.select_icon=Select an icon to filter the results:
+warps:search_results.no_icons_in_results=§r§8[§1❣WARP§8] §7No warps with icons in the results.§r
 
 warps:warp_details.title=§r§l§5❣ Warp§r §l%s
 warps:warp_details.body=%2$s%3$sOwner: §l%4$s§r\nVisibility: §l%5$s§r\n%7$s%8$s

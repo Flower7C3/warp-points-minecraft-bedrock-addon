@@ -450,13 +450,16 @@ const Warps = () => {
         const getWarpDetailsLocationTexts = (warpArg) => {
             const coords = `${warpArg.x ?? "?"}, ${warpArg.y ?? "?"}, ${warpArg.z ?? "?"}`;
             const dim = (warpArg.dimension != null && String(warpArg.dimension)) ? String(warpArg.dimension) : "overworld";
-            return { translate: `${translationKey}.location`, with: { rawtext: [{ text: coords }, { translate: `warps:dimension.${dim}` }] } };
+            return {
+                translate: `${translationKey}.location`,
+                with: {rawtext: [{text: coords}, {translate: `warps:dimension.${dim}`}]}
+            };
         };
         const DIRECTION_NAMES = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
         const DIRECTION_ARROWS = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
         const getPlayerToWarpDistanceTexts = (playerArg, warpArg) => {
-            if (!playerArg) return { text: "" };
-            if (warpArg.dimension !== getPlayerDimension(playerArg)) return { text: "" };
+            if (!playerArg) return {text: ""};
+            if (warpArg.dimension !== getPlayerDimension(playerArg)) return {text: ""};
             const playerLocation = playerArg.location;
             const distance = calculateDistance(playerLocation.x, playerLocation.y, playerLocation.z, warpArg.x, warpArg.y, warpArg.z);
             const suffix = (distance === 1) ? "1" : ((1 < distance && distance < 5) ? "2" : "5");
@@ -494,46 +497,48 @@ const Warps = () => {
         const getWarpIconTexts = (warpArg) => {
             const iconKey = (warpArg && typeof warpArg.icon === "string") ? warpArg.icon : null;
             const rawtext = !iconKey
-                ? [{ text: "?" }, { text: "?" }]
+                ? [{text: "?"}, {text: "?"}]
                 : (() => {
                     const icon = getIconByName(iconKey);
                     if (!icon) {
-                        return [{ text: "?" }, { text: iconKey }];
+                        return [{text: "?"}, {text: iconKey}];
                     }
                     return [
                         (icon.translatedCategory && typeof icon.translatedCategory === "string")
-                            ? { translate: icon.translatedCategory } : { text: "?" },
+                            ? {translate: icon.translatedCategory} : {text: "?"},
                         (icon.translatedName && typeof icon.translatedName === "string")
-                            ? { translate: icon.translatedName } : { text: iconKey }
+                            ? {translate: icon.translatedName} : {text: iconKey}
                     ];
                 })();
-            return { translate: `${translationKey}.category`, with: { rawtext } };
+            return {translate: `${translationKey}.category`, with: {rawtext}};
         };
         const getWarpSignTexts = (warpArg) => ({
             translate: `${translationKey}.sign`,
-            with: { rawtext: [
-                { translate: `warps:field.sign_mode.value.${getWarpSignMode(warpArg)}` },
-                { translate: `warps:field.sign_material.value.${getWarpSignMaterial(warpArg)}` }
-            ]}
+            with: {
+                rawtext: [
+                    {translate: `warps:field.sign_mode.value.${getWarpSignMode(warpArg)}`},
+                    {translate: `warps:field.sign_material.value.${getWarpSignMaterial(warpArg)}`}
+                ]
+            }
         });
 
         let rawText;
         if (simplifiedData) {
             rawText = [
-                { text: (warp.name != null ? String(warp.name) : "?") },
+                {text: (warp.name != null ? String(warp.name) : "?")},
                 getWarpDetailsLocationTexts(warp),
-                { translate: `warps:visibility.state.${visibility}.label` },
-                visibility ? { translate: `warps:visibility.state.${visibility}.symbol` } : { text: "" },
+                {translate: `warps:visibility.state.${visibility}.label`},
+                visibility ? {translate: `warps:visibility.state.${visibility}.symbol`} : {text: ""},
                 getWarpIconTexts(warp),
             ];
         } else {
             rawText = [
-                { text: (warp.name != null ? String(warp.name) : "?") },
+                {text: (warp.name != null ? String(warp.name) : "?")},
                 getWarpDetailsLocationTexts(warp),
                 getPlayerToWarpDistanceTexts(player, warp),
-                { text: String((warp.owner === null || warp.owner === "" || warp.owner === undefined) ? "?" : warp.owner) },
-                { translate: `warps:visibility.state.${visibility}.label` },
-                visibility ? { translate: `warps:visibility.state.${visibility}.symbol` } : { text: "" },
+                {text: String((warp.owner === null || warp.owner === "" || warp.owner === undefined) ? "?" : warp.owner)},
+                {translate: `warps:visibility.state.${visibility}.label`},
+                visibility ? {translate: `warps:visibility.state.${visibility}.symbol`} : {text: ""},
                 getWarpIconTexts(warp),
                 getWarpSignTexts(warp),
             ];
@@ -604,21 +609,51 @@ const Warps = () => {
 
 
     ///=================================================================================================================
-    // === Teleport Functions ===
+    // === Search & Teleport Functions ===
+
+    /** Returns visible warps whose name (case-insensitive) contains the query. Sorted: exact match first, then startsWith, then contains. */
+    const searchWarpsByQuery = (player, query) => {
+        if (!player || !query || typeof query !== "string") return [];
+        const q = query.trim().toLowerCase();
+        if (q === "") return [];
+        const warps = filterWarpsByVisibility(getValidWarps(), player);
+        const matching = warps.filter(w => w.name && w.name.toLowerCase().includes(q));
+        // Sort: exact match first, then name starts with query, then rest (by name)
+        matching.sort((a, b) => {
+            const aLower = a.name.toLowerCase();
+            const bLower = b.name.toLowerCase();
+            const aExact = aLower === q ? 0 : 1;
+            const bExact = bLower === q ? 0 : 1;
+            if (aExact !== bExact) return aExact - bExact;
+            const aStarts = aLower.startsWith(q) ? 0 : 1;
+            const bStarts = bLower.startsWith(q) ? 0 : 1;
+            if (aStarts !== bStarts) return aStarts - bStarts;
+            return a.name.localeCompare(b.name);
+        });
+        return matching;
+    }
 
     const teleportToWarpByName = (player, warpName) => {
         if (!player || !warpName) {
             return;
         }
 
+        const query = warpName.trim();
         const warps = filterWarpsByVisibility(getValidWarps(), player);
-        const warp = warps.find(w => w.name.toLowerCase() === warpName.toLowerCase());
+        const exactMatch = warps.find(w => w.name && w.name.toLowerCase() === query.toLowerCase());
 
-        if (!warp) {
-            return player.sendMessage({translate: "warps:error.warp_name_not_found", with: [warpName]});
+        if (exactMatch) {
+            teleportToWarp(player, exactMatch);
+            return;
         }
 
-        teleportToWarp(player, warp);
+        const matching = searchWarpsByQuery(player, query);
+        if (matching.length === 0) {
+            return player.sendMessage({translate: "warps:error.warp_name_not_found", with: [query]});
+        }
+
+        const defaultSortBy = SORT_BY.ALPHABETICAL;
+        showWarpsListMenuWithOptions(player, matching, defaultSortBy, WARP_MENU.TELEPORT, null, null, matching, query);
     }
 
     const teleportToWarp = (player, warp) => {
@@ -638,96 +673,42 @@ const Warps = () => {
     ///=================================================================================================================
     // === Menu Functions ===
 
-    const showCategoriesListMenu = (player, mode = WARP_MENU.TELEPORT) => {
-        const allWarps = getValidWarps();
-        const warps = filterWarpsByVisibility(allWarps, player);
-
-        if (warps.length === 0) {
-            return player.sendMessage({translate: "warps:menu.no_warps"});
-        }
-
-        const filterFormTitle = mode === WARP_MENU.TELEPORT
-            ? {rawtext: [{translate: "warps:teleport_menu.title"}]}
-            : {rawtext: [{translate: "warps:manage_menu.title"}]};
-
-        const filterForm = new MinecraftUi.ActionFormData()
-            .title(filterFormTitle)
-            .body("");
-
-        // Option: All warps
-        filterForm.button({
-            rawtext: [{translate: "warps:menu.filter_all"}]
-        });
-
-        filterForm.label({rawtext: [{translate: "warps:menu.filter.or_select_category"}]});
-
-        // Filter categories — show only those that have warps
-        const categoriesWithWarps = getCategoriesWithWarps(warps);
-
-        // Options for each category with warps
-        categoriesWithWarps.forEach(category => {
-            const categoryIcon = WARP_ICONS.find(icon => icon && icon.category === category);
-            filterForm.button({
-                rawtext: [{
-                    translate: "warps:menu.filter_category",
-                    with: {
-                        rawtext: [{translate: `warps:category.${category}`}]
-                    }
-                }]
-            }, categoryIcon ? categoryIcon.path : "");
-        });
-
-        filterForm.show(player).then((filterRes) => {
-            if (filterRes.canceled) {
-                return;
-            }
-
-            let filteredWarps = warps;
-            let selectedCategory = null;
-
-            if (filterRes.selection === 0) {
-                // All warps
-                filteredWarps = warps;
-            } else {
-                // Selected category
-                const categoryIndex = filterRes.selection - 1;
-                if (categoryIndex >= 0 && categoryIndex < categoriesWithWarps.length) {
-                    selectedCategory = categoriesWithWarps[categoryIndex];
-                    filteredWarps = filterWarpsByCategory(warps, selectedCategory);
-                }
-            }
-
-            // Filter again by visibility (in case category contained invisible warps)
-            filteredWarps = filterWarpsByVisibility(filteredWarps, player);
-
-            if (filteredWarps.length === 0) {
-                return player.sendMessage({translate: "warps:menu.no_warps_in_category"});
-            }
-
-            // Default sorting: distance for teleport, alphabetical for management
-            const defaultSortBy = mode === WARP_MENU.TELEPORT ? SORT_BY.DISTANCE : SORT_BY.ALPHABETICAL;
-            showWarpsListMenuWithOptions(player, filteredWarps, defaultSortBy, mode, selectedCategory);
-        });
-    }
-
-    const showSubcategoriesMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon = null) => {
+    /**
+     * Lista ikon: wszystkich (z podziałem na kategorie), w kategorii, lub wg wyszukiwania (z podziałem na kategorie).
+     * query !== null = tryb wyszukiwania (warps = wyniki wyszukiwania).
+     */
+    const showSubcategoriesMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon = null, query = null) => {
         const iconsWithWarps = getIconsWithWarps(warps);
+        const isSearchMode = query !== null && query !== undefined;
+
         if (iconsWithWarps.length === 0) {
-            showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, null);
+            if (isSearchMode) {
+                player.sendMessage({translate: "warps:search_results.no_icons_in_results"});
+                showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query);
+            } else {
+                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, null, null);
+            }
             return;
         }
 
-        const subForm = new MinecraftUi.ActionFormData()
-            .title({
-                rawtext: [{
-                    translate: (mode === WARP_MENU.TELEPORT)
-                        ? "warps:teleport_menu.title"
-                        : "warps:manage_menu.title"
-                }]
-            })
-            .body("");
+        const hasFirstButton = true;
+        const subForm = new MinecraftUi.ActionFormData();
 
-        const BUTTON_ALL_IN_CATEGORY = 0;
+        if (isSearchMode) {
+            subForm.title({
+                rawtext: [{translate: "warps:search_results.title", with: {rawtext: [{text: query}]}}]
+            });
+        } else {
+            subForm.title({
+                rawtext: [{
+                    translate: (mode === WARP_MENU.TELEPORT) ? "warps:teleport_menu.title" : "warps:manage_menu.title"
+                }]
+            });
+        }
+
+        subForm.body("");
+
+        const BUTTON_BACK = 0;
         if (selectedCategory) {
             subForm.button({
                 rawtext: [{
@@ -742,7 +723,10 @@ const Warps = () => {
                 }]
             });
         } else {
-            subForm.body({
+            subForm.button({
+                rawtext: [{translate: "warps:menu.filter_all"}]
+            });
+            subForm.label({
                 rawtext: [{translate: "warps:menu.filter.select_icon"}]
             });
         }
@@ -760,88 +744,127 @@ const Warps = () => {
 
         subForm.show(player).then((subRes) => {
             if (subRes.canceled) {
+                if (isSearchMode) {
+                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query);
+                } else {
+                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null, null);
+                }
                 return;
             }
-            if (selectedCategory && subRes.selection === BUTTON_ALL_IN_CATEGORY) {
-                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null);
+            if (hasFirstButton && subRes.selection === BUTTON_BACK) {
+                if (isSearchMode) {
+                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query);
+                } else {
+                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null, null);
+                }
                 return;
             }
-            const iconIndex = selectedCategory ? subRes.selection - 1 : subRes.selection;
+            const iconIndex = hasFirstButton ? subRes.selection - 1 : subRes.selection;
             if (iconIndex >= 0 && iconIndex < iconsWithWarps.length) {
                 const chosenIcon = iconsWithWarps[iconIndex];
                 const filteredWarps = filterWarpsByIcon(warps, chosenIcon.name);
-                showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, selectedCategory, chosenIcon, warps);
+                const categoryForChosenIcon = selectedCategory || chosenIcon.category || null;
+                if (isSearchMode) {
+                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, categoryForChosenIcon, chosenIcon, warps, query);
+                } else {
+                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, categoryForChosenIcon, chosenIcon, warps, null);
+                }
             }
         });
     }
 
-    const showWarpsListMenuWithOptions = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory = null, selectedIcon = null, categoryWarps = null) => {
-        const actionForm = new MinecraftUi.ActionFormData()
-            .title({
-                rawtext: [{
-                    translate: (mode === WARP_MENU.TELEPORT)
-                        ? "warps:teleport_menu.title"
-                        : "warps:manage_menu.title"
-                }]
-            })
-            .body("");
+    /**
+     * Wybór kategorii: pierwsza pozycja "Wszystkie", potem lista kategorii.
+     * Pokazuje tylko kategorie mające warpy w bieżącym kontekście (pełna lista lub wyniki wyszukiwania).
+     */
+    const showCategoryPickerMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories = null) => {
+        const isSearchMode = query !== null && query !== undefined;
+        const fullList = isSearchMode ? warps : (allWarpsForCategories ?? categoryWarps ?? warps);
+        const categoriesWithWarps = getCategoriesWithWarps(fullList);
 
-
-        const BUTTON_CHANGE_SORT = 0;
-        const BUTTON_SHOW_SUBCATEGORIES = 1;
-        actionForm
-            .button({
-                rawtext: [{
-                    translate: sortBy === SORT_BY.DISTANCE
-                        ? "warps:menu.sort_change_to_alphabetical"
-                        : "warps:menu.sort_change_to_distance"
-                }]
-            })
-            .button({
-                rawtext: [{translate: "warps:menu.show_subcategories"}]
+        const form = new MinecraftUi.ActionFormData();
+        if (isSearchMode) {
+            form.title({rawtext: [{translate: "warps:search_results.title", with: {rawtext: [{text: query}]}}]});
+        } else {
+            form.title({
+                rawtext: [{translate: (mode === WARP_MENU.TELEPORT) ? "warps:teleport_menu.title" : "warps:manage_menu.title"}]
             });
-
-        const sortLabelTextKey = sortBy === SORT_BY.DISTANCE
-            ? "warps:menu.sorting_by_distance"
-            : "warps:menu.sorting_by_alphabetical";
-        if (selectedIcon) {
-            const categoryKey = selectedIcon.category ? `warps:category.${selectedIcon.category}` : null;
-            actionForm.label({
+        }
+        form.body("");
+        form.button({rawtext: [{translate: "warps:menu.filter_all"}]});
+        form.label({rawtext: [{translate: "warps:menu.or_select_category_from_list"}]});
+        categoriesWithWarps.forEach(category => {
+            form.button({
                 rawtext: [{
-                    translate: `${sortLabelTextKey}_cat_icon`,
-                    with: {
-                        rawtext: [
-                            categoryKey ? {translate: categoryKey} : {text: ""},
-                            {translate: selectedIcon.translatedName}
-                        ]
-                    }
+                    translate: "warps:menu.filter_category",
+                    with: {rawtext: [{translate: `warps:category.${category}`}]}
                 }]
             });
+        });
+
+        form.show(player).then((res) => {
+            if (res.canceled) {
+                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query);
+                return;
+            }
+            if (res.selection === 0) {
+                showWarpsListMenuWithOptions(player, fullList, sortBy, mode, null, null, null, query);
+                return;
+            }
+            const categoryIndex = res.selection - 1;
+            if (categoryIndex >= 0 && categoryIndex < categoriesWithWarps.length) {
+                const chosenCategory = categoriesWithWarps[categoryIndex];
+                const filteredByCategory = filterWarpsByCategory(fullList, chosenCategory);
+                showWarpsListMenuWithOptions(player, filteredByCategory, sortBy, mode, chosenCategory, null, fullList, query);
+            }
+        });
+    }
+
+    const showWarpsListMenuWithOptions = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory = null, selectedIcon = null, categoryWarps = null, query = null) => {
+        const isSearchMode = query !== null && query !== undefined;
+        const displayWarps = warps;
+        const sortedWarps = sortWarps([...filterWarpsByVisibility(displayWarps, player)], sortBy, player);
+
+        const actionForm = new MinecraftUi.ActionFormData();
+
+        if (isSearchMode) {
+            actionForm
+                .title({
+                    rawtext: [{translate: "warps:search_results.title", with: {rawtext: [{text: query}]}}]
+                });
         } else {
             actionForm
-                .label(selectedCategory
-                    ? {
-                        rawtext: [{
-                            translate: `${sortLabelTextKey}_cat`,
-                            with: {
-                                rawtext: [{translate: `warps:category.${selectedCategory}`}]
-                            }
-                        }]
-                    }
-                    : {rawtext: [{translate: `${sortLabelTextKey}_all`}]}
-                );
+                .title({
+                    rawtext: [{
+                        translate: (mode === WARP_MENU.TELEPORT) ? "warps:teleport_menu.title" : "warps:manage_menu.title"
+                    }]
+                });
         }
 
-        // Filter warps by visibility
-        const visibleWarps = filterWarpsByVisibility(warps, player);
-        const sortedWarps = sortWarps(visibleWarps, sortBy, player);
+        const iconObj = selectedIcon && typeof selectedIcon === "object" ? selectedIcon : (selectedIcon ? getIconByName(selectedIcon) : null);
+        const categoryKey = selectedCategory ? `warps:category.${selectedCategory}` : (iconObj && iconObj.category ? `warps:category.${iconObj.category}` : null);
+
+        actionForm.body("");
+
+        const BUTTON_FILTER_CATEGORY = 0;
+        const BUTTON_FILTER_ICON = 1;
+        const BUTTON_SORT = 2;
+        const categoryButtonText = selectedCategory
+            ? { rawtext: [{ translate: "warps:menu.button_category_current", with: { rawtext: [{ translate: categoryKey }] } }] }
+            : { rawtext: [{ translate: "warps:menu.filter_by_category" }] };
+        const iconButtonText = selectedIcon && iconObj
+            ? { rawtext: [{ translate: "warps:menu.button_icon_current", with: { rawtext: [{ translate: iconObj.translatedName }] } }] }
+            : { rawtext: [{ translate: "warps:menu.filter_by_icon" }] };
+        const sortButtonText = { rawtext: [{ translate: sortBy === SORT_BY.DISTANCE ? "warps:menu.meta_sort_distance" : "warps:menu.meta_sort_alphabetical" }] };
+        actionForm
+            .button(categoryButtonText)
+            .button(iconButtonText)
+            .button(sortButtonText)
+            .divider();
 
         sortedWarps.forEach(warp => {
             try {
-                const buttonTranslationKey = sortBy === SORT_BY.DISTANCE
-                    ? "warps:button_format.long"
-                    : "warps:button_format.short";
-
+                const buttonTranslationKey = sortBy === SORT_BY.DISTANCE ? "warps:button_format.long" : "warps:button_format.short";
                 const icon = getIconByName(warp.icon);
                 actionForm.button(
                     getWarpDetails(warp, player, buttonTranslationKey),
@@ -853,26 +876,33 @@ const Warps = () => {
         });
 
         actionForm.show(player).then((res) => {
-            if (res.canceled) {
+            if (res.canceled) return;
+
+            if (res.selection === BUTTON_FILTER_CATEGORY) {
+                const allWarpsForCategories = filterWarpsByVisibility(getValidWarps(), player);
+                showCategoryPickerMenu(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories);
                 return;
             }
 
-            if (res.selection === BUTTON_CHANGE_SORT) {
+            if (res.selection === BUTTON_FILTER_ICON) {
+                const categoryForIconList = selectedCategory || (iconObj && iconObj.category) || null;
+                const warpsForIconList = categoryForIconList
+                    ? filterWarpsByCategory(categoryWarps !== null ? categoryWarps : warps, categoryForIconList)
+                    : warps;
+                showSubcategoriesMenu(player, warpsForIconList, sortBy, mode, categoryForIconList, selectedIcon, query);
+                return;
+            }
+
+            if (res.selection === BUTTON_SORT) {
                 const newSortBy = sortBy === SORT_BY.DISTANCE ? SORT_BY.ALPHABETICAL : SORT_BY.DISTANCE;
-                showWarpsListMenuWithOptions(player, warps, newSortBy, mode, selectedCategory, selectedIcon, categoryWarps);
+                showWarpsListMenuWithOptions(player, warps, newSortBy, mode, selectedCategory, selectedIcon, categoryWarps, query);
                 return;
             }
 
-            if (res.selection === BUTTON_SHOW_SUBCATEGORIES) {
-                const warpsForIcons = categoryWarps !== null ? categoryWarps : warps;
-                showSubcategoriesMenu(player, warpsForIcons, sortBy, mode, selectedCategory, selectedIcon);
-                return;
-            }
-
-            const warpIndex = res.selection - 2;
+            const warpIndex = res.selection - 3;
             if (warpIndex >= 0 && warpIndex < sortedWarps.length) {
                 const selectedWarp = sortedWarps[warpIndex];
-                if (mode === WARP_MENU.TELEPORT) {
+                if (mode === WARP_MENU.TELEPORT || isSearchMode) {
                     teleportToWarp(player, selectedWarp);
                 } else {
                     showWarpDetailsMenu(player, selectedWarp);
@@ -1812,7 +1842,7 @@ const Warps = () => {
         saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.change_visibility.success", [
             warp.name,
             {translate: `warps:visibility.state.${warp.visibility}.label`},
-            {translate: `warps:visibility.${newVisibility.toString()}.label`}
+            {translate: `warps:visibility.state.${newVisibility}.label`}
         ]);
     }
 
@@ -1998,12 +2028,24 @@ const Warps = () => {
             }
 
             switch (res.selection) {
-                case BUTTON_TELEPORT:
-                    showCategoriesListMenu(player, WARP_MENU.TELEPORT);
+                case BUTTON_TELEPORT: {
+                    const teleportWarps = filterWarpsByVisibility(getValidWarps(), player);
+                    if (teleportWarps.length === 0) {
+                        player.sendMessage({translate: "warps:menu.no_warps"});
+                    } else {
+                        showWarpsListMenuWithOptions(player, teleportWarps, SORT_BY.DISTANCE, WARP_MENU.TELEPORT, null, null, null, null);
+                    }
                     break;
-                case BUTTON_MANAGEMENT:
-                    showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
+                }
+                case BUTTON_MANAGEMENT: {
+                    const manageWarps = filterWarpsByVisibility(getValidWarps(), player);
+                    if (manageWarps.length === 0) {
+                        player.sendMessage({translate: "warps:menu.no_warps"});
+                    } else {
+                        showWarpsListMenuWithOptions(player, manageWarps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                    }
                     break;
+                }
                 case BUTTON_ADD:
                     addWarpItemFormStep1(player, {
                         targetLocation: roundLocation(player.location),
@@ -2043,7 +2085,10 @@ const Warps = () => {
                         if (warpName !== "") {
                             teleportToWarpByName(player, warpName)
                         } else {
-                            showCategoriesListMenu(player, WARP_MENU.TELEPORT);
+                            const warps = filterWarpsByVisibility(getValidWarps(), player);
+                            if (warps.length > 0) {
+                                showWarpsListMenuWithOptions(player, warps, SORT_BY.DISTANCE, WARP_MENU.TELEPORT, null, null, null, null);
+                            }
                         }
                     });
                     return {
@@ -2103,7 +2148,6 @@ const Warps = () => {
                         const warpDimensionId = getPlayerDimension(player);
                         if (warpName && iconName && targetLocation && signMode && signMaterial) {
                             const icon = getIconByName(iconName);
-                            // const signMode = SIGN_MODE[(Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z))]
                             addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId, signMode, signMaterial);
                         } else {
                             addWarpItemFormStep1(player, {
@@ -2144,7 +2188,10 @@ const Warps = () => {
                             }
                             editWarpNameSave(player, warp, newWarpName, warp.signMode, warp.signMaterial);
                         } else {
-                            showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
+                            const warps = filterWarpsByVisibility(getValidWarps(), player);
+                            if (warps.length > 0) {
+                                showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                            }
                         }
                     })
                 }
@@ -2180,7 +2227,10 @@ const Warps = () => {
                             }
                             editWarpNameSave(player, warp, warpName, signMode, signMaterial);
                         } else {
-                            showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
+                            const warps = filterWarpsByVisibility(getValidWarps(), player);
+                            if (warps.length > 0) {
+                                showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                            }
                         }
                     })
                 }
@@ -2218,7 +2268,10 @@ const Warps = () => {
                             }
                             editWarpIconSave(player, warp, icon);
                         } else {
-                            showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
+                            const warps = filterWarpsByVisibility(getValidWarps(), player);
+                            if (warps.length > 0) {
+                                showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                            }
                         }
                     })
                 }
@@ -2248,7 +2301,10 @@ const Warps = () => {
                             }
                             removeWarpItemForm(player, warp);
                         } else {
-                            showCategoriesListMenu(player, WARP_MENU.MANAGEMENT);
+                            const warps = filterWarpsByVisibility(getValidWarps(), player);
+                            if (warps.length > 0) {
+                                showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                            }
                         }
                     })
                 }

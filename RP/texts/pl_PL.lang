@@ -58,31 +58,28 @@ warps:teleport_menu.title=§r§l§3✈ Teleportuj się do...§r
 warps:manage_menu.title=§r§l§5❣ Zarządzaj Warpami§r
 
 warps:menu.filter_all=Wszystkie Warpy
-warps:menu.filter_all_in_category=§r§6Wszystkie warpy w kategorii §l%1$s§r
+warps:menu.filter_all_in_category=Wszystkie warpy w kategorii §l%1$s§r
 warps:menu.filter_category=%1$s
-warps:menu.filter.or_select_category=Lub wybierz kategorię:
 warps:menu.filter.select_icon=Wybierz ikonę:
-warps:menu.filter.or_select_icon=Lub wybierz ikonę:
 warps:menu.filter.or_select_icon_from_category=Lub wybierz ikonę z kategorii §l%1$s§r:
 
-warps:menu.show_subcategories=§r§6Filtruj wg ikon§r
-warps:menu.sort_change_to_alphabetical=§r§6Zmień na sortowanie §lalfabetycznie§r
-warps:menu.sort_change_to_distance=§r§6Zmień na sortowanie wg §ldystansu§r
-warps:menu.sorting_by_alphabetical_all=§rSortowanie §lalfabetycznie§r:
-warps:menu.sorting_by_alphabetical_cat=§rSortowanie §lalfabetycznie§r w kategorii §l%s§r:
-warps:menu.sorting_by_alphabetical_cat_icon=§rSortowanie alfabetyczne w kategorii §l%1$s§r oraz ikonie §l%2$s§r:
-warps:menu.sorting_by_alphabetical_icon=§rSortowanie §lalfabetycznie§r — ikona §l%s§r:
-warps:menu.sorting_by_distance_all=§rSortowanie wg §ldystansu§r:
-warps:menu.sorting_by_distance_cat=§rSortowanie wg §ldystansu§r w kategorii §l%s§r:
-warps:menu.sorting_by_distance_cat_icon=§rSortowanie wg dystansu w kategorii §l%1$s§r oraz ikonie §l%2$s§r:
-warps:menu.sorting_by_distance_icon=§rSortowanie wg §ldystansu§r — ikona §l%s§r:
+warps:menu.or_select_category_from_list=Lub wybierz kategorię z listy:
+warps:menu.filter_by_category=Filtruj wg kategorii
+warps:menu.filter_by_icon=Filtruj wg ikony
+warps:menu.button_category_current=Kategoria: %s
+warps:menu.button_icon_current=Ikona: %s
+warps:menu.meta_sort_distance=Sortowanie: wg dystansu
+warps:menu.meta_sort_alphabetical=Sortowanie: alfabetycznie
 
 warps:teleport.error=§r§8[§1❣WARP§8] §cBłąd podczas teleportacji do Warp §l%s§r§c!§r
 warps:error.warp_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
 warps:error.warp_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
 warps:error.icon_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono ikony o nazwie §l%s§r§c!§r
 warps:menu.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w!§r
-warps:menu.no_warps_in_category=§r§8[§1❣WARP§8] §cNie ma żadnych Warp§w w tej kategorii!§r
+
+warps:search_results.title=§r§l§3✈ Wyniki wyszukiwania§r %s
+warps:search_results.select_icon=Wybierz ikonę, aby przefiltrować wyniki:
+warps:search_results.no_icons_in_results=§r§8[§1❣WARP§8] §7W wynikach nie ma warpów z ikonami.§r
 
 warps:warp_details.title=§r§l§5❣ Warp§r §l%s
 warps:warp_details.body=%2$s%3$sWłaściciel: §l%4$s§r\nWidoczność: §l%5$s§r\n%7$s%8$s
