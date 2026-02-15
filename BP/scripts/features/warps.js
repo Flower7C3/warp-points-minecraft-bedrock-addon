@@ -14,14 +14,6 @@ const Warps = () => {
     ///=================================================================================================================
     // === Constants (module scope) ===
     const WORLD_PROP = "warps:data";
-    const COMMAND_WARPS_TP = "warps:warp_tp";
-    const COMMAND_WARPS_LIST = "warps:warps_list";
-    const COMMAND_WARPS_ADD = "warps:warp_add";
-    const COMMAND_WARP_RENAME = "warps:warp_rename";
-    const COMMAND_WARP_SIGN_CHANGE = "warps:warp_sign_change";
-    const COMMAND_WARP_ICON_CHANGE = "warps:warp_icon_change";
-    const COMMAND_WARP_REMOVE = "warps:warp_remove";
-    const COMMAND_WARPS_REGEN_SIGNS = "warps:warps_signs_regenerate";
     const ITEM_COMPONENT_ID = "warps:warp_menu";
 
     let dataLoaded = false;
@@ -65,7 +57,7 @@ const Warps = () => {
         SIGN_TEXT: "❣ §l[warpName]§r ([categoryName])",
         BUTTON_LONG: "[visibilitySymbol] §l[warpName]§r [distanceDirectionValue] [directionSign]",
         BUTTON_SHORT: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName]",
-        LIST_ALL: "[visibilitySymbol] §l[warpName]§r [coordsValue [dimensionName]",
+        LIST_ALL: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName]",
     })
 
     // List of available images for warps — organized by categories
@@ -287,7 +279,7 @@ const Warps = () => {
         }
 
         if (soundId) {
-            player.dimension.playSound(soundId, player.location);
+            player.playSound(soundId, player.location);
         }
 
         // Format parameters for rawtext
@@ -448,7 +440,7 @@ const Warps = () => {
         return warp || null;
     }
 
-    const getWarpDimension = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
+    const getDimensionByName = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
 
     const getWarpDetails = (warp, player, pattern) => {
         const visibility = (warp.visibility === null || warp.visibility === "" || warp.visibility === undefined)
@@ -533,6 +525,15 @@ const Warps = () => {
             keys.directionLabel = {translate: `warps:field.direction.label`};
             keys.directionText = {translate: directionText};
             keys.directionSign = {text: directionSign};
+        } else {
+            keys.distanceLabel = {translate: `warps:field.distance.label`};
+            keys.distanceKmValue = {text: "—"};
+            keys.distanceMetersValue = {text: "—"};
+            keys.distanceMetersLocale = {text: "—"};
+            keys.distanceDirectionValue = {text: "—"};
+            keys.directionLabel = {translate: `warps:field.direction.label`};
+            keys.directionText = {text: "—"};
+            keys.directionSign = {text: ""};
         }
 
         const parts = [];
@@ -667,9 +668,9 @@ const Warps = () => {
 
     const teleportToWarp = (player, warp) => {
         try {
-            const dimension = getWarpDimension(warp.dimension);
+            const dimension = getDimensionByName(warp.dimension);
             dimension.runCommand(`tp "${player.name}" ${warp.x} ${warp.y} ${warp.z}`);
-            player.dimension.playSound("mob.shulker.teleport", {x: warp.x, y: warp.y, z: warp.z});
+            player.playSound("mob.shulker.teleport", {x: warp.x, y: warp.y, z: warp.z});
         } catch (error) {
             console.error(`[WARP] Error teleporting to warp ${warp.name}:`, error);
             player.sendMessage({
@@ -1213,7 +1214,7 @@ const Warps = () => {
 
     const updateWarpSign = (warp) => {
         try {
-            const warpDimension = getWarpDimension(warp.dimension);
+            const warpDimension = getDimensionByName(warp.dimension);
             if (!warpDimension) return;
 
             const signLocation = {
@@ -1261,7 +1262,7 @@ const Warps = () => {
 
     const removeWarpSign = (warp) => {
         try {
-            const warpDimension = getWarpDimension(warp.dimension);
+            const warpDimension = getDimensionByName(warp.dimension);
             if (!warpDimension) return;
 
             const signLocation = {
@@ -2077,6 +2078,178 @@ const Warps = () => {
     }
 
     ///=================================================================================================================
+    const teleportCommand = (origin, warpName = "") => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            if (!player) return;
+            if (warpName !== "") {
+                teleportToWarpByName(player, warpName)
+            } else {
+                const warps = filterWarpsByVisibility(getValidWarps(), player);
+                if (warps.length > 0) {
+                    showWarpsListMenuWithOptions(player, warps, SORT_BY.DISTANCE, WARP_MENU.TELEPORT, null, null, null, null);
+                }
+            }
+        });
+        return {
+            status: CustomCommandStatus.Success,
+        };
+    };
+    const listCommand = (origin) => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            player.sendMessage({translate: "warps:menu.filter_all"});
+            getValidWarps().forEach(warp => player.sendMessage(
+                getWarpDetails(warp, player, TRANSLATION_PATTERN.LIST_ALL)
+            ))
+        });
+        return {
+            status: CustomCommandStatus.Success,
+        };
+    }
+    const addCommand = (origin, warpName, iconName, location, signMode, signMaterial) => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            if (!player) return;
+
+            const targetLocation = roundLocation(location || player.location);
+            const warpDimensionId = getPlayerDimension(player);
+            if (warpName && iconName && targetLocation && signMode && signMaterial) {
+                const icon = getIconByName(iconName);
+                addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId, signMode, signMaterial);
+            } else {
+                addWarpItemFormStep1(player, {
+                    warpName: warpName,
+                    iconName: iconName,
+                    targetLocation: targetLocation,
+                    warpDimensionId: warpDimensionId
+                });
+            }
+        })
+    }
+    const renameCommand = (origin, oldWarpName = "", newWarpName = "") => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            if (!player) return;
+            if (oldWarpName !== "") {
+                const warp = getWarpByName(oldWarpName);
+                if (!warp) {
+                    return player.sendMessage({
+                        translate: "warps:error.warp_name_not_found",
+                        with: [oldWarpName]
+                    });
+                }
+                editWarpNameSave(player, warp, newWarpName, warp.signMode, warp.signMaterial);
+            } else {
+                const warps = filterWarpsByVisibility(getValidWarps(), player);
+                if (warps.length > 0) {
+                    showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                }
+            }
+        })
+    }
+    const updateSignCommand = (origin, warpName, signMode, signMaterial) => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            if (!player) return;
+            if (warpName !== "" && signMode !== "" && signMaterial !== "") {
+                const warp = getWarpByName(warpName);
+                if (!warp) {
+                    return player.sendMessage({
+                        translate: "warps:error.warp_name_not_found",
+                        with: [warpName]
+                    });
+                }
+                editWarpNameSave(player, warp, warpName, signMode, signMaterial);
+            } else {
+                const warps = filterWarpsByVisibility(getValidWarps(), player);
+                if (warps.length > 0) {
+                    showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                }
+            }
+        })
+    }
+
+    const registerCommandWithAliases = (event, names, customCommand, callback) => {
+        for (const name of names) {
+            customCommand.name = `warps:${name}`;
+            event.customCommandRegistry.registerCommand(customCommand, callback);
+        }
+    }
+
+    const updateIconCommand = (origin, warpName, iconName) => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            if (!player) return;
+            if (warpName !== "" && iconName !== "") {
+                const warp = getWarpByName(warpName);
+                if (!warp) {
+                    return player.sendMessage({
+                        translate: "warps:error.warp_name_not_found",
+                        with: [warpName]
+                    });
+                }
+                const icon = getIconByName(iconName);
+                if (!icon) {
+                    player.sendMessage({translate: "warps:error.icon_name_not_found"});
+                    return;
+                }
+                editWarpIconSave(player, warp, icon);
+            } else {
+                const warps = filterWarpsByVisibility(getValidWarps(), player);
+                if (warps.length > 0) {
+                    showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                }
+            }
+        })
+    }
+    const removeCommand = (origin, warpName = "") => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            if (!player) return;
+            if (warpName !== "") {
+                const warp = getWarpByName(warpName);
+                if (!warp) {
+                    return player.sendMessage({
+                        translate: "warps:error.warp_name_not_found",
+                        with: [warpName]
+                    });
+                }
+                removeWarpItemForm(player, warp);
+            } else {
+                const warps = filterWarpsByVisibility(getValidWarps(), player);
+                if (warps.length > 0) {
+                    showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                }
+            }
+        })
+    }
+    const regenerateCommand = (origin) => {
+        system.run(() => {
+            const player = getPlayer(origin);
+            if (!player) return;
+
+            console.info("[WARP] Regenerating all warp signs...");
+            const warps = getValidWarps();
+            let updated = 0;
+
+            warps.forEach(warp => {
+                try {
+                    if (updateWarpSign(warp)) {
+                        updated++;
+                    }
+                } catch (error) {
+                    console.error(`[WARP] Error regenerating sign for warp ${warp.name}: ${error}`);
+                }
+            });
+
+            console.info(`[WARP] Regenerated ${updated} warp signs`);
+            player.sendMessage({
+                translate: "warps:regen_signs.success",
+                with: [updated.toString()]
+            });
+        });
+    }
     // === Initialization ===
     const init = () => {
         ///=================================================================================================================
@@ -2088,9 +2261,7 @@ const Warps = () => {
             event.customCommandRegistry.registerEnum("warps:sign_mode", Object.values(SIGN_MODE));
             event.customCommandRegistry.registerEnum("warps:sign_material", Object.values(SIGN_MATERIAL));
 
-            event.customCommandRegistry.registerCommand(
-                {
-                    name: COMMAND_WARPS_TP,
+            registerCommandWithAliases(event, ["warp_tp", "wtp"], {
                     description: "Warp to a specific location (public Warps)",
                     permissionLevel: Minecraft.CommandPermissionLevel.Any,
                     optionalParameters: [{
@@ -2098,48 +2269,17 @@ const Warps = () => {
                         name: "warps:name"
                     }],
                 },
-                (origin, warpName = "") => {
-                    system.run(() => {
-                        const player = getPlayer(origin)
-                        if (!player) return;
-                        if (warpName !== "") {
-                            teleportToWarpByName(player, warpName)
-                        } else {
-                            const warps = filterWarpsByVisibility(getValidWarps(), player);
-                            if (warps.length > 0) {
-                                showWarpsListMenuWithOptions(player, warps, SORT_BY.DISTANCE, WARP_MENU.TELEPORT, null, null, null, null);
-                            }
-                        }
-                    });
-                    return {
-                        status: CustomCommandStatus.Success,
-                    };
-                }
+                teleportCommand
             );
 
-            event.customCommandRegistry.registerCommand(
-                {
-                    name: COMMAND_WARPS_LIST,
+            registerCommandWithAliases(event, ["warps_list", "wl"], {
                     description: "List all Warps",
                     permissionLevel: Minecraft.CommandPermissionLevel.Any,
                 },
-                (origin) => {
-                    system.run(() => {
-                        const player = getPlayer(origin)
-                        player.sendMessage({translate: "warps:menu.filter_all"});
-                        getValidWarps().forEach(warp => player.sendMessage(
-                            getWarpDetails(warp, player, TRANSLATION_PATTERN.LIST_ALL)
-                        ))
-                    });
-                    return {
-                        status: CustomCommandStatus.Success,
-                    };
-                }
+                listCommand
             );
 
-            event.customCommandRegistry.registerCommand(
-                {
-                    name: COMMAND_WARPS_ADD,
+            registerCommandWithAliases(event, ["warp_add", "wa"], {
                     description: "Add a new public Warp",
                     permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
@@ -2159,31 +2299,10 @@ const Warps = () => {
                         name: "warps:sign_material",
                     }],
                 },
-                (origin, warpName, iconName, location, signMode, signMaterial) => {
-                    system.run(() => {
-                        const player = getPlayer(origin)
-                        if (!player) return;
-
-                        const targetLocation = roundLocation(location || player.location);
-                        const warpDimensionId = getPlayerDimension(player);
-                        if (warpName && iconName && targetLocation && signMode && signMaterial) {
-                            const icon = getIconByName(iconName);
-                            addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId, signMode, signMaterial);
-                        } else {
-                            addWarpItemFormStep1(player, {
-                                warpName: warpName,
-                                iconName: iconName,
-                                targetLocation: targetLocation,
-                                warpDimensionId: warpDimensionId
-                            });
-                        }
-                    })
-                }
+                addCommand
             );
 
-            event.customCommandRegistry.registerCommand(
-                {
-                    name: COMMAND_WARP_RENAME,
+            registerCommandWithAliases(event, ["warp_rename"], {
                     description: "Rename a public Warp",
                     permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
@@ -2194,32 +2313,10 @@ const Warps = () => {
                         name: "warps:name",
                     }],
                 },
-                (origin, oldWarpName = "", newWarpName = "") => {
-                    system.run(() => {
-                        const player = getPlayer(origin)
-                        if (!player) return;
-                        if (oldWarpName !== "") {
-                            const warp = getWarpByName(oldWarpName);
-                            if (!warp) {
-                                return player.sendMessage({
-                                    translate: "warps:error.warp_name_not_found",
-                                    with: [oldWarpName]
-                                });
-                            }
-                            editWarpNameSave(player, warp, newWarpName, warp.signMode, warp.signMaterial);
-                        } else {
-                            const warps = filterWarpsByVisibility(getValidWarps(), player);
-                            if (warps.length > 0) {
-                                showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
-                            }
-                        }
-                    })
-                }
+                renameCommand
             );
 
-            event.customCommandRegistry.registerCommand(
-                {
-                    name: COMMAND_WARP_SIGN_CHANGE,
+            registerCommandWithAliases(event, ["warp_sign_change", "warp_sign"], {
                     description: "Change sign for a public Warp",
                     permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
@@ -2233,32 +2330,10 @@ const Warps = () => {
                         name: "warps:sign_material",
                     }],
                 },
-                (origin, warpName, signMode, signMaterial) => {
-                    system.run(() => {
-                        const player = getPlayer(origin)
-                        if (!player) return;
-                        if (warpName !== "" && signMode !== "" && signMaterial !== "") {
-                            const warp = getWarpByName(warpName);
-                            if (!warp) {
-                                return player.sendMessage({
-                                    translate: "warps:error.warp_name_not_found",
-                                    with: [warpName]
-                                });
-                            }
-                            editWarpNameSave(player, warp, warpName, signMode, signMaterial);
-                        } else {
-                            const warps = filterWarpsByVisibility(getValidWarps(), player);
-                            if (warps.length > 0) {
-                                showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
-                            }
-                        }
-                    })
-                }
+                updateSignCommand
             );
 
-            event.customCommandRegistry.registerCommand(
-                {
-                    name: COMMAND_WARP_ICON_CHANGE,
+            registerCommandWithAliases(event, ["warp_icon_change", "warp_icon"], {
                     description: "Change icon for a public Warp",
                     permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
@@ -2269,37 +2344,10 @@ const Warps = () => {
                         name: "warps:icon",
                     }],
                 },
-                (origin, warpName, iconName) => {
-                    system.run(() => {
-                        const player = getPlayer(origin)
-                        if (!player) return;
-                        if (warpName !== "" && iconName !== "") {
-                            const warp = getWarpByName(warpName);
-                            if (!warp) {
-                                return player.sendMessage({
-                                    translate: "warps:error.warp_name_not_found",
-                                    with: [warpName]
-                                });
-                            }
-                            const icon = getIconByName(iconName);
-                            if (!icon) {
-                                player.sendMessage({translate: "warps:error.icon_name_not_found"});
-                                return;
-                            }
-                            editWarpIconSave(player, warp, icon);
-                        } else {
-                            const warps = filterWarpsByVisibility(getValidWarps(), player);
-                            if (warps.length > 0) {
-                                showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
-                            }
-                        }
-                    })
-                }
+                updateIconCommand
             );
 
-            event.customCommandRegistry.registerCommand(
-                {
-                    name: COMMAND_WARP_REMOVE,
+            registerCommandWithAliases(event, ["warp_remove"], {
                     description: "Remove a public Warp",
                     permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
@@ -2307,61 +2355,14 @@ const Warps = () => {
                         name: "warps:name",
                     }],
                 },
-                (origin, warpName = "") => {
-                    system.run(() => {
-                        const player = getPlayer(origin)
-                        if (!player) return;
-                        if (warpName !== "") {
-                            const warp = getWarpByName(warpName);
-                            if (!warp) {
-                                return player.sendMessage({
-                                    translate: "warps:error.warp_name_not_found",
-                                    with: [warpName]
-                                });
-                            }
-                            removeWarpItemForm(player, warp);
-                        } else {
-                            const warps = filterWarpsByVisibility(getValidWarps(), player);
-                            if (warps.length > 0) {
-                                showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
-                            }
-                        }
-                    })
-                }
+                removeCommand
             );
 
-            event.customCommandRegistry.registerCommand(
-                {
-                    name: COMMAND_WARPS_REGEN_SIGNS,
+            registerCommandWithAliases(event, ["warps_signs_regenerate", "warps_reload"], {
                     description: "Regenerate all warp signs",
                     permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
                 },
-                (origin) => {
-                    system.run(() => {
-                        const player = getPlayer(origin);
-                        if (!player) return;
-
-                        console.info("[WARP] Regenerating all warp signs...");
-                        const warps = getValidWarps();
-                        let updated = 0;
-
-                        warps.forEach(warp => {
-                            try {
-                                if (updateWarpSign(warp)) {
-                                    updated++;
-                                }
-                            } catch (error) {
-                                console.error(`[WARP] Error regenerating sign for warp ${warp.name}: ${error}`);
-                            }
-                        });
-
-                        console.info(`[WARP] Regenerated ${updated} warp signs`);
-                        player.sendMessage({
-                            translate: "warps:regen_signs.success",
-                            with: [updated.toString()]
-                        });
-                    });
-                }
+                regenerateCommand
             );
 
             ///=================================================================================================================
