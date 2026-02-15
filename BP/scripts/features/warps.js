@@ -1294,9 +1294,8 @@ const Warps = () => {
         warpDimensionId
     }) => {
         // If category and icon are already selected (e.g., after error), skip step 1 and 2
-        if (category && iconName) {
-            const categoryIcons = getIconsByCategory(category);
-            const selectedIcon = categoryIcons.find(icon => icon.name === iconName);
+        if (iconName) {
+            const selectedIcon = getIconByName(iconName);
             if (selectedIcon) {
                 addWarpItemFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId);
                 return;
@@ -1410,7 +1409,7 @@ const Warps = () => {
                 return;
             }
 
-            let index = 3;
+            let index = 2;
             const warpNameIndex = index++;
             const targetLocationXIndex = index++;
             const targetLocationYIndex = index++;
@@ -1419,7 +1418,11 @@ const Warps = () => {
             const signMaterialIndex = index++;
             const visibilityIndex = index++;
 
-            if (!res.formValues || !res.formValues[warpNameIndex] || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex] || res.formValues[signModeIndex] === undefined || res.formValues[signMaterialIndex] === undefined || res.formValues[visibilityIndex] === undefined) {
+            if (!res.formValues || !res.formValues[warpNameIndex]
+                || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex]
+                || res.formValues[signModeIndex] === undefined
+                || res.formValues[signMaterialIndex] === undefined
+                || res.formValues[visibilityIndex] === undefined) {
                 player.sendMessage({translate: "warps:error.fill_required"});
                 // Show form again with filled data
                 const currentVisibility = res.formValues && res.formValues[visibilityIndex] !== undefined
@@ -1665,20 +1668,20 @@ const Warps = () => {
             })
             .slider(
                 {rawtext: [{translate: "warps:field.x.label"}]},
-                currentX - 3,
-                currentX + 3,
+                currentX - 5,
+                currentX + 5,
                 {defaultValue: currentX}
             )
             .slider(
                 {rawtext: [{translate: "warps:field.y.label"}]},
-                currentY - 3,
-                currentY + 3,
+                currentY - 5,
+                currentY + 5,
                 {defaultValue: currentY}
             )
             .slider(
                 {rawtext: [{translate: "warps:field.z.label"}]},
-                currentZ - 3,
-                currentZ + 3,
+                currentZ - 5,
+                currentZ + 5,
                 {defaultValue: currentZ}
             );
 
