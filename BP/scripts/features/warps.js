@@ -1631,9 +1631,7 @@ const Warps = () => {
             warps[warpIndex].name = newWarpName;
             warps[warpIndex].signMode = newSignMode;
             warps[warpIndex].signMaterial = newSignMaterial;
-            if (warps[warpIndex].facing) {
-                warps[warpIndex].facing = null;
-            }
+            warps[warpIndex].facing = null;
             saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_name.success", [
                 oldName,
                 newWarpName,
