@@ -1,14 +1,14 @@
 import * as Minecraft from "@minecraft/server"
 import * as MinecraftUi from "@minecraft/server-ui"
 import {
-    system,
+    BlockPermutation,
     CustomCommandParamType,
     CustomCommandStatus,
-    SignSide,
     DyeColor,
-    BlockPermutation,
-    LocationInUnloadedChunkError
-} from "@minecraft/server";
+    LocationInUnloadedChunkError,
+    SignSide,
+    system
+} from "@minecraft/server"
 
 const Warps = () => {
     ///=================================================================================================================
@@ -57,7 +57,7 @@ const Warps = () => {
         SIGN_TEXT: "❣ §l[warpName]§r ([categoryName])",
         BUTTON_LONG: "[visibilitySymbol] §l[warpName]§r [distanceDirectionValue] [directionSign]",
         BUTTON_SHORT: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName]",
-        LIST_ALL: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName]",
+        LIST_ALL: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName] ([categoryName]/[iconName])",
     })
 
     // List of available images for warps — organized by categories
@@ -643,17 +643,30 @@ const Warps = () => {
         return matching;
     }
 
-    const teleportToWarpByName = (player, warpName) => {
-        if (!player || !warpName) {
+    const openWarpByName = (player, warpName, mode) => {
+        if (!player) {
             return;
         }
 
         const query = warpName.trim();
+        if (query === "") {
+            const warps = filterWarpsByVisibility(getValidWarps(), player);
+            if (warps.length === 0) {
+                return player.sendMessage({translate: "warps:error.no_warps", with: [query]});
+            }
+            showWarpsListMenuWithOptions(player, warps, SORT_BY.DISTANCE, mode, null, null, null, null);
+            return;
+        }
+
         const warps = filterWarpsByVisibility(getValidWarps(), player);
         const exactMatch = warps.find(w => w.name && w.name.toLowerCase() === query.toLowerCase());
 
         if (exactMatch) {
-            teleportToWarp(player, exactMatch);
+            if (mode === WARP_MENU.TELEPORT) {
+                teleportToWarp(player, exactMatch);
+            } else if (mode === WARP_MENU.MANAGEMENT) {
+                showWarpDetailsMenu(player, exactMatch);
+            }
             return;
         }
 
@@ -662,8 +675,7 @@ const Warps = () => {
             return player.sendMessage({translate: "warps:error.warp_name_not_found", with: [query]});
         }
 
-        const defaultSortBy = SORT_BY.ALPHABETICAL;
-        showWarpsListMenuWithOptions(player, matching, defaultSortBy, WARP_MENU.TELEPORT, null, null, matching, query);
+        showWarpsListMenuWithOptions(player, matching, SORT_BY.ALPHABETICAL, mode, null, null, matching, query);
     }
 
     const teleportToWarp = (player, warp) => {
@@ -832,8 +844,7 @@ const Warps = () => {
 
     const showWarpsListMenuWithOptions = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory = null, selectedIcon = null, categoryWarps = null, query = null) => {
         const isSearchMode = query !== null && query !== undefined;
-        const displayWarps = warps;
-        const sortedWarps = sortWarps([...filterWarpsByVisibility(displayWarps, player)], sortBy, player);
+        const sortedWarps = sortWarps([...filterWarpsByVisibility(warps, player)], sortBy, player);
 
         const actionForm = new MinecraftUi.ActionFormData();
 
@@ -922,7 +933,7 @@ const Warps = () => {
             const warpIndex = res.selection - 3;
             if (warpIndex >= 0 && warpIndex < sortedWarps.length) {
                 const selectedWarp = sortedWarps[warpIndex];
-                if (mode === WARP_MENU.TELEPORT || isSearchMode) {
+                if (mode === WARP_MENU.TELEPORT) {
                     teleportToWarp(player, selectedWarp);
                 } else {
                     showWarpDetailsMenu(player, selectedWarp);
@@ -2053,7 +2064,7 @@ const Warps = () => {
                 case BUTTON_TELEPORT: {
                     const teleportWarps = filterWarpsByVisibility(getValidWarps(), player);
                     if (teleportWarps.length === 0) {
-                        player.sendMessage({translate: "warps:menu.no_warps"});
+                        player.sendMessage({translate: "warps:error.no_warps"});
                     } else {
                         showWarpsListMenuWithOptions(player, teleportWarps, SORT_BY.DISTANCE, WARP_MENU.TELEPORT, null, null, null, null);
                     }
@@ -2062,7 +2073,7 @@ const Warps = () => {
                 case BUTTON_MANAGEMENT: {
                     const manageWarps = filterWarpsByVisibility(getValidWarps(), player);
                     if (manageWarps.length === 0) {
-                        player.sendMessage({translate: "warps:menu.no_warps"});
+                        player.sendMessage({translate: "warps:error.no_warps"});
                     } else {
                         showWarpsListMenuWithOptions(player, manageWarps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
                     }
@@ -2082,25 +2093,34 @@ const Warps = () => {
     const teleportCommand = (origin, warpName = "") => {
         system.run(() => {
             const player = getPlayer(origin)
-            if (!player) return;
-            if (warpName !== "") {
-                teleportToWarpByName(player, warpName)
-            } else {
-                const warps = filterWarpsByVisibility(getValidWarps(), player);
-                if (warps.length > 0) {
-                    showWarpsListMenuWithOptions(player, warps, SORT_BY.DISTANCE, WARP_MENU.TELEPORT, null, null, null, null);
-                }
-            }
+            openWarpByName(player, warpName, WARP_MENU.TELEPORT)
         });
         return {
             status: CustomCommandStatus.Success,
         };
     };
-    const listCommand = (origin) => {
+    const manageCommand = (origin, warpName = "") => {
         system.run(() => {
             const player = getPlayer(origin)
-            player.sendMessage({translate: "warps:menu.filter_all"});
-            getValidWarps().forEach(warp => player.sendMessage(
+            openWarpByName(player, warpName, WARP_MENU.MANAGEMENT)
+        });
+        return {
+            status: CustomCommandStatus.Success,
+        };
+    };
+    const listCommand = (origin, queryString) => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            player.sendMessage(
+                (!queryString)
+                    ? {translate: "warps:menu.filter_all"}
+                    : {rawtext: [{translate: "warps:search_results.title", with: {rawtext: [{text: queryString}]}}]}
+            );
+            const queriedWarps = (!queryString)
+                ? getValidWarps()
+                : searchWarpsByQuery(player, queryString)
+            const sortedWarps = sortWarps([...queriedWarps], SORT_BY.ALPHABETICAL, player);
+            sortedWarps.forEach(warp => player.sendMessage(
                 getWarpDetails(warp, player, TRANSLATION_PATTERN.LIST_ALL)
             ))
         });
@@ -2141,11 +2161,6 @@ const Warps = () => {
                     });
                 }
                 editWarpNameSave(player, warp, newWarpName, warp.signMode, warp.signMaterial);
-            } else {
-                const warps = filterWarpsByVisibility(getValidWarps(), player);
-                if (warps.length > 0) {
-                    showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
-                }
             }
         })
     }
@@ -2162,11 +2177,6 @@ const Warps = () => {
                     });
                 }
                 editWarpNameSave(player, warp, warpName, signMode, signMaterial);
-            } else {
-                const warps = filterWarpsByVisibility(getValidWarps(), player);
-                if (warps.length > 0) {
-                    showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
-                }
             }
         })
     }
@@ -2196,11 +2206,6 @@ const Warps = () => {
                     return;
                 }
                 editWarpIconSave(player, warp, icon);
-            } else {
-                const warps = filterWarpsByVisibility(getValidWarps(), player);
-                if (warps.length > 0) {
-                    showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
-                }
             }
         })
     }
@@ -2217,11 +2222,6 @@ const Warps = () => {
                     });
                 }
                 removeWarpItemForm(player, warp);
-            } else {
-                const warps = filterWarpsByVisibility(getValidWarps(), player);
-                if (warps.length > 0) {
-                    showWarpsListMenuWithOptions(player, warps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
-                }
             }
         })
     }
@@ -2273,9 +2273,24 @@ const Warps = () => {
                 teleportCommand
             );
 
+            registerCommandWithAliases(event, ["warp_details", "wd"], {
+                    description: "See Warp details",
+                    permissionLevel: Minecraft.CommandPermissionLevel.Any,
+                    optionalParameters: [{
+                        type: CustomCommandParamType.String,
+                        name: "warps:name"
+                    }],
+                },
+                manageCommand
+            );
+
             registerCommandWithAliases(event, ["warps_list", "wl"], {
                     description: "List all Warps",
                     permissionLevel: Minecraft.CommandPermissionLevel.Any,
+                    optionalParameters: [{
+                        type: CustomCommandParamType.String,
+                        name: "warps:name",
+                    }],
                 },
                 listCommand
             );

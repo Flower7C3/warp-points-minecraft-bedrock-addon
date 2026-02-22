@@ -82,7 +82,7 @@ warps:teleport.error=§r§8[§1❣WARP§8] §cBłąd podczas teleportacji do War
 warps:error.warp_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
 warps:error.warp_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
 warps:error.icon_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono ikony o nazwie §l%s§r§c!§r
-warps:menu.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych warpów!§r
+warps:error.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych warpów!§r
 
 warps:search_results.title=§r§l§3✈ Wyniki wyszukiwania§r %s
 warps:search_results.select_icon=Wybierz ikonę, aby przefiltrować wyniki:
