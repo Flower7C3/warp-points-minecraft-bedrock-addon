@@ -55,6 +55,7 @@ warps:add.step3.title=§r§l§6✚ Add Warp§r step 3/3
 warps:add.coords_must_be_number=§r§8[§1❣WARP§8] §7Coordinates must be numbers.§r
 warps:add.coords_out_of_range=§r§8[§1❣WARP§8] §7Coordinates are out of valid range.§r
 warps:add.duplicate_name=§r§8[§1❣WARP§8] §cA warp with name §l%s§r§c already exists!§r
+warps:add.duplicate_location=§r§8[§1❣WARP§8] §cA warp with location §l%s (%s,%s,%s)§r§c already exists!§r
 warps:add.invalid_icon=§r§8[§1❣WARP§8] §7Invalid icon selected! Please try again.§r
 warps:add.name_too_long=§r§8[§1❣WARP§8] §7The warp name is too long (max 50 characters)!§r
 warps:add.select_category=Select a category:

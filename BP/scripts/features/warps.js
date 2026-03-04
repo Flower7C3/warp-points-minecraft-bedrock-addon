@@ -1506,6 +1506,20 @@ const Warps = () => {
             addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
             return;
         }
+        if (warps.some(w => (w.x === targetLocation.x && w.y === targetLocation.y && w.z === targetLocation.z))) {
+            player.sendMessage({
+                translate: "warps:add.duplicate_location",
+                with: [
+                    {translate: `warps:dimension.${warpDimensionId}`},
+                    {text: targetLocation.x.toString()},
+                    {text: targetLocation.y.toString()},
+                    {text: targetLocation.z.toString()},
+                ]
+            });
+            // Show form again with filled data (step 3/3, skipping category and icon selection)
+            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            return;
+        }
 
         const newWarp = {
             name: warpName,

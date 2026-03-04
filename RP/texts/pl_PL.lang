@@ -54,6 +54,7 @@ warps:add.step3.title=§r§l§6✚ Dodaj Warp§r krok 3/3
 warps:add.coords_must_be_number=§r§8[§1❣WARP§8] §7Współrzędne muszą być liczbą!§r
 warps:add.coords_out_of_range=§r§8[§1❣WARP§8] §7Współrzędne są poza prawidłowym zakresem!§r
 warps:add.duplicate_name=§r§8[§1❣WARP§8] §cWarp o nazwie §l%s§r§c już istnieje!§r
+warps:add.duplicate_location=§r§8[§1❣WARP§8] §cWarp o lokalizacji §l%s (%s,%s,%s)§r§c już istnieje!§r
 warps:add.invalid_icon=§r§8[§1❣WARP§8] §7Wybrano nieprawidłową ikonę! Spróbuj ponownie.§r
 warps:add.name_too_long=§r§8[§1❣WARP§8] §7Nazwa warpa jest za długa (maksymalnie 50 znaków)!§r
 warps:add.select_category=Wybierz kategorię:
