@@ -14,6 +14,8 @@ const Warps = () => {
     ///=================================================================================================================
     // === Constants (module scope) ===
     const WORLD_PROP = "warps:data";
+    /** Bedrock dynamic property value max length (chars). Use chunked save when JSON exceeds this. */
+    const MAX_DYNAMIC_PROP_LENGTH = 32000;
     const ITEM_COMPONENT_ID = "warps:warp_menu";
 
     let dataLoaded = false;
@@ -201,7 +203,23 @@ const Warps = () => {
     ///=================================================================================================================
     // === Data Management Functions ===
     const loadWarps = () => {
-        const saved = Minecraft.world.getDynamicProperty(WORLD_PROP)?.toString();
+        const chunkCount = Minecraft.world.getDynamicProperty(WORLD_PROP + "_n");
+        let saved;
+        if (chunkCount !== undefined && chunkCount !== null) {
+            const n = Number(chunkCount);
+            if (!Number.isInteger(n) || n < 1) {
+                if (!isDataLoaded()) dataLoaded = true;
+                return [];
+            }
+            const parts = [];
+            for (let i = 0; i < n; i++) {
+                const part = Minecraft.world.getDynamicProperty(WORLD_PROP + "_" + i)?.toString();
+                if (part) parts.push(part);
+            }
+            saved = parts.join("");
+        } else {
+            saved = Minecraft.world.getDynamicProperty(WORLD_PROP)?.toString();
+        }
         if (!saved) {
             if (!isDataLoaded()) {
                 dataLoaded = true;
@@ -256,24 +274,45 @@ const Warps = () => {
 
     const saveWarps = (player, action, warps, warp, translateKey, translateParams = []) => {
         const json = JSON.stringify(warps);
-        Minecraft.world.setDynamicProperty(WORLD_PROP, json);
+        if (json.length <= MAX_DYNAMIC_PROP_LENGTH) {
+            Minecraft.world.setDynamicProperty(WORLD_PROP, json);
+            const oldN = Minecraft.world.getDynamicProperty(WORLD_PROP + "_n");
+            if (oldN !== undefined && oldN !== null) {
+                for (let i = 0; i < Number(oldN); i++) {
+                    Minecraft.world.setDynamicProperty(WORLD_PROP + "_" + i, null);
+                }
+                Minecraft.world.setDynamicProperty(WORLD_PROP + "_n", null);
+            }
+        } else {
+            const numChunks = Math.ceil(json.length / MAX_DYNAMIC_PROP_LENGTH);
+            for (let i = 0; i < numChunks; i++) {
+                const start = i * MAX_DYNAMIC_PROP_LENGTH;
+                const chunk = json.slice(start, start + MAX_DYNAMIC_PROP_LENGTH);
+                Minecraft.world.setDynamicProperty(WORLD_PROP + "_" + i, chunk);
+            }
+            Minecraft.world.setDynamicProperty(WORLD_PROP + "_n", String(numChunks));
+            Minecraft.world.setDynamicProperty(WORLD_PROP, null);
+        }
 
+        const wx = Number(warp.x);
+        const wy = Number(warp.y);
+        const wz = Number(warp.z);
         let soundId;
         switch (action) {
             case SAVE_ACTION.CREATE:
                 soundId = "beacon.activate"
-                player.dimension.runCommand(`summon fireworks_rocket ${warp.x} ${warp.y} ${warp.z}`);
+                player.dimension.runCommand(`summon fireworks_rocket ${wx} ${wy} ${wz}`);
                 updateWarpSigns();
                 break;
             case SAVE_ACTION.UPDATE:
                 soundId = "beacon.power"
-                player.dimension.runCommand(`particle minecraft:witchspell_emitter ${warp.x} ${warp.y} ${warp.z}`);
+                player.dimension.runCommand(`particle minecraft:witchspell_emitter ${wx} ${wy} ${wz}`);
                 updateWarpSign(warp);
                 showWarpDetailsMenu(player, warp);
                 break;
             case SAVE_ACTION.DELETE:
                 soundId = "beacon.deactivate"
-                player.dimension.runCommand(`particle minecraft:critical_hit_emitter ${warp.x} ${warp.y} ${warp.z}`);
+                player.dimension.runCommand(`particle minecraft:critical_hit_emitter ${wx} ${wy} ${wz}`);
                 removeWarpSign(warp);
                 break;
         }
@@ -282,28 +321,25 @@ const Warps = () => {
             player.playSound(soundId, player.location);
         }
 
-        // Format parameters for rawtext
-        const formattedParams = translateParams.map(param => {
-            // If param is already an object with rawtext, return it
-            if (typeof param === 'object' && param.rawtext) {
-                return param;
-            }
-            // If param is an object with translate or text, return it directly
-            if (typeof param === 'object' && (param.translate || param.text)) {
-                return param;
-            }
-            // If param is a string or number, wrap in text
-            return {text: param.toString()};
+        // Build message: use only primitive strings so native API does not throw "Native variant type conversion failed".
+        const withStrings = translateParams.map(param => {
+            if (param === null || param === undefined) return '';
+            if (typeof param === 'object' && typeof param.text === 'string') return param.text;
+            return String(param);
         });
-
-        player.sendMessage({
-            rawtext: [{
-                translate: translateKey,
-                with: {
-                    rawtext: formattedParams
-                }
-            }]
-        });
+        const msgKey = String(translateKey);
+        try {
+            player.sendMessage({
+                translate: msgKey,
+                with: withStrings
+            });
+        } catch (e) {
+            try {
+                player.sendMessage(msgKey + (withStrings.length ? ' ' + withStrings.join(', ') : ''));
+            } catch (_) {
+                player.sendMessage('[Warp] OK');
+            }
+        }
     }
 
 
@@ -321,11 +357,13 @@ const Warps = () => {
 
     const getPlayerDimension = (player) => player.dimension.id.replace("minecraft:", "");
 
-    const roundLocation = (location) => ({
-        x: Math.round(location.x),
-        y: Math.round(location.y),
-        z: Math.round(location.z)
-    })
+    const roundLocation = (location) => {
+        if (!location) return null;
+        const x = Number(location.x ?? location.blockX ?? 0);
+        const y = Number(location.y ?? location.blockY ?? 0);
+        const z = Number(location.z ?? location.blockZ ?? 0);
+        return { x: Math.round(x), y: Math.round(y), z: Math.round(z) };
+    }
 
     const calculateDistance = (x1, y1, z1, x2, y2, z2) => {
         const dx = x2 - x1;
@@ -718,7 +756,14 @@ const Warps = () => {
 
         if (isSearchMode) {
             subForm.title({
-                rawtext: [{translate: "warps:search_results.title", with: {rawtext: [{text: query}]}}]
+                rawtext: [{
+                    translate: "warps:search_results.title", with: {
+                        rawtext: [
+                            {text: query},
+                            {text: iconsWithWarps.length.toString()},
+                        ]
+                    }
+                }]
             });
         } else {
             subForm.title({
@@ -806,7 +851,16 @@ const Warps = () => {
 
         const form = new MinecraftUi.ActionFormData();
         if (isSearchMode) {
-            form.title({rawtext: [{translate: "warps:search_results.title", with: {rawtext: [{text: query}]}}]});
+            form.title({
+                rawtext: [{
+                    translate: "warps:search_results.title", with: {
+                        rawtext: [
+                            {text: query},
+                            {text: categoriesWithWarps.length.toString()},
+                        ]
+                    }
+                }]
+            });
         } else {
             form.title({
                 rawtext: [{translate: (mode === WARP_MENU.TELEPORT) ? "warps:teleport_menu.title" : "warps:manage_menu.title"}]
@@ -851,7 +905,14 @@ const Warps = () => {
         if (isSearchMode) {
             actionForm
                 .title({
-                    rawtext: [{translate: "warps:search_results.title", with: {rawtext: [{text: query}]}}]
+                    rawtext: [{
+                        translate: "warps:search_results.title", with: {
+                            rawtext: [
+                                {text: query},
+                                {text: sortedWarps.length.toString()}
+                            ]
+                        }
+                    }]
                 });
         } else {
             actionForm
@@ -1521,23 +1582,28 @@ const Warps = () => {
             return;
         }
 
+        const x = Number(targetLocation.x);
+        const y = Number(targetLocation.y);
+        const z = Number(targetLocation.z);
         const newWarp = {
-            name: warpName,
-            x: targetLocation.x,
-            y: targetLocation.y,
-            z: targetLocation.z,
-            dimension: warpDimensionId,
-            icon: icon.name,
-            owner: player.name,
-            visibility: visibility,
-            signMode: signMode,
-            signMaterial: signMaterial,
+            name: String(warpName),
+            x,
+            y,
+            z,
+            dimension: String(warpDimensionId),
+            icon: String(icon.name),
+            owner: String(player.name),
+            visibility: String(visibility),
+            signMode: String(signMode),
+            signMaterial: String(signMaterial),
         };
 
         warps.push(newWarp);
         saveWarps(player, SAVE_ACTION.CREATE, warps, newWarp, "warps:add.success", [
             warpName,
-            targetLocation.x.toString(), targetLocation.y.toString(), targetLocation.z.toString()
+            String(x),
+            String(y),
+            String(z),
         ]);
     }
 
@@ -2026,27 +2092,36 @@ const Warps = () => {
             .button2({rawtext: [{translate: "warps:warp_details.remove_confirm.no"}]})
             .show(player).then((res) => {
             if (res.selection === 0) {
-                // Check permissions before deletion
-                if (!canPlayerEditWarp(player, warp)) {
-                    player.sendMessage({translate: "warps:error.no_permission"});
-                    return;
-                }
-
-                const allWarps = loadWarps();
-                const updatedWarps = allWarps.filter(w =>
-                    !(w.name === warp.name &&
-                        w.x === warp.x &&
-                        w.y === warp.y &&
-                        w.z === warp.z &&
-                        w.dimension === warp.dimension)
-                );
-                saveWarps(player, SAVE_ACTION.DELETE, updatedWarps, warp, "warps:warp_details.remove.success", [
-                    warp.name,
-                ]);
+                removeWarpItemSave(player, warp);
             } else {
                 showWarpDetailsMenu(player, warp);
             }
         })
+    }
+
+    const removeWarpItemSave = (player, warp) => {
+        // Check permissions before deletion
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        if (!warp) {
+            player.sendMessage({translate: "warps:error.warp_not_found"});
+            return;
+        }
+
+        const allWarps = loadWarps();
+        const updatedWarps = allWarps.filter(w =>
+            !(w.name === warp.name &&
+                w.x === warp.x &&
+                w.y === warp.y &&
+                w.z === warp.z &&
+                w.dimension === warp.dimension)
+        );
+        saveWarps(player, SAVE_ACTION.DELETE, updatedWarps, warp, "warps:warp_details.remove.success", [
+            warp.name,
+        ]);
     }
 
     ///=================================================================================================================
@@ -2125,15 +2200,30 @@ const Warps = () => {
     const listCommand = (origin, queryString) => {
         system.run(() => {
             const player = getPlayer(origin)
-            player.sendMessage(
-                (!queryString)
-                    ? {translate: "warps:menu.filter_all"}
-                    : {rawtext: [{translate: "warps:search_results.title", with: {rawtext: [{text: queryString}]}}]}
-            );
             const queriedWarps = (!queryString)
                 ? getValidWarps()
                 : searchWarpsByQuery(player, queryString)
             const sortedWarps = sortWarps([...queriedWarps], SORT_BY.ALPHABETICAL, player);
+            player.sendMessage(
+                (!queryString)
+                    ? {
+                        translate: "warps:menu.filter_all_count", with: {
+                            rawtext: [
+                                {text: sortedWarps.length.toString()}
+                            ]
+                        }
+                    }
+                    : {
+                        rawtext: [{
+                            translate: "warps:search_results.title", with: {
+                                rawtext: [
+                                    {text: queryString},
+                                    {text: sortedWarps.length.toString()}
+                                ]
+                            }
+                        }]
+                    }
+            );
             sortedWarps.forEach(warp => player.sendMessage(
                 getWarpDetails(warp, player, TRANSLATION_PATTERN.LIST_ALL)
             ))
@@ -2147,9 +2237,11 @@ const Warps = () => {
             const player = getPlayer(origin)
             if (!player) return;
 
-            const targetLocation = roundLocation(location || player.location);
+            const rawLoc = location || player.location;
+            const targetLocation = roundLocation(rawLoc);
             const warpDimensionId = getPlayerDimension(player);
-            if (warpName && iconName && targetLocation && signMode && signMaterial) {
+            const validCoords = targetLocation && Number.isFinite(targetLocation.x) && Number.isFinite(targetLocation.y) && Number.isFinite(targetLocation.z);
+            if (warpName && iconName && validCoords && signMode && signMaterial) {
                 const icon = getIconByName(iconName);
                 addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId, signMode, signMaterial);
             } else {
@@ -2235,7 +2327,7 @@ const Warps = () => {
                         with: [warpName]
                     });
                 }
-                removeWarpItemForm(player, warp);
+                removeWarpItemSave(player, warp);
             }
         })
     }

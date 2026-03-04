@@ -66,6 +66,7 @@ warps:teleport_menu.title=§r§l§3✈ Teleportuj się do...§r
 warps:manage_menu.title=§r§l§5❣ Zarządzaj Warpami§r
 
 warps:menu.filter_all=Wszystkie Warpy
+warps:menu.filter_all_count=Wszystkie Warpy (%s elementów)
 warps:menu.filter_all_in_category=Wszystkie warpy w kategorii §l%1$s§r
 warps:menu.filter_category=%1$s
 warps:menu.filter.select_icon=Wybierz ikonę:
@@ -85,7 +86,7 @@ warps:error.warp_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
 warps:error.icon_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono ikony o nazwie §l%s§r§c!§r
 warps:error.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych warpów!§r
 
-warps:search_results.title=§r§l§3✈ Wyniki wyszukiwania§r %s
+warps:search_results.title=§r§l§3✈ Wyniki wyszukiwania§r %s (%s elementów)
 warps:search_results.select_icon=Wybierz ikonę, aby przefiltrować wyniki:
 warps:search_results.no_icons_in_results=§r§8[§1❣WARP§8] §7W wynikach nie ma warpów z ikonami.§r
 
