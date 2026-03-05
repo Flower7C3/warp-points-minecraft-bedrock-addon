@@ -21,6 +21,10 @@ warps:field.y.label=Współrzędna Y (z dołu do góry)
 warps:field.y.placeholder=%s (wymagane, liczba)
 warps:field.z.label=Współrzędna Z (z północy na południe)
 warps:field.z.placeholder=%s (wymagane, liczba)
+warps:field.translation_pattern.label=Formatowanie nazwy
+warps:field.translation_pattern.value.name_with_category=Nazwa z kategorią
+warps:field.translation_pattern.value.name_with_icon=Nazwa z ikoną
+warps:field.translation_pattern.value.name_solo=Nazwa solo
 warps:field.sign_mode.label=Orientacja tabliczki
 warps:field.sign_mode.value.north_south=Automatycznie: oś północ-południe (stojąca/wisząca) lub ścienna
 warps:field.sign_mode.value.east_west=Automatycznie: oś wschód-zachód (stojąca/wisząca) lub ścienna
@@ -92,25 +96,25 @@ warps:search_results.no_icons_in_results=§r§8[§1❣WARP§8] §7W wynikach nie
 
 warps:warp_details.title=§r§l§5❣ Warp§r §l%s
 warps:warp_details.options.delete=§r§c✖ Usuń§r
-warps:warp_details.options.edit_name=§r§5✎ Zmień nazwę§r
-warps:warp_details.options.edit_coordinates=§r§5⌖ Zmień współrzędne§r
-warps:warp_details.options.edit_icon=§r§5✯ Zmień ikonę§r
-warps:warp_details.options.change_visibility=§r§5⇨ Zmień widoczność§r
+warps:warp_details.options.edit_name=§r§5✎ Edytuj§r
+warps:warp_details.options.edit_coordinates=§r§5⌖ Współrzędne§r
+warps:warp_details.options.edit_icon=§r§5✯ Ikona§r
+warps:warp_details.options.change_visibility=§r§5⇨ Widoczność§r
 warps:warp_details.options.teleport=§r§3✈ Teleportuj się§r
 
-warps:warp_details.edit_name.title=§r§l§5✎ Zmień nazwę§r §l%s
+warps:warp_details.edit_name.title=§r§l§5✎ Edycja WARP§r §l%s
 warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
-warps:warp_details.edit_coordinates.title=§r§l§5⌖ Zmień współrzędne§r §l%s
+warps:warp_details.edit_coordinates.title=§r§l§5⌖ Zmiana współrzędych§r §l%s
 warps:warp_details.edit_coordinates.success=§r§8[§1❣WARP§8] §7Zmieniono współrzędne warpa §l%1$s§r§7 z §f%2$s§r§7 na §f%3$s§r§7!§r
 warps:warp_details.edit_name.success=§r§8[§1❣WARP§8] §7Zmieniono nazwę warpa z §l%1$s§r§7 na §l%2$s§r§7!§r
 warps:regen_signs.success=§r§8[§1❣WARP§8] §7Przegenerowano §l%s§r§7 tabliczek!§r
 
-warps:warp_details.edit_icon.title=§r§l§5✯ Zmień ikonę§r §l%s
+warps:warp_details.edit_icon.title=§r§l§5✯ Zmiana ikony§r §l%s
 warps:warp_details.edit_icon.step1.body=Wybierz kategorię, aby wybrać nową ikonę:
 warps:warp_details.edit_icon.step2.body=Wybierz nową ikonę kategorii §l%s§r:
 warps:warp_details.edit_icon.success=§r§8[§1❣WARP§8] §7Zmieniono ikonę dla warpa §l%1$s§r§7 na §l%2$s§r§7!§r
 
-warps:warp_details.change_visibility.title=§r§l§5⇨ Zmień widoczność§r §l%s
+warps:warp_details.change_visibility.title=§r§l§5⇨ Zmiana widoczności§r §l%s
 warps:warp_details.change_visibility.body=Obecna widoczność: %2$s\n\nWybierz nową widoczność:
 warps:warp_details.change_visibility.public_warning.title=§r§l§c⚠ Ostrzeżenie§r
 warps:warp_details.change_visibility.public_warning.body=§cZmiana warpa na publiczny jest trwała i nieodwracalna!\n\nKażdy będzie mógł edytować lub usuwać ten warp.§r

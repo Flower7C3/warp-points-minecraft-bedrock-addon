@@ -32,6 +32,22 @@ const Warps = () => {
         };
     }
 
+    /** Resolve warp.translationPattern (stored value from SIGN_TRANSLATION_PATTERN or legacy index) to TRANSLATION_PATTERN string. */
+    const getWarpTranslationPattern = (warp) => {
+        const v = warp.translationPattern;
+        const keys = Object.keys(SIGN_TRANSLATION_PATTERN);
+        const values = Object.values(SIGN_TRANSLATION_PATTERN);
+        let signKey;
+        const idx = Number(v);
+        if (Number.isFinite(idx) && idx >= 0 && idx < values.length) {
+            signKey = keys[idx];
+        } else {
+            const entry = Object.entries(SIGN_TRANSLATION_PATTERN).find(([, val]) => val === v);
+            signKey = entry ? entry[0] : keys[0];
+        }
+        return TRANSLATION_PATTERN[`SIGN_${signKey}`] ?? TRANSLATION_PATTERN.SIGN_NAME_SOLO;
+    }
+
     const getWarpSignMode = (warp) => {
         const vals = Object.values(SIGN_MODE);
         if (warp.facing === 0 || warp.facing === 1) {
@@ -55,11 +71,19 @@ const Warps = () => {
     };
 
     const TRANSLATION_PATTERN = Object.freeze({
-        BODY: "[coordsLabel]: §l[coordsValue]§r\n[dimensionLabel]: §l[dimensionName]§r\n[distanceLabel]: §l[distanceKmValue]§r (§l[distanceMetersLocale]§r)\n[directionLabel]: §l[directionText] [directionSign]§r\n[ownerLabel]: §l[ownerName]§r\n[visibilityLabel]: §l[visibilityName]§r\n[categoryLabel]: §l[categoryName]§r\n[iconLabel]: §l[iconName]§r\n[signModeLabel]: §l[signModeValue]§r\n[signMaterialLabel]: §l[signMaterialValue]§r",
-        SIGN_TEXT: "❣ §l[warpName]§r ([categoryName])",
+        BODY: "[coordsLabel]: §l[coordsValue]§r\n[dimensionLabel]: §l[dimensionName]§r\n[distanceLabel]: §l[distanceKmValue]§r (§l[distanceMetersLocale]§r)\n[directionLabel]: §l[directionText] [directionSign]§r\n\n[categoryLabel]: §l[categoryName]§r\n[iconLabel]: §l[iconName]§r\n\n[translationPatternLabel]: §l[translationPatternValue]§r\n[signModeLabel]: §l[signModeValue]§r\n[signMaterialLabel]: §l[signMaterialValue]§r\n\n[ownerLabel]: §l[ownerName]§r\n[visibilityLabel]: §l[visibilityName]§r",
         BUTTON_LONG: "[visibilitySymbol] §l[warpName]§r [distanceDirectionValue] [directionSign]",
         BUTTON_SHORT: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName]",
         LIST_ALL: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName] ([categoryName]/[iconName])",
+        SIGN_NAME_WITH_CATEGORY: "❣ §l[warpName]§r ([categoryName])",
+        SIGN_NAME_WITH_ICON: "❣ §l[warpName]§r ([iconName])",
+        SIGN_NAME_SOLO: "❣ §l[warpName]§r",
+    })
+
+    const SIGN_TRANSLATION_PATTERN = Object.freeze({
+        NAME_WITH_CATEGORY: "name_with_category",
+        NAME_WITH_ICON: "name_with_icon",
+        NAME_SOLO: "name_solo",
     })
 
     // List of available images for warps — organized by categories
@@ -242,6 +266,9 @@ const Warps = () => {
                 if (!warp.signMaterial) {
                     warp.signMaterial = Object.values(SIGN_MATERIAL)[0];
                 }
+                if (!warp.translationPattern) {
+                    warp.translationPattern = Object.values(SIGN_TRANSLATION_PATTERN)[0];
+                }
                 return warp;
             });
             if (!isDataLoaded()) {
@@ -362,7 +389,7 @@ const Warps = () => {
         const x = Number(location.x ?? location.blockX ?? 0);
         const y = Number(location.y ?? location.blockY ?? 0);
         const z = Number(location.z ?? location.blockZ ?? 0);
-        return { x: Math.round(x), y: Math.round(y), z: Math.round(z) };
+        return {x: Math.round(x), y: Math.round(y), z: Math.round(z)};
     }
 
     const calculateDistance = (x1, y1, z1, x2, y2, z2) => {
@@ -480,7 +507,7 @@ const Warps = () => {
 
     const getDimensionByName = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
 
-    const getWarpDetails = (warp, player, pattern) => {
+    const getWarpDetails = (warp, player, pattern, options) => {
         const visibility = (warp.visibility === null || warp.visibility === "" || warp.visibility === undefined)
             ? WARP_VISIBILITY.PUBLIC
             : warp.visibility;
@@ -515,6 +542,8 @@ const Warps = () => {
             iconName: (icon.translatedName && typeof icon.translatedName === "string")
                 ? {translate: icon.translatedName}
                 : {text: iconKey},
+            translationPatternLabel: {translate: "warps:field.translation_pattern.label"},
+            translationPatternValue: {translate: `warps:field.translation_pattern.value.${warp.translationPattern || Object.values(SIGN_TRANSLATION_PATTERN)[0]}`},
             signModeLabel: {translate: "warps:field.sign_mode.label"},
             signModeValue: {translate: `warps:field.sign_mode.value.${getWarpSignMode(warp)}`},
             signMaterialLabel: {translate: "warps:field.sign_material.label"},
@@ -574,30 +603,43 @@ const Warps = () => {
             keys.directionSign = {text: ""};
         }
 
-        const parts = [];
-        const regex = /\[([^\]]+)\]/g;
-        let lastEnd = 0;
-        let m;
-        while ((m = regex.exec(pattern)) !== null) {
-            if (m.index > lastEnd) {
-                const literal = pattern.slice(lastEnd, m.index);
-                if (literal.length > 0) {
-                    parts.push({text: literal});
+        const buildParts = (patt) => {
+            const out = [];
+            const regex = /\[([^\]]+)\]/g;
+            let lastEnd = 0;
+            let m;
+            while ((m = regex.exec(patt)) !== null) {
+                if (m.index > lastEnd) {
+                    const literal = patt.slice(lastEnd, m.index);
+                    if (literal.length > 0) out.push({text: literal});
+                }
+                const key = m[1];
+                if (keys[key] !== undefined) out.push(keys[key]);
+                lastEnd = m.index + m[0].length;
+            }
+            if (lastEnd < patt.length) {
+                const literal = patt.slice(lastEnd);
+                if (literal.length > 0) out.push({text: literal});
+            }
+            return out;
+        };
+
+        if (options && options.asSections === true) {
+            const chunks = pattern.split(/\n\n/);
+            const sections = [];
+            for (const chunk of chunks) {
+                const trimmed = chunk.replace(/\r$/, "").trim();
+                if (trimmed.length > 0) {
+                    const parts = buildParts(trimmed);
+                    if (parts.length > 0) {
+                        sections.push({type: "label", rawtext: parts});
+                    }
                 }
             }
-            const key = m[1];
-            if (keys[key] !== undefined) {
-                parts.push(keys[key]);
-            }
-            lastEnd = m.index + m[0].length;
-        }
-        if (lastEnd < pattern.length) {
-            const literal = pattern.slice(lastEnd);
-            if (literal.length > 0) {
-                parts.push({text: literal});
-            }
+            return sections;
         }
 
+        const parts = buildParts(pattern);
         return {rawtext: parts};
     }
 
@@ -1004,7 +1046,16 @@ const Warps = () => {
     }
 
     const showWarpDetailsMenu = (player, warp) => {
-        const icon = getIconByName(warp.icon);
+        const canEdit = canPlayerEditWarp(player, warp);
+        let buttonIndex = 0
+        const BUTTON_TELEPORT = buttonIndex++;
+        const BUTTON_EDIT_NAME = buttonIndex++;
+        const BUTTON_EDIT_COORDINATES = buttonIndex++;
+        const BUTTON_EDIT_ICON = buttonIndex++;
+        const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
+        const BUTTON_CHANGE_VISIBILITY = hasVisibilityButton ? buttonIndex++ : -1;
+        const BUTTON_DELETE = buttonIndex++;
+
         const optionsForm = new MinecraftUi.ActionFormData()
             .title({
                 rawtext: [{
@@ -1012,26 +1063,20 @@ const Warps = () => {
                     with: {rawtext: [{text: warp.name}]}
                 }]
             })
-            .body("")
-            .button({
-                rawtext: [{translate: "warps:warp_details.options.teleport"}]
-            }, icon ? icon.path : "")
-            .label(
-                getWarpDetails(warp, player, TRANSLATION_PATTERN.BODY)
-            );
-        const canEdit = canPlayerEditWarp(player, warp);
+            .body("");
 
-        const BUTTON_TELEPORT = 0;
-        let buttonIndex = 1;
+        const icon = getIconByName(warp.icon);
+        optionsForm.button({
+            rawtext: [{translate: "warps:warp_details.options.teleport"}]
+        }, icon ? icon.path : "");
+
+        const detailsSections = getWarpDetails(warp, player, TRANSLATION_PATTERN.BODY, {asSections: true});
+        detailsSections.forEach((section, i) => {
+            optionsForm.label({rawtext: section.rawtext});
+        });
+
 
         if (canEdit) {
-            const BUTTON_EDIT_NAME = buttonIndex++;
-            const BUTTON_EDIT_COORDINATES = buttonIndex++;
-            const BUTTON_EDIT_ICON = buttonIndex++;
-            const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
-            const BUTTON_CHANGE_VISIBILITY = hasVisibilityButton ? buttonIndex++ : -1;
-            const BUTTON_DELETE = buttonIndex++;
-
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.edit_name"}]
             });
@@ -1049,17 +1094,15 @@ const Warps = () => {
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.delete"}]
             });
+        }
+        optionsForm.show(player).then((res) => {
+            if (res.canceled) {
+                return;
+            }
 
-            optionsForm.show(player).then((res) => {
-                if (res.canceled) {
-                    return;
-                }
-
-                if (res.selection === BUTTON_TELEPORT) {
-                    teleportToWarp(player, warp);
-                    return;
-                }
-
+            if (res.selection === BUTTON_TELEPORT) {
+                teleportToWarp(player, warp);
+            } else if (canEdit) {
                 switch (res.selection) {
                     case BUTTON_EDIT_NAME:
                         editWarpNameForm(player, warp);
@@ -1077,20 +1120,10 @@ const Warps = () => {
                         removeWarpItemForm(player, warp);
                         break;
                 }
-            });
-        } else {
-            optionsForm.show(player).then((res) => {
-                if (res.canceled) {
-                    return;
-                }
-
-                if (res.selection === BUTTON_TELEPORT) {
-                    teleportToWarp(player, warp);
-                } else {
-                    player.sendMessage({translate: "warps:error.no_permission"});
-                }
-            });
-        }
+            } else {
+                player.sendMessage({translate: "warps:error.no_permission"});
+            }
+        });
     }
 
 
@@ -1099,6 +1132,7 @@ const Warps = () => {
 
     const WarpSign = (warpDimension, warp) => {
         const signMode = getWarpSignMode(warp);
+        const translationPattern = getWarpTranslationPattern(warp);
         // Default for standing type
         let signType;
         let signDirection;
@@ -1245,7 +1279,7 @@ const Warps = () => {
             blockProperties: blockProperties(signType, signDirection),
             isDoubleSide: signType !== SIGN_TYPE.WALL,
             textColor: getSignTextColor(signMaterial),
-            text: getWarpDetails(warp, null, TRANSLATION_PATTERN.SIGN_TEXT),
+            text: getWarpDetails(warp, null, translationPattern),
         }
     }
 
@@ -1360,8 +1394,8 @@ const Warps = () => {
     // === Add Functions ===
     const addWarpItemFormStep1 = (player, {
         warpName = "",
+        translationPattern = "",
         iconName = "",
-        category = "",
         targetLocation,
         warpDimensionId
     }) => {
@@ -1369,7 +1403,7 @@ const Warps = () => {
         if (iconName) {
             const selectedIcon = getIconByName(iconName);
             if (selectedIcon) {
-                addWarpItemFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId);
+                addWarpItemFormStep3(player, warpName, translationPattern, selectedIcon, targetLocation, warpDimensionId);
                 return;
             }
         }
@@ -1392,11 +1426,11 @@ const Warps = () => {
             }
 
             const selectedCategory = categories[categoryRes.selection];
-            addWarpItemFormStep2(player, warpName, selectedCategory, targetLocation, warpDimensionId);
+            addWarpItemFormStep2(player, warpName, translationPattern, selectedCategory, targetLocation, warpDimensionId);
         });
     }
 
-    const addWarpItemFormStep2 = (player, warpName, category, targetLocation, warpDimensionId) => {
+    const addWarpItemFormStep2 = (player, warpName, translationPattern, category, targetLocation, warpDimensionId) => {
         // Step 2/3: Icon selection from selected category
         const categoryIcons = WARP_ICONS.filter(icon => icon && icon.category === category);
 
@@ -1425,11 +1459,11 @@ const Warps = () => {
                 return;
             }
 
-            addWarpItemFormStep3(player, warpName, selectedIcon, targetLocation, warpDimensionId);
+            addWarpItemFormStep3(player, warpName, translationPattern, selectedIcon, targetLocation, warpDimensionId);
         });
     }
 
-    const addWarpItemFormStep3 = (player, warpName, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED) => {
+    const addWarpItemFormStep3 = (player, warpName, translationPattern, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED) => {
         // Step 3/3: Name, coordinates and visibility
         const currentSignModeIndex = (Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z));
 
@@ -1500,7 +1534,7 @@ const Warps = () => {
                 const currentVisibility = res.formValues && res.formValues[visibilityIndex] !== undefined
                     ? getVisibilityByIndex(res.formValues[visibilityIndex])
                     : visibility;
-                addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId, currentVisibility);
+                addWarpItemFormStep3(player, warpName, translationPattern, icon, targetLocation, warpDimensionId, currentVisibility);
                 return;
             }
 
@@ -1513,35 +1547,35 @@ const Warps = () => {
             const selectedSignMode = Object.values(SIGN_MODE)[res.formValues[signModeIndex]] || Object.values(SIGN_MODE)[0];
             const selectedSignMaterial = Object.values(SIGN_MATERIAL)[res.formValues[signMaterialIndex]] || Object.values(SIGN_MATERIAL)[0];
             const selectedVisibility = getVisibilityByIndex(res.formValues[visibilityIndex]);
-            addWarpItemSave(player, warpName, icon, finalLocation, warpDimensionId, selectedSignMode, selectedSignMaterial, selectedVisibility);
+            addWarpItemSave(player, warpName, translationPattern, icon, finalLocation, warpDimensionId, selectedSignMode, selectedSignMaterial, selectedVisibility);
         });
     }
 
-    const addWarpItemSave = (player, warpName, icon, targetLocation, warpDimensionId, signMode = Object.values(SIGN_MODE)[0], signMaterial = Object.values(SIGN_MATERIAL)[0], visibility = WARP_VISIBILITY.PROTECTED) => {
+    const addWarpItemSave = (player, warpName, translationPattern, icon, targetLocation, warpDimensionId, signMode = Object.values(SIGN_MODE)[0], signMaterial = Object.values(SIGN_MATERIAL)[0], visibility = WARP_VISIBILITY.PROTECTED) => {
         // Icon validation
         if (!icon || !icon.name) {
             player.sendMessage({translate: "warps:add.invalid_icon"});
-            addWarpItemFormStep1(player, {warpName, targetLocation, warpDimensionId});
+            addWarpItemFormStep1(player, {warpName, translationPattern, targetLocation, warpDimensionId});
             return;
         }
 
         // Name validation
         if (!warpName || warpName.trim().length === 0) {
             player.sendMessage({translate: "warps:error.fill_required"});
-            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            addWarpItemFormStep3(player, warpName, translationPattern, icon, targetLocation, warpDimensionId);
             return;
         }
 
         if (warpName.length > 50) {
             player.sendMessage({translate: "warps:add.name_too_long"});
-            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            addWarpItemFormStep3(player, warpName, translationPattern, icon, targetLocation, warpDimensionId);
             return;
         }
 
         if (isNaN(targetLocation.x) || isNaN(targetLocation.y) || isNaN(targetLocation.z)) {
             player.sendMessage({translate: "warps:add.coords_must_be_number"});
             // Show form again with filled data (step 3/3, skipping category and icon selection)
-            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            addWarpItemFormStep3(player, warpName, translationPattern, icon, targetLocation, warpDimensionId);
             return;
         }
 
@@ -1549,7 +1583,7 @@ const Warps = () => {
         // Y can be from -64 to 320 in Bedrock Edition (from version 1.18+)
         if (Math.abs(targetLocation.x) > 30000000 || targetLocation.y < -64 || targetLocation.y > 320 || Math.abs(targetLocation.z) > 30000000) {
             player.sendMessage({translate: "warps:add.coords_out_of_range"});
-            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            addWarpItemFormStep3(player, warpName, translationPattern, icon, targetLocation, warpDimensionId);
             return;
         }
 
@@ -1564,7 +1598,7 @@ const Warps = () => {
                 with: [warpName]
             });
             // Show form again with filled data (step 3/3, skipping category and icon selection)
-            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            addWarpItemFormStep3(player, warpName, translationPattern, icon, targetLocation, warpDimensionId);
             return;
         }
         if (warps.some(w => (w.x === targetLocation.x && w.y === targetLocation.y && w.z === targetLocation.z))) {
@@ -1578,15 +1612,20 @@ const Warps = () => {
                 ]
             });
             // Show form again with filled data (step 3/3, skipping category and icon selection)
-            addWarpItemFormStep3(player, warpName, icon, targetLocation, warpDimensionId);
+            addWarpItemFormStep3(player, warpName, translationPattern, icon, targetLocation, warpDimensionId);
             return;
         }
 
         const x = Number(targetLocation.x);
         const y = Number(targetLocation.y);
         const z = Number(targetLocation.z);
+        const signPatternValues = Object.values(SIGN_TRANSLATION_PATTERN);
+        const translationPatternValue = signPatternValues.includes(translationPattern)
+            ? translationPattern
+            : (signPatternValues[Number(translationPattern)] ?? signPatternValues[0]);
         const newWarp = {
             name: String(warpName),
+            translationPattern: String(translationPatternValue),
             x,
             y,
             z,
@@ -1621,8 +1660,9 @@ const Warps = () => {
             return;
         }
 
-        const currentSignMaterialIndex = Object.values(SIGN_MATERIAL).indexOf(warp.signMaterial);
+        const currentTranslationPatternIndex = Object.values(SIGN_TRANSLATION_PATTERN).indexOf(warp.translationPattern);
         const currentSignModeIndex = Object.values(SIGN_MODE).indexOf(warp.signMode);
+        const currentSignMaterialIndex = Object.values(SIGN_MATERIAL).indexOf(warp.signMaterial);
 
         new MinecraftUi.ModalFormData()
             .title({
@@ -1635,6 +1675,13 @@ const Warps = () => {
                 {rawtext: [{translate: "warps:field.name.label"}]},
                 {rawtext: [{translate: "warps:field.name.placeholder"}]},
                 {defaultValue: warp.name}
+            )
+            .dropdown(
+                {rawtext: [{translate: "warps:field.translation_pattern.label"}]},
+                Object.values(SIGN_TRANSLATION_PATTERN).map(type => ({
+                    rawtext: [{translate: `warps:field.translation_pattern.value.${type}`}]
+                })),
+                {defaultValueIndex: currentTranslationPatternIndex >= 0 ? currentTranslationPatternIndex : 0}
             )
             .dropdown(
                 {rawtext: [{translate: "warps:field.sign_mode.label"}]},
@@ -1665,20 +1712,24 @@ const Warps = () => {
 
             let index = 0;
             const warpNameIndex = index++;
+            const warpTranslationPattern = index++;
             const signModeIndex = index++;
             const signMaterialIndex = index++;
 
             const newWarpName = res.formValues[warpNameIndex]?.toString().trim();
+            const newTranslationPatternIndex = Number(res.formValues[warpTranslationPattern]);
+            const signPatternValues = Object.values(SIGN_TRANSLATION_PATTERN);
+            const newTranslationPattern = signPatternValues[newTranslationPatternIndex] ?? signPatternValues[0];
             const newSignModeIndex = res.formValues[signModeIndex];
             const newSignMode = Object.values(SIGN_MODE)[newSignModeIndex] || Object.values(SIGN_MODE)[0];
             const newSignMaterialIndex = res.formValues[signMaterialIndex];
             const newSignMaterial = Object.values(SIGN_MATERIAL)[newSignMaterialIndex] || Object.values(SIGN_MATERIAL)[0];
 
-            editWarpNameSave(player, warp, newWarpName, newSignMode, newSignMaterial);
+            editWarpNameSave(player, warp, newWarpName, newTranslationPattern, newSignMode, newSignMaterial);
         });
     }
 
-    const editWarpNameSave = (player, warp, newWarpName, newSignMode, newSignMaterial) => {
+    const editWarpNameSave = (player, warp, newWarpName, newTranslationPattern, newSignMode, newSignMaterial) => {
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
             return;
@@ -1714,17 +1765,16 @@ const Warps = () => {
             return;
         }
 
-        const oldName = warp.name;
-
         // Remove old sign if name or mode or material changed
-        if (oldName !== newWarpName || warps[warpIndex].signMode !== newSignMode || warps[warpIndex].signMaterial !== newSignMaterial) {
+        if (warps[warpIndex].name !== newWarpName || warps[warpIndex].translationPattern !== newTranslationPattern || warps[warpIndex].signMode !== newSignMode || warps[warpIndex].signMaterial !== newSignMaterial) {
             removeWarpSign(warps[warpIndex]);
             warps[warpIndex].name = newWarpName;
+            warps[warpIndex].translationPattern = newTranslationPattern;
             warps[warpIndex].signMode = newSignMode;
             warps[warpIndex].signMaterial = newSignMaterial;
             warps[warpIndex].facing = null;
             saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_name.success", [
-                oldName,
+                warp.name,
                 newWarpName,
             ]);
         }
@@ -2232,7 +2282,7 @@ const Warps = () => {
             status: CustomCommandStatus.Success,
         };
     }
-    const addCommand = (origin, warpName, iconName, location, signMode, signMaterial) => {
+    const addCommand = (origin, warpName, translationPattern, signMode, signMaterial, iconName, location) => {
         system.run(() => {
             const player = getPlayer(origin)
             if (!player) return;
@@ -2243,10 +2293,11 @@ const Warps = () => {
             const validCoords = targetLocation && Number.isFinite(targetLocation.x) && Number.isFinite(targetLocation.y) && Number.isFinite(targetLocation.z);
             if (warpName && iconName && validCoords && signMode && signMaterial) {
                 const icon = getIconByName(iconName);
-                addWarpItemSave(player, warpName, icon, targetLocation, warpDimensionId, signMode, signMaterial);
+                addWarpItemSave(player, warpName, translationPattern, icon, targetLocation, warpDimensionId, signMode, signMaterial);
             } else {
                 addWarpItemFormStep1(player, {
                     warpName: warpName,
+                    translationPattern: translationPattern,
                     iconName: iconName,
                     targetLocation: targetLocation,
                     warpDimensionId: warpDimensionId
@@ -2364,6 +2415,7 @@ const Warps = () => {
         Minecraft.system.beforeEvents.startup.subscribe((event) => {
             console.info("[WARP] Loaded Script")
 
+            event.customCommandRegistry.registerEnum("warps:translation_pattern", Object.values(SIGN_TRANSLATION_PATTERN));
             event.customCommandRegistry.registerEnum("warps:icon", WARP_ICONS.filter(icon => icon && icon.name).map(icon => icon.name));
             event.customCommandRegistry.registerEnum("warps:sign_mode", Object.values(SIGN_MODE));
             event.customCommandRegistry.registerEnum("warps:sign_material", Object.values(SIGN_MATERIAL));
@@ -2409,16 +2461,19 @@ const Warps = () => {
                         name: "warps:name",
                     }, {
                         type: CustomCommandParamType.Enum,
-                        name: "warps:icon",
-                    }, {
-                        type: CustomCommandParamType.Location,
-                        name: "warps:location",
+                        name: "warps:translation_pattern",
                     }, {
                         type: CustomCommandParamType.Enum,
                         name: "warps:sign_mode",
                     }, {
                         type: CustomCommandParamType.Enum,
                         name: "warps:sign_material",
+                    }, {
+                        type: CustomCommandParamType.Enum,
+                        name: "warps:icon",
+                    }, {
+                        type: CustomCommandParamType.Location,
+                        name: "warps:location",
                     }],
                 },
                 addCommand
