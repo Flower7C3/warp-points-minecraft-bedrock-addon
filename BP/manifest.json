@@ -55,18 +55,6 @@
       ]
     }
   ],
-  "subpacks": [
-    {
-      "folder_name": "recipe_true",
-      "name": "§r§7Craftable §1Warp Menu§8: §aTrue§r",
-      "memory_tier": 0
-    },
-    {
-      "folder_name": "recipe_false",
-      "name": "§r§7Craftable §1Warp Menu§8: §cFalse§r",
-      "memory_tier": 1
-    }
-  ],
   "metadata": {
     "authors": [
       "Flower7C3",

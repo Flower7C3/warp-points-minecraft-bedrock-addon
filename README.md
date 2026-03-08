@@ -61,13 +61,6 @@ A Minecraft Bedrock Edition addon that adds a comprehensive warp point system, a
 - **Tag `warpsAdmin`**: Players with the tag `warpsAdmin` can **edit all warps** (rename, change coordinates, icon, visibility, delete), regardless of owner or visibility.  
   Grant in-game: `/tag <player> add warpsAdmin`. Remove: `/tag <player> remove warpsAdmin`.
 
-## Subpacks
-
-The addon includes two subpacks:
-
-- **Craftable Warp Menu: True** - Makes the Warp Menu item craftable
-- **Craftable Warp Menu: False** - Warp Menu item is not craftable (default)
-
 ## Icons
 
 Some icons used in this addon are sourced from:
