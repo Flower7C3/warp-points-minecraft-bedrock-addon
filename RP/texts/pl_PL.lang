@@ -1,4 +1,7 @@
-item.warps:warp_menu=Perła menu WARPs
+pack.name=Punkty warp
+pack.description=Twórz punkty warp i pozwól innym się do nich teleportować!
+
+item.warps:warp_menu=Menu Warpów
 
 warps:main_menu.title=§r§l§1☰ Menu główne Warpów§r
 warps:main_menu.teleport=§r§3✈ Teleportuj§r

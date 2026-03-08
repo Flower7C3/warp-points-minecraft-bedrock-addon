@@ -1,4 +1,7 @@
-item.warps:warp_menu=WARPs menu pearl
+pack.name=Warp Points
+pack.description=Create Warp Points and let others to teleport there!
+
+item.warps:warp_menu=WARPs menu
 
 warps:main_menu.title=§r§l§1☰ Warps main menu§r
 warps:main_menu.teleport=§r§3✈ Teleport§r

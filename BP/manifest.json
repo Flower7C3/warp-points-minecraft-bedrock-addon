@@ -1,8 +1,8 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Warp Points",
-    "description": "Create Warp Points and let others to teleport there!",
+    "name": "pack.name",
+    "description": "pack.description",
     "uuid": "df6237c4-104f-49f0-a381-f7433a075fbd",
     "version": [
       3,
