@@ -55,6 +55,18 @@
       ]
     }
   ],
+  "subpacks": [
+    {
+      "folder_name": "tests_disabled",
+      "name": "Disable test functions",
+      "memory_tier": 0
+    },
+    {
+      "folder_name": "tests_enabled",
+      "name": "Enable test functions",
+      "memory_tier": 1
+    }
+  ],
   "metadata": {
     "authors": [
       "Flower7C3",
