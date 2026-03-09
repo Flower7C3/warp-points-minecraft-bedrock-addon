@@ -6,7 +6,9 @@ import {
     CustomCommandStatus,
     DyeColor,
     LocationInUnloadedChunkError,
+    LocationWaypoint,
     SignSide,
+    WaypointTexture,
     system
 } from "@minecraft/server"
 
@@ -506,6 +508,89 @@ const Warps = () => {
     }
 
     const getDimensionByName = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
+
+    /** Locator bar (waypoints on HUD) — uses player.locatorBar and LocationWaypoint from @minecraft/server */
+    const getWarpDimensionLocation = (warp) => {
+        const dimId = (warp.dimension != null && String(warp.dimension)) ? String(warp.dimension) : "overworld";
+        return {
+            dimension: getDimensionByName(dimId),
+            x: Number(warp.x),
+            y: Number(warp.y),
+            z: Number(warp.z)
+        };
+    };
+    const waypointMatchesWarp = (waypoint, warp) => {
+        try {
+            const loc = waypoint.getDimensionLocation();
+            const dimId = (loc.dimension && loc.dimension.id) ? String(loc.dimension.id).replace("minecraft:", "") : "";
+            return dimId === String(warp.dimension || "overworld") &&
+                Number(loc.x) === Number(warp.x) &&
+                Number(loc.y) === Number(warp.y) &&
+                Number(loc.z) === Number(warp.z);
+        } catch {
+            return false;
+        }
+    };
+    const isLocatorBarAvailable = (player) => {
+        try {
+            return player.locatorBar != null && typeof LocationWaypoint === "function";
+        } catch {
+            return false;
+        }
+    };
+    const hasWarpOnLocatorBar = (player, warp) => {
+        try {
+            const bar = player.locatorBar;
+            if (!bar || typeof bar.getAllWaypoints !== "function") return false;
+            const waypoints = bar.getAllWaypoints();
+            return waypoints.some((w) => waypointMatchesWarp(w, warp));
+        } catch {
+            return false;
+        }
+    };
+    const addWarpToLocatorBar = (player, warp) => {
+        try {
+            const bar = player.locatorBar;
+            if (!bar || typeof bar.addWaypoint !== "function") {
+                player.sendMessage({ translate: "warps:locator.not_available" });
+                return;
+            }
+            if (bar.count >= bar.maxCount) {
+                player.sendMessage({ translate: "warps:locator.limit_reached", with: [String(bar.maxCount)] });
+                return;
+            }
+            if (hasWarpOnLocatorBar(player, warp)) {
+                player.sendMessage({ translate: "warps:locator.already_added", with: [warp.name] });
+                return;
+            }
+            const dimensionLocation = getWarpDimensionLocation(warp);
+            const textureSelector = { textureBoundsList: [{ lowerBound: 0, texture: WaypointTexture.Circle }] };
+            const waypoint = new LocationWaypoint(dimensionLocation, textureSelector, { red: 0.2, green: 0.6, blue: 1 });
+            bar.addWaypoint(waypoint);
+            player.sendMessage({ translate: "warps:locator.added", with: [warp.name] });
+        } catch (e) {
+            player.sendMessage({ translate: "warps:locator.not_available" });
+        }
+    };
+    const removeWarpFromLocatorBar = (player, warp) => {
+        try {
+            const bar = player.locatorBar;
+            if (!bar || typeof bar.getAllWaypoints !== "function") {
+                player.sendMessage({ translate: "warps:locator.not_available" });
+                return;
+            }
+            const waypoints = bar.getAllWaypoints();
+            const found = waypoints.find((w) => waypointMatchesWarp(w, warp));
+            if (found) {
+                bar.removeWaypoint(found);
+                player.sendMessage({ translate: "warps:locator.removed", with: [warp.name] });
+            } else {
+                player.sendMessage({ translate: "warps:locator.not_on_locator", with: [warp.name] });
+            }
+        } catch (e) {
+            player.sendMessage({ translate: "warps:locator.not_available" });
+        }
+    };
 
     const getWarpDetails = (warp, player, pattern, options) => {
         const visibility = (warp.visibility === null || warp.visibility === "" || warp.visibility === undefined)
@@ -1047,8 +1132,11 @@ const Warps = () => {
 
     const showWarpDetailsMenu = (player, warp) => {
         const canEdit = canPlayerEditWarp(player, warp);
-        let buttonIndex = 0
+        const locatorAvailable = isLocatorBarAvailable(player);
+        const hasOnLocator = locatorAvailable && hasWarpOnLocatorBar(player, warp);
+        let buttonIndex = 0;
         const BUTTON_TELEPORT = buttonIndex++;
+        const BUTTON_LOCATOR = locatorAvailable ? buttonIndex++ : -1;
         const BUTTON_EDIT_NAME = buttonIndex++;
         const BUTTON_EDIT_COORDINATES = buttonIndex++;
         const BUTTON_EDIT_ICON = buttonIndex++;
@@ -1069,6 +1157,12 @@ const Warps = () => {
         optionsForm.button({
             rawtext: [{translate: "warps:warp_details.options.teleport"}]
         }, icon ? icon.path : "");
+
+        if (locatorAvailable) {
+            optionsForm.button({
+                rawtext: [{ translate: hasOnLocator ? "warps:warp_details.options.remove_from_locator" : "warps:warp_details.options.show_on_locator" }]
+            });
+        }
 
         const detailsSections = getWarpDetails(warp, player, TRANSLATION_PATTERN.BODY, {asSections: true});
         detailsSections.forEach((section, i) => {
@@ -1102,7 +1196,18 @@ const Warps = () => {
 
             if (res.selection === BUTTON_TELEPORT) {
                 teleportToWarp(player, warp);
-            } else if (canEdit) {
+                return;
+            }
+            if (res.selection === BUTTON_LOCATOR) {
+                if (hasOnLocator) {
+                    removeWarpFromLocatorBar(player, warp);
+                } else {
+                    addWarpToLocatorBar(player, warp);
+                }
+                showWarpDetailsMenu(player, warp);
+                return;
+            }
+            if (canEdit) {
                 switch (res.selection) {
                     case BUTTON_EDIT_NAME:
                         editWarpNameForm(player, warp);
@@ -2384,6 +2489,8 @@ const Warps = () => {
     }
     const regenerateCommand = (origin) => {
         system.run(() => {
+
+
             const player = getPlayer(origin);
             if (!player) return;
 

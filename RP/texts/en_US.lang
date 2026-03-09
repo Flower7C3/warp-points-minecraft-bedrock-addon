@@ -105,6 +105,14 @@ warps:warp_details.options.edit_coordinates=§r§5⌖ Change coordinates§r
 warps:warp_details.options.edit_icon=§r§5✯ Change icon§r
 warps:warp_details.options.change_visibility=§r§5⇨ Change visibility§r
 warps:warp_details.options.teleport=§r§3✈ Teleport to§r
+warps:warp_details.options.show_on_locator=§r§b⌖ Show on locator§r
+warps:warp_details.options.remove_from_locator=§r§8⌖ Remove from locator§r
+warps:locator.added=§r§8[§1❣WARP§8] §aAdded §l%s§r§a to locator bar.§r
+warps:locator.removed=§r§8[§1❣WARP§8] §7Removed §l%s§r§7 from locator bar.§r
+warps:locator.already_added=§r§8[§1❣WARP§8] §7§l%s§r§7 is already on the locator bar.§r
+warps:locator.not_on_locator=§r§8[§1❣WARP§8] §7§l%s§r§7 is not on the locator bar.§r
+warps:locator.limit_reached=§r§8[§1❣WARP§8] §cLocator bar is full (max %s waypoints).§r
+warps:locator.not_available=§r§8[§1❣WARP§8] §7Locator bar waypoints are not available in this version.§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Rename§r §l%s
 warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cWarp not found!§r

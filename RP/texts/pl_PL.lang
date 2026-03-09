@@ -104,6 +104,14 @@ warps:warp_details.options.edit_coordinates=§r§5⌖ Współrzędne§r
 warps:warp_details.options.edit_icon=§r§5✯ Ikona§r
 warps:warp_details.options.change_visibility=§r§5⇨ Widoczność§r
 warps:warp_details.options.teleport=§r§3✈ Teleportuj się§r
+warps:warp_details.options.show_on_locator=§r§b⌖ Pokaż na lokatorze§r
+warps:warp_details.options.remove_from_locator=§r§8⌖ Usuń z lokatora§r
+warps:locator.added=§r§8[§1❣WARP§8] §aDodano §l%s§r§a do paska lokatora.§r
+warps:locator.removed=§r§8[§1❣WARP§8] §7Usunięto §l%s§r§7 z paska lokatora.§r
+warps:locator.already_added=§r§8[§1❣WARP§8] §7§l%s§r§7 jest już na pasku lokatora.§r
+warps:locator.not_on_locator=§r§8[§1❣WARP§8] §7§l%s§r§7 nie jest na pasku lokatora.§r
+warps:locator.limit_reached=§r§8[§1❣WARP§8] §cPasek lokatora jest pełny (maks. %s punktów).§r
+warps:locator.not_available=§r§8[§1❣WARP§8] §7Punkty na pasku lokatora nie są dostępne w tej wersji.§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Edycja WARP§r §l%s
 warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
