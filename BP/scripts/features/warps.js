@@ -16,6 +16,7 @@ const Warps = () => {
     ///=================================================================================================================
     // === Constants (module scope) ===
     const WORLD_PROP = "warps:data";
+    const WORLD_FAVORITES_PROP = "warps:favorites";
     /** Bedrock dynamic property value max length (chars). Use chunked save when JSON exceeds this. */
     const MAX_DYNAMIC_PROP_LENGTH = 32000;
     const ITEM_COMPONENT_ID = "warps:warp_menu";
@@ -226,6 +227,37 @@ const Warps = () => {
         WARPED: 'warped',
     });
 
+    /** Locator behavior config (single place to tune waypoint UX). */
+    const LOCATOR_CONFIG = Object.freeze({
+        enabled: true,
+        showMessages: true,
+        /** Use null to keep native bar.maxCount limit. */
+        maxWaypointsOverride: null,
+        /** Default/fallback texture key from WaypointTexture. */
+        texture: "Circle",
+        color: Object.freeze({ red: 0.2, green: 0.6, blue: 1 }),
+        /**
+         * Visibility style synced with lang symbols:
+         * private=§9■, protected=§e◆, public=§f◎
+         */
+        visibilityStyles: Object.freeze({
+            private: Object.freeze({
+                texture: "Square",
+                color: Object.freeze({ red: 0.333, green: 0.333, blue: 1.0 }),
+            }),
+            protected: Object.freeze({
+                texture: "Diamond",
+                color: Object.freeze({ red: 1.0, green: 1.0, blue: 0.333 }),
+            }),
+            public: Object.freeze({
+                texture: "Circle",
+                color: Object.freeze({ red: 1.0, green: 1.0, blue: 1.0 }),
+            }),
+        }),
+        /** If false, duplicate check ignores Y level (X/Z + dimension only). */
+        matchExactY: true
+    });
+
     ///=================================================================================================================
     // === Data Management Functions ===
     const loadWarps = () => {
@@ -285,6 +317,100 @@ const Warps = () => {
         }
     }
 
+    const loadFavorites = () => {
+        const saved = Minecraft.world.getDynamicProperty(WORLD_FAVORITES_PROP)?.toString();
+        if (!saved) return {};
+        try {
+            const parsed = JSON.parse(saved);
+            if (!parsed || typeof parsed !== "object") return {};
+            return parsed;
+        } catch {
+            return {};
+        }
+    };
+
+    const saveFavorites = (favorites) => {
+        Minecraft.world.setDynamicProperty(WORLD_FAVORITES_PROP, JSON.stringify(favorites));
+    };
+
+    const cleanupFavoritesData = (favorites) => {
+        const validKeys = new Set(getValidWarps().map((warp) => getWarpLocatorKey(warp)));
+        const cleaned = {};
+        let changed = false;
+
+        Object.entries(favorites || {}).forEach(([playerName, keys]) => {
+            if (!Array.isArray(keys) || playerName === "") {
+                changed = true;
+                return;
+            }
+            const uniqueValid = Array.from(new Set(keys.map((k) => String(k))))
+                .filter((k) => validKeys.has(k));
+
+            if (uniqueValid.length > 0) {
+                cleaned[playerName] = uniqueValid;
+            }
+
+            if (uniqueValid.length !== keys.length) {
+                changed = true;
+            }
+        });
+
+        if (Object.keys(cleaned).length !== Object.keys(favorites || {}).length) {
+            changed = true;
+        }
+
+        return { cleaned, changed };
+    };
+
+    const cleanupFavoritesStorage = () => {
+        const favorites = loadFavorites();
+        const { cleaned, changed } = cleanupFavoritesData(favorites);
+        if (changed) saveFavorites(cleaned);
+        return cleaned;
+    };
+
+    const getPlayerFavoriteWarpKeys = (player) => {
+        const allFavorites = cleanupFavoritesStorage();
+        const list = allFavorites?.[String(player?.name || "")];
+        if (!Array.isArray(list)) return new Set();
+        return new Set(list.map(v => String(v)));
+    };
+
+    const setPlayerFavoriteWarpKeys = (player, keysSet) => {
+        const allFavorites = cleanupFavoritesStorage();
+        const playerName = String(player?.name || "");
+        if (!playerName) return;
+        const validKeys = new Set(getValidWarps().map((warp) => getWarpLocatorKey(warp)));
+        const keys = Array.from(keysSet).map((k) => String(k)).filter((k) => validKeys.has(k));
+        if (keys.length > 0) {
+            allFavorites[playerName] = keys;
+        } else {
+            delete allFavorites[playerName];
+        }
+        saveFavorites(allFavorites);
+    };
+
+    const getWarpLocatorKey = (warp) => {
+        const dim = String(warp?.dimension || "overworld");
+        const x = Number(warp?.x);
+        const y = Number(warp?.y);
+        const z = Number(warp?.z);
+        return `${dim}:${x},${y},${z}`;
+    };
+
+    const syncPlayerLocatorFromFavorites = (player) => {
+        try {
+            if (!isLocatorBarAvailable(player)) return;
+            const favoriteKeys = getPlayerFavoriteWarpKeys(player);
+            if (favoriteKeys.size === 0) return;
+            const favoriteWarps = filterWarpsByVisibility(getValidWarps(), player)
+                .filter((warp) => favoriteKeys.has(getWarpLocatorKey(warp)));
+            favoriteWarps.forEach((warp) => addWarpToLocatorBar(player, warp, { silent: true, persist: false }));
+        } catch (e) {
+            console.error(`[WARP] Failed to restore favorites for ${player?.name}:`, e);
+        }
+    };
+
     const getValidWarps = () => {
         return loadWarps().filter(warp =>
             warp?.name &&
@@ -322,6 +448,7 @@ const Warps = () => {
             Minecraft.world.setDynamicProperty(WORLD_PROP + "_n", String(numChunks));
             Minecraft.world.setDynamicProperty(WORLD_PROP, null);
         }
+        cleanupFavoritesStorage();
 
         const wx = Number(warp.x);
         const wy = Number(warp.y);
@@ -462,6 +589,11 @@ const Warps = () => {
     const filterWarpsByVisibility = (warps, player) => {
         return warps.filter(warp => canPlayerSeeWarp(player, warp));
     }
+    const filterWarpsByLocatorBar = (warps, player) => {
+        const favoriteKeys = getPlayerFavoriteWarpKeys(player);
+        if (favoriteKeys.size === 0) return [];
+        return warps.filter(warp => favoriteKeys.has(getWarpLocatorKey(warp)));
+    }
 
 
     const sortWarps = (warps, sortBy, player) => {
@@ -509,6 +641,28 @@ const Warps = () => {
 
     const getDimensionByName = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
 
+    const notifyLocator = (player, key, withValues = []) => {
+        if (!LOCATOR_CONFIG.showMessages) return;
+        player.sendMessage({ translate: key, with: withValues });
+    };
+
+    const getLocatorTexture = (warp) => {
+        const visibility = String(warp?.visibility || WARP_VISIBILITY.PUBLIC);
+        const preferredTexture = LOCATOR_CONFIG.visibilityStyles?.[visibility]?.texture || LOCATOR_CONFIG.texture;
+        const selected = WaypointTexture?.[preferredTexture];
+        if (selected !== undefined) return selected;
+        return WaypointTexture?.Circle;
+    };
+
+    const getLocatorColor = (warp) => {
+        const visibility = String(warp?.visibility || WARP_VISIBILITY.PUBLIC);
+        const candidate = LOCATOR_CONFIG.visibilityStyles?.[visibility]?.color;
+        if (candidate && typeof candidate.red === "number" && typeof candidate.green === "number" && typeof candidate.blue === "number") {
+            return candidate;
+        }
+        return LOCATOR_CONFIG.color;
+    };
+
     /** Locator bar (waypoints on HUD) — uses player.locatorBar and LocationWaypoint from @minecraft/server */
     const getWarpDimensionLocation = (warp) => {
         const dimId = (warp.dimension != null && String(warp.dimension)) ? String(warp.dimension) : "overworld";
@@ -523,17 +677,19 @@ const Warps = () => {
         try {
             const loc = waypoint.getDimensionLocation();
             const dimId = (loc.dimension && loc.dimension.id) ? String(loc.dimension.id).replace("minecraft:", "") : "";
-            return dimId === String(warp.dimension || "overworld") &&
-                Number(loc.x) === Number(warp.x) &&
-                Number(loc.y) === Number(warp.y) &&
-                Number(loc.z) === Number(warp.z);
+            const sameDimension = dimId === String(warp.dimension || "overworld");
+            const sameX = Number(loc.x) === Number(warp.x);
+            const sameZ = Number(loc.z) === Number(warp.z);
+            if (!sameDimension || !sameX || !sameZ) return false;
+            if (!LOCATOR_CONFIG.matchExactY) return true;
+            return Number(loc.y) === Number(warp.y);
         } catch {
             return false;
         }
     };
     const isLocatorBarAvailable = (player) => {
         try {
-            return player.locatorBar != null && typeof LocationWaypoint === "function";
+            return LOCATOR_CONFIG.enabled && player.locatorBar != null && typeof LocationWaypoint === "function";
         } catch {
             return false;
         }
@@ -548,47 +704,75 @@ const Warps = () => {
             return false;
         }
     };
-    const addWarpToLocatorBar = (player, warp) => {
+    const addWarpToLocatorBar = (player, warp, options = {}) => {
+        const silent = options?.silent === true;
+        const persist = options?.persist !== false;
         try {
             const bar = player.locatorBar;
             if (!bar || typeof bar.addWaypoint !== "function") {
-                player.sendMessage({ translate: "warps:locator.not_available" });
+                if (!silent) notifyLocator(player, "warps:locator.not_available");
                 return;
             }
-            if (bar.count >= bar.maxCount) {
-                player.sendMessage({ translate: "warps:locator.limit_reached", with: [String(bar.maxCount)] });
+            const configuredLimit = Number(LOCATOR_CONFIG.maxWaypointsOverride);
+            const limit = Number.isInteger(configuredLimit) && configuredLimit > 0
+                ? Math.min(configuredLimit, Number(bar.maxCount))
+                : Number(bar.maxCount);
+            if (Number(bar.count) >= limit) {
+                if (!silent) notifyLocator(player, "warps:locator.limit_reached", [String(limit)]);
                 return;
             }
             if (hasWarpOnLocatorBar(player, warp)) {
-                player.sendMessage({ translate: "warps:locator.already_added", with: [warp.name] });
+                if (!silent) notifyLocator(player, "warps:locator.already_added", [warp.name]);
+                if (persist) {
+                    const keys = getPlayerFavoriteWarpKeys(player);
+                    keys.add(getWarpLocatorKey(warp));
+                    setPlayerFavoriteWarpKeys(player, keys);
+                }
                 return;
             }
             const dimensionLocation = getWarpDimensionLocation(warp);
-            const textureSelector = { textureBoundsList: [{ lowerBound: 0, texture: WaypointTexture.Circle }] };
-            const waypoint = new LocationWaypoint(dimensionLocation, textureSelector, { red: 0.2, green: 0.6, blue: 1 });
+            const textureSelector = { textureBoundsList: [{ lowerBound: 0, texture: getLocatorTexture(warp) }] };
+            const waypoint = new LocationWaypoint(dimensionLocation, textureSelector, getLocatorColor(warp));
             bar.addWaypoint(waypoint);
-            player.sendMessage({ translate: "warps:locator.added", with: [warp.name] });
+            if (persist) {
+                const keys = getPlayerFavoriteWarpKeys(player);
+                keys.add(getWarpLocatorKey(warp));
+                setPlayerFavoriteWarpKeys(player, keys);
+            }
+            if (!silent) notifyLocator(player, "warps:locator.added", [warp.name]);
         } catch (e) {
-            player.sendMessage({ translate: "warps:locator.not_available" });
+            if (!silent) notifyLocator(player, "warps:locator.not_available");
         }
     };
-    const removeWarpFromLocatorBar = (player, warp) => {
+    const removeWarpFromLocatorBar = (player, warp, options = {}) => {
+        const silent = options?.silent === true;
+        const persist = options?.persist !== false;
         try {
             const bar = player.locatorBar;
             if (!bar || typeof bar.getAllWaypoints !== "function") {
-                player.sendMessage({ translate: "warps:locator.not_available" });
+                if (!silent) notifyLocator(player, "warps:locator.not_available");
                 return;
             }
             const waypoints = bar.getAllWaypoints();
             const found = waypoints.find((w) => waypointMatchesWarp(w, warp));
             if (found) {
                 bar.removeWaypoint(found);
-                player.sendMessage({ translate: "warps:locator.removed", with: [warp.name] });
+                if (persist) {
+                    const keys = getPlayerFavoriteWarpKeys(player);
+                    keys.delete(getWarpLocatorKey(warp));
+                    setPlayerFavoriteWarpKeys(player, keys);
+                }
+                if (!silent) notifyLocator(player, "warps:locator.removed", [warp.name]);
             } else {
-                player.sendMessage({ translate: "warps:locator.not_on_locator", with: [warp.name] });
+                if (persist) {
+                    const keys = getPlayerFavoriteWarpKeys(player);
+                    keys.delete(getWarpLocatorKey(warp));
+                    setPlayerFavoriteWarpKeys(player, keys);
+                }
+                if (!silent) notifyLocator(player, "warps:locator.not_on_locator", [warp.name]);
             }
         } catch (e) {
-            player.sendMessage({ translate: "warps:locator.not_available" });
+            if (!silent) notifyLocator(player, "warps:locator.not_available");
         }
     };
 
@@ -864,16 +1048,16 @@ const Warps = () => {
      * Lista ikon: wszystkich (z podziałem na kategorie), w kategorii, lub wg wyszukiwania (z podziałem na kategorie).
      * query !== null = tryb wyszukiwania (warps = wyniki wyszukiwania).
      */
-    const showSubcategoriesMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon = null, query = null) => {
+    const showSubcategoriesMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon = null, query = null, showOnlyLocator = false) => {
         const iconsWithWarps = getIconsWithWarps(warps);
         const isSearchMode = query !== null && query !== undefined;
 
         if (iconsWithWarps.length === 0) {
             if (isSearchMode) {
                 player.sendMessage({translate: "warps:search_results.no_icons_in_results"});
-                showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query);
+                showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query, showOnlyLocator);
             } else {
-                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, null, null);
+                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, null, null, showOnlyLocator);
             }
             return;
         }
@@ -939,17 +1123,17 @@ const Warps = () => {
         subForm.show(player).then((subRes) => {
             if (subRes.canceled) {
                 if (isSearchMode) {
-                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query);
+                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query, showOnlyLocator);
                 } else {
-                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null, null);
+                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null, null, showOnlyLocator);
                 }
                 return;
             }
             if (hasFirstButton && subRes.selection === BUTTON_BACK) {
                 if (isSearchMode) {
-                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query);
+                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query, showOnlyLocator);
                 } else {
-                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null, null);
+                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null, null, showOnlyLocator);
                 }
                 return;
             }
@@ -959,9 +1143,9 @@ const Warps = () => {
                 const filteredWarps = filterWarpsByIcon(warps, chosenIcon.name);
                 const categoryForChosenIcon = selectedCategory || chosenIcon.category || null;
                 if (isSearchMode) {
-                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, categoryForChosenIcon, chosenIcon, warps, query);
+                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, categoryForChosenIcon, chosenIcon, warps, query, showOnlyLocator);
                 } else {
-                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, categoryForChosenIcon, chosenIcon, warps, null);
+                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, categoryForChosenIcon, chosenIcon, warps, null, showOnlyLocator);
                 }
             }
         });
@@ -971,7 +1155,7 @@ const Warps = () => {
      * Wybór kategorii: pierwsza pozycja "Wszystkie", potem lista kategorii.
      * Pokazuje tylko kategorie mające warpy w bieżącym kontekście (pełna lista lub wyniki wyszukiwania).
      */
-    const showCategoryPickerMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories = null) => {
+    const showCategoryPickerMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories = null, showOnlyLocator = false) => {
         const isSearchMode = query !== null && query !== undefined;
         const fullList = isSearchMode ? warps : (allWarpsForCategories ?? categoryWarps ?? warps);
         const categoriesWithWarps = getCategoriesWithWarps(fullList);
@@ -1007,25 +1191,27 @@ const Warps = () => {
 
         form.show(player).then((res) => {
             if (res.canceled) {
-                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query);
+                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, showOnlyLocator);
                 return;
             }
             if (res.selection === 0) {
-                showWarpsListMenuWithOptions(player, fullList, sortBy, mode, null, null, null, query);
+                showWarpsListMenuWithOptions(player, fullList, sortBy, mode, null, null, null, query, showOnlyLocator);
                 return;
             }
             const categoryIndex = res.selection - 1;
             if (categoryIndex >= 0 && categoryIndex < categoriesWithWarps.length) {
                 const chosenCategory = categoriesWithWarps[categoryIndex];
                 const filteredByCategory = filterWarpsByCategory(fullList, chosenCategory);
-                showWarpsListMenuWithOptions(player, filteredByCategory, sortBy, mode, chosenCategory, null, fullList, query);
+                showWarpsListMenuWithOptions(player, filteredByCategory, sortBy, mode, chosenCategory, null, fullList, query, showOnlyLocator);
             }
         });
     }
 
-    const showWarpsListMenuWithOptions = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory = null, selectedIcon = null, categoryWarps = null, query = null) => {
+    const showWarpsListMenuWithOptions = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory = null, selectedIcon = null, categoryWarps = null, query = null, showOnlyLocator = false) => {
         const isSearchMode = query !== null && query !== undefined;
-        const sortedWarps = sortWarps([...filterWarpsByVisibility(warps, player)], sortBy, player);
+        const visibleWarps = filterWarpsByVisibility(warps, player);
+        const baseWarps = showOnlyLocator ? filterWarpsByLocatorBar(visibleWarps, player) : visibleWarps;
+        const sortedWarps = sortWarps([...baseWarps], sortBy, player);
 
         const actionForm = new MinecraftUi.ActionFormData();
 
@@ -1058,6 +1244,7 @@ const Warps = () => {
         const BUTTON_FILTER_CATEGORY = 0;
         const BUTTON_FILTER_ICON = 1;
         const BUTTON_SORT = 2;
+        const BUTTON_FAVORITES = 3;
         const categoryButtonText = selectedCategory
             ? {
                 rawtext: [{
@@ -1075,10 +1262,12 @@ const Warps = () => {
             }
             : {rawtext: [{translate: "warps:menu.filter_by_icon"}]};
         const sortButtonText = {rawtext: [{translate: sortBy === SORT_BY.DISTANCE ? "warps:menu.meta_sort_distance" : "warps:menu.meta_sort_alphabetical"}]};
+        const favoritesButtonText = {rawtext: [{translate: showOnlyLocator ? "warps:menu.meta_favorites_on" : "warps:menu.meta_favorites_off"}]};
         actionForm
             .button(categoryButtonText)
             .button(iconButtonText)
             .button(sortButtonText)
+            .button(favoritesButtonText)
             .divider();
 
         sortedWarps.forEach(warp => {
@@ -1099,7 +1288,7 @@ const Warps = () => {
 
             if (res.selection === BUTTON_FILTER_CATEGORY) {
                 const allWarpsForCategories = filterWarpsByVisibility(getValidWarps(), player);
-                showCategoryPickerMenu(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories);
+                showCategoryPickerMenu(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories, showOnlyLocator);
                 return;
             }
 
@@ -1108,17 +1297,22 @@ const Warps = () => {
                 const warpsForIconList = categoryForIconList
                     ? filterWarpsByCategory(categoryWarps !== null ? categoryWarps : warps, categoryForIconList)
                     : warps;
-                showSubcategoriesMenu(player, warpsForIconList, sortBy, mode, categoryForIconList, selectedIcon, query);
+                showSubcategoriesMenu(player, warpsForIconList, sortBy, mode, categoryForIconList, selectedIcon, query, showOnlyLocator);
                 return;
             }
 
             if (res.selection === BUTTON_SORT) {
                 const newSortBy = sortBy === SORT_BY.DISTANCE ? SORT_BY.ALPHABETICAL : SORT_BY.DISTANCE;
-                showWarpsListMenuWithOptions(player, warps, newSortBy, mode, selectedCategory, selectedIcon, categoryWarps, query);
+                showWarpsListMenuWithOptions(player, warps, newSortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, showOnlyLocator);
                 return;
             }
 
-            const warpIndex = res.selection - 3;
+            if (res.selection === BUTTON_FAVORITES) {
+                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, !showOnlyLocator);
+                return;
+            }
+
+            const warpIndex = res.selection - 4;
             if (warpIndex >= 0 && warpIndex < sortedWarps.length) {
                 const selectedWarp = sortedWarps[warpIndex];
                 if (mode === WARP_MENU.TELEPORT) {
@@ -1158,17 +1352,16 @@ const Warps = () => {
             rawtext: [{translate: "warps:warp_details.options.teleport"}]
         }, icon ? icon.path : "");
 
-        if (locatorAvailable) {
-            optionsForm.button({
-                rawtext: [{ translate: hasOnLocator ? "warps:warp_details.options.remove_from_locator" : "warps:warp_details.options.show_on_locator" }]
-            });
-        }
-
         const detailsSections = getWarpDetails(warp, player, TRANSLATION_PATTERN.BODY, {asSections: true});
         detailsSections.forEach((section, i) => {
             optionsForm.label({rawtext: section.rawtext});
         });
 
+        if (locatorAvailable) {
+            optionsForm.button({
+                rawtext: [{ translate: hasOnLocator ? "warps:warp_details.options.remove_from_locator" : "warps:warp_details.options.show_on_locator" }]
+            });
+        }
 
         if (canEdit) {
             optionsForm.button({
@@ -2294,7 +2487,11 @@ const Warps = () => {
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.manage"}]
         });
-        const BUTTON_ADD = 2;
+        const BUTTON_FAVORITES = 2;
+        menuForm.button({
+            rawtext: [{translate: "warps:main_menu.favorites"}]
+        });
+        const BUTTON_ADD = 3;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.add"}]
         });
@@ -2320,6 +2517,16 @@ const Warps = () => {
                         player.sendMessage({translate: "warps:error.no_warps"});
                     } else {
                         showWarpsListMenuWithOptions(player, manageWarps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                    }
+                    break;
+                }
+                case BUTTON_FAVORITES: {
+                    const favoriteWarpsBase = filterWarpsByVisibility(getValidWarps(), player);
+                    const favoriteWarps = filterWarpsByLocatorBar(favoriteWarpsBase, player);
+                    if (favoriteWarps.length === 0) {
+                        player.sendMessage({translate: "warps:error.no_favorites"});
+                    } else {
+                        showWarpsListMenuWithOptions(player, favoriteWarpsBase, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null, true);
                     }
                     break;
                 }
@@ -2706,7 +2913,19 @@ const Warps = () => {
     Minecraft.world.afterEvents.worldLoad.subscribe(() => {
         system.runTimeout(() => {
             loadWarps();
+            cleanupFavoritesStorage();
+            Minecraft.world.getAllPlayers().forEach((player) => {
+                syncPlayerLocatorFromFavorites(player);
+            });
         }, 60);
+    });
+
+    Minecraft.world.afterEvents.playerSpawn.subscribe((event) => {
+        system.runTimeout(() => {
+            const player = event.player;
+            if (!player) return;
+            syncPlayerLocatorFromFavorites(player);
+        }, 20);
     });
 
     Minecraft.world.afterEvents.playerInteractWithBlock.subscribe((event) => {
