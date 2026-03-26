@@ -183,11 +183,6 @@ const Warps = () => {
         WarpIcon("TNT", "resources", "ore/TNT.png"),
     ]
 
-    const WARP_MENU = Object.freeze({
-        TELEPORT: 'teleport',
-        MANAGEMENT: 'management'
-    });
-
     const SORT_BY = Object.freeze({
         DISTANCE: 'distance',
         ALPHABETICAL: 'alphabetical'
@@ -992,7 +987,7 @@ const Warps = () => {
         return matching;
     }
 
-    const openWarpByName = (player, warpName, mode) => {
+    const openWarpByName = (player, warpName, teleportOnExact = false) => {
         if (!player) {
             return;
         }
@@ -1003,7 +998,7 @@ const Warps = () => {
             if (warps.length === 0) {
                 return player.sendMessage({translate: "warps:error.no_warps", with: [query]});
             }
-            showWarpsListMenuWithOptions(player, warps, SORT_BY.DISTANCE, mode, null, null, null, null);
+            showWarpsListMenuWithOptions(player, warps, SORT_BY.DISTANCE, null, null, null, null, false);
             return;
         }
 
@@ -1011,9 +1006,9 @@ const Warps = () => {
         const exactMatch = warps.find(w => w.name && w.name.toLowerCase() === query.toLowerCase());
 
         if (exactMatch) {
-            if (mode === WARP_MENU.TELEPORT) {
+            if (teleportOnExact) {
                 teleportToWarp(player, exactMatch);
-            } else if (mode === WARP_MENU.MANAGEMENT) {
+            } else {
                 showWarpDetailsMenu(player, exactMatch);
             }
             return;
@@ -1024,7 +1019,7 @@ const Warps = () => {
             return player.sendMessage({translate: "warps:error.warp_name_not_found", with: [query]});
         }
 
-        showWarpsListMenuWithOptions(player, matching, SORT_BY.ALPHABETICAL, mode, null, null, matching, query);
+        showWarpsListMenuWithOptions(player, matching, SORT_BY.ALPHABETICAL, null, null, matching, query, false);
     }
 
     const teleportToWarp = (player, warp) => {
@@ -1048,16 +1043,16 @@ const Warps = () => {
      * Lista ikon: wszystkich (z podziałem na kategorie), w kategorii, lub wg wyszukiwania (z podziałem na kategorie).
      * query !== null = tryb wyszukiwania (warps = wyniki wyszukiwania).
      */
-    const showSubcategoriesMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon = null, query = null, showOnlyLocator = false) => {
+    const showSubcategoriesMenu = (player, warps, sortBy, selectedCategory, selectedIcon = null, query = null, showOnlyLocator = false) => {
         const iconsWithWarps = getIconsWithWarps(warps);
         const isSearchMode = query !== null && query !== undefined;
 
         if (iconsWithWarps.length === 0) {
             if (isSearchMode) {
                 player.sendMessage({translate: "warps:search_results.no_icons_in_results"});
-                showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query, showOnlyLocator);
+                showWarpsListMenuWithOptions(player, warps, sortBy, null, null, warps, query, showOnlyLocator);
             } else {
-                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, null, null, showOnlyLocator);
+                showWarpsListMenuWithOptions(player, warps, sortBy, selectedCategory, selectedIcon, null, null, showOnlyLocator);
             }
             return;
         }
@@ -1079,7 +1074,7 @@ const Warps = () => {
         } else {
             subForm.title({
                 rawtext: [{
-                    translate: (mode === WARP_MENU.TELEPORT) ? "warps:teleport_menu.title" : "warps:manage_menu.title"
+                    translate: "warps:manage_menu.title"
                 }]
             });
         }
@@ -1123,17 +1118,17 @@ const Warps = () => {
         subForm.show(player).then((subRes) => {
             if (subRes.canceled) {
                 if (isSearchMode) {
-                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query, showOnlyLocator);
+                    showWarpsListMenuWithOptions(player, warps, sortBy, null, null, warps, query, showOnlyLocator);
                 } else {
-                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null, null, showOnlyLocator);
+                    showWarpsListMenuWithOptions(player, warps, sortBy, selectedCategory, null, null, null, showOnlyLocator);
                 }
                 return;
             }
             if (hasFirstButton && subRes.selection === BUTTON_BACK) {
                 if (isSearchMode) {
-                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, null, null, warps, query, showOnlyLocator);
+                    showWarpsListMenuWithOptions(player, warps, sortBy, null, null, warps, query, showOnlyLocator);
                 } else {
-                    showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, null, null, null, showOnlyLocator);
+                    showWarpsListMenuWithOptions(player, warps, sortBy, selectedCategory, null, null, null, showOnlyLocator);
                 }
                 return;
             }
@@ -1143,9 +1138,9 @@ const Warps = () => {
                 const filteredWarps = filterWarpsByIcon(warps, chosenIcon.name);
                 const categoryForChosenIcon = selectedCategory || chosenIcon.category || null;
                 if (isSearchMode) {
-                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, categoryForChosenIcon, chosenIcon, warps, query, showOnlyLocator);
+                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, categoryForChosenIcon, chosenIcon, warps, query, showOnlyLocator);
                 } else {
-                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, mode, categoryForChosenIcon, chosenIcon, warps, null, showOnlyLocator);
+                    showWarpsListMenuWithOptions(player, filteredWarps, sortBy, categoryForChosenIcon, chosenIcon, warps, null, showOnlyLocator);
                 }
             }
         });
@@ -1155,7 +1150,7 @@ const Warps = () => {
      * Wybór kategorii: pierwsza pozycja "Wszystkie", potem lista kategorii.
      * Pokazuje tylko kategorie mające warpy w bieżącym kontekście (pełna lista lub wyniki wyszukiwania).
      */
-    const showCategoryPickerMenu = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories = null, showOnlyLocator = false) => {
+    const showCategoryPickerMenu = (player, warps, sortBy, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories = null, showOnlyLocator = false) => {
         const isSearchMode = query !== null && query !== undefined;
         const fullList = isSearchMode ? warps : (allWarpsForCategories ?? categoryWarps ?? warps);
         const categoriesWithWarps = getCategoriesWithWarps(fullList);
@@ -1174,7 +1169,7 @@ const Warps = () => {
             });
         } else {
             form.title({
-                rawtext: [{translate: (mode === WARP_MENU.TELEPORT) ? "warps:teleport_menu.title" : "warps:manage_menu.title"}]
+                rawtext: [{translate: "warps:manage_menu.title"}]
             });
         }
         form.body("");
@@ -1191,23 +1186,23 @@ const Warps = () => {
 
         form.show(player).then((res) => {
             if (res.canceled) {
-                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, showOnlyLocator);
+                showWarpsListMenuWithOptions(player, warps, sortBy, selectedCategory, selectedIcon, categoryWarps, query, showOnlyLocator);
                 return;
             }
             if (res.selection === 0) {
-                showWarpsListMenuWithOptions(player, fullList, sortBy, mode, null, null, null, query, showOnlyLocator);
+                showWarpsListMenuWithOptions(player, fullList, sortBy, null, null, null, query, showOnlyLocator);
                 return;
             }
             const categoryIndex = res.selection - 1;
             if (categoryIndex >= 0 && categoryIndex < categoriesWithWarps.length) {
                 const chosenCategory = categoriesWithWarps[categoryIndex];
                 const filteredByCategory = filterWarpsByCategory(fullList, chosenCategory);
-                showWarpsListMenuWithOptions(player, filteredByCategory, sortBy, mode, chosenCategory, null, fullList, query, showOnlyLocator);
+                showWarpsListMenuWithOptions(player, filteredByCategory, sortBy, chosenCategory, null, fullList, query, showOnlyLocator);
             }
         });
     }
 
-    const showWarpsListMenuWithOptions = (player, warps, sortBy, mode = WARP_MENU.TELEPORT, selectedCategory = null, selectedIcon = null, categoryWarps = null, query = null, showOnlyLocator = false) => {
+    const showWarpsListMenuWithOptions = (player, warps, sortBy, selectedCategory = null, selectedIcon = null, categoryWarps = null, query = null, showOnlyLocator = false) => {
         const isSearchMode = query !== null && query !== undefined;
         const visibleWarps = filterWarpsByVisibility(warps, player);
         const baseWarps = showOnlyLocator ? filterWarpsByLocatorBar(visibleWarps, player) : visibleWarps;
@@ -1231,7 +1226,7 @@ const Warps = () => {
             actionForm
                 .title({
                     rawtext: [{
-                        translate: (mode === WARP_MENU.TELEPORT) ? "warps:teleport_menu.title" : "warps:manage_menu.title"
+                        translate: "warps:manage_menu.title"
                     }]
                 });
         }
@@ -1288,7 +1283,7 @@ const Warps = () => {
 
             if (res.selection === BUTTON_FILTER_CATEGORY) {
                 const allWarpsForCategories = filterWarpsByVisibility(getValidWarps(), player);
-                showCategoryPickerMenu(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories, showOnlyLocator);
+                showCategoryPickerMenu(player, warps, sortBy, selectedCategory, selectedIcon, categoryWarps, query, allWarpsForCategories, showOnlyLocator);
                 return;
             }
 
@@ -1297,29 +1292,25 @@ const Warps = () => {
                 const warpsForIconList = categoryForIconList
                     ? filterWarpsByCategory(categoryWarps !== null ? categoryWarps : warps, categoryForIconList)
                     : warps;
-                showSubcategoriesMenu(player, warpsForIconList, sortBy, mode, categoryForIconList, selectedIcon, query, showOnlyLocator);
+                showSubcategoriesMenu(player, warpsForIconList, sortBy, categoryForIconList, selectedIcon, query, showOnlyLocator);
                 return;
             }
 
             if (res.selection === BUTTON_SORT) {
                 const newSortBy = sortBy === SORT_BY.DISTANCE ? SORT_BY.ALPHABETICAL : SORT_BY.DISTANCE;
-                showWarpsListMenuWithOptions(player, warps, newSortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, showOnlyLocator);
+                showWarpsListMenuWithOptions(player, warps, newSortBy, selectedCategory, selectedIcon, categoryWarps, query, showOnlyLocator);
                 return;
             }
 
             if (res.selection === BUTTON_FAVORITES) {
-                showWarpsListMenuWithOptions(player, warps, sortBy, mode, selectedCategory, selectedIcon, categoryWarps, query, !showOnlyLocator);
+                showWarpsListMenuWithOptions(player, warps, sortBy, selectedCategory, selectedIcon, categoryWarps, query, !showOnlyLocator);
                 return;
             }
 
             const warpIndex = res.selection - 4;
             if (warpIndex >= 0 && warpIndex < sortedWarps.length) {
                 const selectedWarp = sortedWarps[warpIndex];
-                if (mode === WARP_MENU.TELEPORT) {
-                    teleportToWarp(player, selectedWarp);
-                } else {
-                    showWarpDetailsMenu(player, selectedWarp);
-                }
+                showWarpDetailsMenu(player, selectedWarp);
             }
         });
     }
@@ -2479,21 +2470,21 @@ const Warps = () => {
             .title({rawtext: [{translate: "warps:main_menu.title"}]})
             .body("");
 
-        const BUTTON_TELEPORT = 0;
+        const BUTTON_NEAREST = 0;
         menuForm.button({
-            rawtext: [{translate: "warps:main_menu.teleport"}]
+            rawtext: [{translate: "warps:main_menu.list_nearest"}]
         });
-        const BUTTON_MANAGEMENT = 1;
+        const BUTTON_ALL = 1;
         menuForm.button({
-            rawtext: [{translate: "warps:main_menu.manage"}]
+            rawtext: [{translate: "warps:main_menu.list_all"}]
         });
         const BUTTON_FAVORITES = 2;
         menuForm.button({
-            rawtext: [{translate: "warps:main_menu.favorites"}]
+            rawtext: [{translate: "warps:main_menu.list_favorites"}]
         });
-        const BUTTON_ADD = 3;
+        const BUTTON_ADD_NEW = 3;
         menuForm.button({
-            rawtext: [{translate: "warps:main_menu.add"}]
+            rawtext: [{translate: "warps:main_menu.add_new"}]
         });
 
         menuForm.show(player).then((res) => {
@@ -2502,21 +2493,21 @@ const Warps = () => {
             }
 
             switch (res.selection) {
-                case BUTTON_TELEPORT: {
-                    const teleportWarps = filterWarpsByVisibility(getValidWarps(), player);
-                    if (teleportWarps.length === 0) {
+                case BUTTON_NEAREST: {
+                    const nearestWarps = filterWarpsByVisibility(getValidWarps(), player);
+                    if (nearestWarps.length === 0) {
                         player.sendMessage({translate: "warps:error.no_warps"});
                     } else {
-                        showWarpsListMenuWithOptions(player, teleportWarps, SORT_BY.DISTANCE, WARP_MENU.TELEPORT, null, null, null, null);
+                        showWarpsListMenuWithOptions(player, nearestWarps, SORT_BY.DISTANCE, null, null, null, null, false);
                     }
                     break;
                 }
-                case BUTTON_MANAGEMENT: {
-                    const manageWarps = filterWarpsByVisibility(getValidWarps(), player);
-                    if (manageWarps.length === 0) {
+                case BUTTON_ALL: {
+                    const allWarps = filterWarpsByVisibility(getValidWarps(), player);
+                    if (allWarps.length === 0) {
                         player.sendMessage({translate: "warps:error.no_warps"});
                     } else {
-                        showWarpsListMenuWithOptions(player, manageWarps, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null);
+                        showWarpsListMenuWithOptions(player, allWarps, SORT_BY.ALPHABETICAL, null, null, null, null, false);
                     }
                     break;
                 }
@@ -2526,11 +2517,11 @@ const Warps = () => {
                     if (favoriteWarps.length === 0) {
                         player.sendMessage({translate: "warps:error.no_favorites"});
                     } else {
-                        showWarpsListMenuWithOptions(player, favoriteWarpsBase, SORT_BY.ALPHABETICAL, WARP_MENU.MANAGEMENT, null, null, null, null, true);
+                        showWarpsListMenuWithOptions(player, favoriteWarpsBase, SORT_BY.ALPHABETICAL, null, null, null, null, true);
                     }
                     break;
                 }
-                case BUTTON_ADD:
+                case BUTTON_ADD_NEW:
                     addWarpItemFormStep1(player, {
                         targetLocation: roundLocation(player.location),
                         warpDimensionId: getPlayerDimension(player)
@@ -2544,7 +2535,7 @@ const Warps = () => {
     const teleportCommand = (origin, warpName = "") => {
         system.run(() => {
             const player = getPlayer(origin)
-            openWarpByName(player, warpName, WARP_MENU.TELEPORT)
+            openWarpByName(player, warpName, true)
         });
         return {
             status: CustomCommandStatus.Success,
@@ -2553,7 +2544,7 @@ const Warps = () => {
     const manageCommand = (origin, warpName = "") => {
         system.run(() => {
             const player = getPlayer(origin)
-            openWarpByName(player, warpName, WARP_MENU.MANAGEMENT)
+            openWarpByName(player, warpName, false)
         });
         return {
             status: CustomCommandStatus.Success,

@@ -4,10 +4,10 @@ pack.description=Create Warp Points and let others to teleport there!
 item.warps:warp_menu=WARPs menu
 
 warps:main_menu.title=§r§l§1☰ Warps main menu§r
-warps:main_menu.teleport=§r§3✈ Teleport§r
-warps:main_menu.manage=§r§5❣ Manage Warps§r
-warps:main_menu.favorites=§r§e★ Favorites§r
-warps:main_menu.add=§r§6✚ Add Warp§r
+warps:main_menu.list_nearest=§r§3⌖ Nearest§r
+warps:main_menu.list_all=§r§5☷ All (A-Z)§r
+warps:main_menu.list_favorites=§r§e★ Favorites§r
+warps:main_menu.add_new=§r§6✚ Add New§r
 
 warps:field.category_icon.label=Category / Icon
 warps:field.category.label=Category
@@ -71,8 +71,7 @@ warps:add.select_icon=Select an icon for this warp:
 warps:add.submit=Save
 warps:add.success=§r§8[§1❣WARP§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
 
-warps:teleport_menu.title=§r§l§3✈ Teleport to...§r
-warps:manage_menu.title=§r§l§5❣ Manage Warps§r
+warps:manage_menu.title=§r§l§5☷ Warp List§r
 
 warps:menu.filter_all=All Warps
 warps:menu.filter_all_count=All Warps (%s items)
