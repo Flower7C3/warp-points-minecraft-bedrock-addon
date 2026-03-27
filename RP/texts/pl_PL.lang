@@ -4,9 +4,10 @@ pack.description=Twórz punkty warp i pozwól innym się do nich teleportować!
 item.warps:warp_menu=Menu Warpów
 
 warps:main_menu.title=§r§l§1☰ Menu główne Warpów§r
-warps:main_menu.teleport=§r§3✈ Teleportuj§r
-warps:main_menu.manage=§r§5❣ Zarządzaj Warpami§r
-warps:main_menu.add=§r§6✚ Dodaj Warp§r
+warps:main_menu.list_nearest=§r§3⌖ Najbliższe§r
+warps:main_menu.list_all=§r§5☷ Wszystkie (A-Z)§r
+warps:main_menu.list_favorites=§r§e★ Ulubione§r
+warps:main_menu.add_new=§r§6✚ Dodaj nowego§r
 
 warps:field.category_icon.label=Kategoria / Ikona
 warps:field.category.label=Kategoria
@@ -69,8 +70,7 @@ warps:add.select_icon=Wybierz ikonę dla tego warpa:
 warps:add.submit=Zapisz
 warps:add.success=§r§8[§1❣WARP§8] §7Dodano Warp §l%s§r§7 na pozycji §f(%s,%s,%s)§r§7!§r
 
-warps:teleport_menu.title=§r§l§3✈ Teleportuj się do...§r
-warps:manage_menu.title=§r§l§5❣ Zarządzaj Warpami§r
+warps:manage_menu.title=§r§l§5☷ Lista Warpów§r
 
 warps:menu.filter_all=Wszystkie Warpy
 warps:menu.filter_all_count=Wszystkie Warpy (%s elementów)
@@ -86,12 +86,15 @@ warps:menu.button_category_current=Kategoria: %s
 warps:menu.button_icon_current=Ikona: %s
 warps:menu.meta_sort_distance=Sortowanie: wg dystansu
 warps:menu.meta_sort_alphabetical=Sortowanie: alfabetycznie
+warps:menu.meta_favorites_on=Ulubione: włączone
+warps:menu.meta_favorites_off=Ulubione: wyłączone
 
 warps:teleport.error=§r§8[§1❣WARP§8] §cBłąd podczas teleportacji do Warp §l%s§r§c!§r
 warps:error.warp_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warp o nazwie §l%s§r§c!§r
 warps:error.warp_not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
 warps:error.icon_name_not_found=§r§8[§1❣WARP§8] §cNie znaleziono ikony o nazwie §l%s§r§c!§r
 warps:error.no_warps=§r§8[§1❣WARP§8] §cNie ma żadnych warpów!§r
+warps:error.no_favorites=§r§8[§1❣WARP§8] §7Nie masz jeszcze żadnych ulubionych warpów na pasku lokatora.§r
 
 warps:search_results.title=§r§l§3✈ Wyniki wyszukiwania§r %s (%s elementów)
 warps:search_results.select_icon=Wybierz ikonę, aby przefiltrować wyniki:
@@ -104,6 +107,14 @@ warps:warp_details.options.edit_coordinates=§r§5⌖ Współrzędne§r
 warps:warp_details.options.edit_icon=§r§5✯ Ikona§r
 warps:warp_details.options.change_visibility=§r§5⇨ Widoczność§r
 warps:warp_details.options.teleport=§r§3✈ Teleportuj się§r
+warps:warp_details.options.show_on_locator=§r§b⌖ Pokaż na lokatorze§r
+warps:warp_details.options.remove_from_locator=§r§8⌖ Usuń z lokatora§r
+warps:locator.added=§r§8[§1❣WARP§8] §aDodano §l%s§r§a do paska lokatora.§r
+warps:locator.removed=§r§8[§1❣WARP§8] §7Usunięto §l%s§r§7 z paska lokatora.§r
+warps:locator.already_added=§r§8[§1❣WARP§8] §7§l%s§r§7 jest już na pasku lokatora.§r
+warps:locator.not_on_locator=§r§8[§1❣WARP§8] §7§l%s§r§7 nie jest na pasku lokatora.§r
+warps:locator.limit_reached=§r§8[§1❣WARP§8] §cPasek lokatora jest pełny (maks. %s punktów).§r
+warps:locator.not_available=§r§8[§1❣WARP§8] §7Punkty na pasku lokatora nie są dostępne w tej wersji.§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Edycja WARP§r §l%s
 warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cNie znaleziono Warpa!§r
