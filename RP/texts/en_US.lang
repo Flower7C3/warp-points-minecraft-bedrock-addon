@@ -4,9 +4,10 @@ pack.description=Create Warp Points and let others to teleport there!
 item.warps:warp_menu=WARPs menu
 
 warps:main_menu.title=§r§l§1☰ Warps main menu§r
-warps:main_menu.teleport=§r§3✈ Teleport§r
-warps:main_menu.manage=§r§5❣ Manage Warps§r
-warps:main_menu.add=§r§6✚ Add Warp§r
+warps:main_menu.list_nearest=§r§3⌖ Nearest§r
+warps:main_menu.list_all=§r§5☷ All (A-Z)§r
+warps:main_menu.list_favorites=§r§e★ Favorites§r
+warps:main_menu.add_new=§r§6✚ Add New§r
 
 warps:field.category_icon.label=Category / Icon
 warps:field.category.label=Category
@@ -70,8 +71,7 @@ warps:add.select_icon=Select an icon for this warp:
 warps:add.submit=Save
 warps:add.success=§r§8[§1❣WARP§8] §7Added Warp §l%s§r§7 at position §f(%s,%s,%s)§r§7!§r
 
-warps:teleport_menu.title=§r§l§3✈ Teleport to...§r
-warps:manage_menu.title=§r§l§5❣ Manage Warps§r
+warps:manage_menu.title=§r§l§5☷ Warp List§r
 
 warps:menu.filter_all=All Warps
 warps:menu.filter_all_count=All Warps (%s items)
@@ -87,12 +87,15 @@ warps:menu.button_category_current=Category: %s
 warps:menu.button_icon_current=Icon: %s
 warps:menu.meta_sort_distance=Sort: by distance
 warps:menu.meta_sort_alphabetical=Sort: alphabetical
+warps:menu.meta_favorites_on=Favorites: on
+warps:menu.meta_favorites_off=Favorites: off
 
 warps:teleport.error=§r§8[§1❣WARP§8] §cError teleporting to Warp §l%s§r§c!§r
 warps:error.warp_name_not_found=§r§8[§1❣WARP§8] §cWarp with name §l%s§r§c not found!§r
 warps:error.warp_not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
 warps:error.icon_name_not_found=§r§8[§1❣WARP§8] §cIcon with name §l%s§r§c not found!§r
 warps:error.no_warps=§r§8[§1❣WARP§8] §cThere are no Warps§r
+warps:error.no_favorites=§r§8[§1❣WARP§8] §7You do not have any favorite warps on the locator bar yet.§r
 
 warps:search_results.title=§r§l§3✈ Search results§r %s (%s items)
 warps:search_results.select_icon=Select an icon to filter the results:
@@ -105,6 +108,14 @@ warps:warp_details.options.edit_coordinates=§r§5⌖ Change coordinates§r
 warps:warp_details.options.edit_icon=§r§5✯ Change icon§r
 warps:warp_details.options.change_visibility=§r§5⇨ Change visibility§r
 warps:warp_details.options.teleport=§r§3✈ Teleport to§r
+warps:warp_details.options.show_on_locator=§r§b⌖ Show on locator§r
+warps:warp_details.options.remove_from_locator=§r§8⌖ Remove from locator§r
+warps:locator.added=§r§8[§1❣WARP§8] §aAdded §l%s§r§a to locator bar.§r
+warps:locator.removed=§r§8[§1❣WARP§8] §7Removed §l%s§r§7 from locator bar.§r
+warps:locator.already_added=§r§8[§1❣WARP§8] §7§l%s§r§7 is already on the locator bar.§r
+warps:locator.not_on_locator=§r§8[§1❣WARP§8] §7§l%s§r§7 is not on the locator bar.§r
+warps:locator.limit_reached=§r§8[§1❣WARP§8] §cLocator bar is full (max %s waypoints).§r
+warps:locator.not_available=§r§8[§1❣WARP§8] §7Locator bar waypoints are not available in this version.§r
 
 warps:warp_details.edit_name.title=§r§l§5✎ Rename§r §l%s
 warps:warp_details.edit_name.not_found=§r§8[§1❣WARP§8] §cWarp not found!§r
