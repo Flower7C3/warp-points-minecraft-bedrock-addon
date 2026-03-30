@@ -230,7 +230,7 @@ const Warps = () => {
         maxWaypointsOverride: null,
         /** Default/fallback texture key from WaypointTexture. */
         texture: "Circle",
-        color: Object.freeze({ red: 0.2, green: 0.6, blue: 1 }),
+        color: Object.freeze({red: 0.2, green: 0.6, blue: 1}),
         /**
          * Visibility style synced with lang symbols:
          * private=§9■, protected=§e◆, public=§f◎
@@ -238,15 +238,15 @@ const Warps = () => {
         visibilityStyles: Object.freeze({
             private: Object.freeze({
                 texture: "Square",
-                color: Object.freeze({ red: 0.333, green: 0.333, blue: 1.0 }),
+                color: Object.freeze({red: 0.333, green: 0.333, blue: 1.0}),
             }),
             protected: Object.freeze({
                 texture: "Diamond",
-                color: Object.freeze({ red: 1.0, green: 1.0, blue: 0.333 }),
+                color: Object.freeze({red: 1.0, green: 1.0, blue: 0.333}),
             }),
             public: Object.freeze({
                 texture: "Circle",
-                color: Object.freeze({ red: 1.0, green: 1.0, blue: 1.0 }),
+                color: Object.freeze({red: 1.0, green: 1.0, blue: 1.0}),
             }),
         }),
         /** If false, duplicate check ignores Y level (X/Z + dimension only). */
@@ -354,12 +354,12 @@ const Warps = () => {
             changed = true;
         }
 
-        return { cleaned, changed };
+        return {cleaned, changed};
     };
 
     const cleanupFavoritesStorage = () => {
         const favorites = loadFavorites();
-        const { cleaned, changed } = cleanupFavoritesData(favorites);
+        const {cleaned, changed} = cleanupFavoritesData(favorites);
         if (changed) saveFavorites(cleaned);
         return cleaned;
     };
@@ -400,7 +400,7 @@ const Warps = () => {
             if (favoriteKeys.size === 0) return;
             const favoriteWarps = filterWarpsByVisibility(getValidWarps(), player)
                 .filter((warp) => favoriteKeys.has(getWarpLocatorKey(warp)));
-            favoriteWarps.forEach((warp) => addWarpToLocatorBar(player, warp, { silent: true, persist: false }));
+            favoriteWarps.forEach((warp) => addWarpToLocatorBar(player, warp, {silent: true, persist: false}));
         } catch (e) {
             console.error(`[WARP] Failed to restore favorites for ${player?.name}:`, e);
         }
@@ -638,7 +638,7 @@ const Warps = () => {
 
     const notifyLocator = (player, key, withValues = []) => {
         if (!LOCATOR_CONFIG.showMessages) return;
-        player.sendMessage({ translate: key, with: withValues });
+        player.sendMessage({translate: key, with: withValues});
     };
 
     const getLocatorTexture = (warp) => {
@@ -726,7 +726,7 @@ const Warps = () => {
                 return;
             }
             const dimensionLocation = getWarpDimensionLocation(warp);
-            const textureSelector = { textureBoundsList: [{ lowerBound: 0, texture: getLocatorTexture(warp) }] };
+            const textureSelector = {textureBoundsList: [{lowerBound: 0, texture: getLocatorTexture(warp)}]};
             const waypoint = new LocationWaypoint(dimensionLocation, textureSelector, getLocatorColor(warp));
             bar.addWaypoint(waypoint);
             if (persist) {
@@ -1235,11 +1235,9 @@ const Warps = () => {
         const categoryKey = selectedCategory ? `warps:category.${selectedCategory}` : (iconObj && iconObj.category ? `warps:category.${iconObj.category}` : null);
 
         actionForm.body("");
+        let buttonIndex = 0;
 
-        const BUTTON_FILTER_CATEGORY = 0;
-        const BUTTON_FILTER_ICON = 1;
-        const BUTTON_SORT = 2;
-        const BUTTON_FAVORITES = 3;
+        const BUTTON_FILTER_CATEGORY = buttonIndex++;
         const categoryButtonText = selectedCategory
             ? {
                 rawtext: [{
@@ -1248,22 +1246,43 @@ const Warps = () => {
                 }]
             }
             : {rawtext: [{translate: "warps:menu.filter_by_category"}]};
-        const iconButtonText = selectedIcon && iconObj
-            ? {
+        actionForm.button(categoryButtonText);
+
+        const BUTTON_FILTER_ICON = buttonIndex++;
+        actionForm.button(
+            selectedIcon && iconObj
+                ? {
+                    rawtext: [{
+                        translate: "warps:menu.button_icon_current",
+                        with: {rawtext: [{translate: iconObj.translatedName}]}
+                    }]
+                }
+                : {rawtext: [{translate: "warps:menu.filter_by_icon"}]}
+        );
+
+        const BUTTON_SORT = buttonIndex++;
+        actionForm.button(
+            {
                 rawtext: [{
-                    translate: "warps:menu.button_icon_current",
-                    with: {rawtext: [{translate: iconObj.translatedName}]}
+                    translate:
+                        sortBy === SORT_BY.DISTANCE
+                            ? "warps:menu.meta_sort_distance"
+                            : "warps:menu.meta_sort_alphabetical"
                 }]
             }
-            : {rawtext: [{translate: "warps:menu.filter_by_icon"}]};
-        const sortButtonText = {rawtext: [{translate: sortBy === SORT_BY.DISTANCE ? "warps:menu.meta_sort_distance" : "warps:menu.meta_sort_alphabetical"}]};
-        const favoritesButtonText = {rawtext: [{translate: showOnlyLocator ? "warps:menu.meta_favorites_on" : "warps:menu.meta_favorites_off"}]};
-        actionForm
-            .button(categoryButtonText)
-            .button(iconButtonText)
-            .button(sortButtonText)
-            .button(favoritesButtonText)
-            .divider();
+        );
+
+        const BUTTON_FAVORITES = buttonIndex++;
+        actionForm.button({
+            rawtext: [{
+                translate:
+                    showOnlyLocator
+                        ? "warps:menu.meta_favorites_on"
+                        : "warps:menu.meta_favorites_off"
+            }]
+        });
+
+        actionForm.divider();
 
         sortedWarps.forEach(warp => {
             try {
@@ -1320,15 +1339,6 @@ const Warps = () => {
         const locatorAvailable = isLocatorBarAvailable(player);
         const hasOnLocator = locatorAvailable && hasWarpOnLocatorBar(player, warp);
         let buttonIndex = 0;
-        const BUTTON_TELEPORT = buttonIndex++;
-        const BUTTON_LOCATOR = locatorAvailable ? buttonIndex++ : -1;
-        const BUTTON_EDIT_NAME = buttonIndex++;
-        const BUTTON_EDIT_SIGN = buttonIndex++;
-        const BUTTON_EDIT_COORDINATES = buttonIndex++;
-        const BUTTON_EDIT_ICON = buttonIndex++;
-        const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
-        const BUTTON_CHANGE_VISIBILITY = hasVisibilityButton ? buttonIndex++ : -1;
-        const BUTTON_DELETE = buttonIndex++;
 
         const optionsForm = new MinecraftUi.ActionFormData()
             .title({
@@ -1340,6 +1350,8 @@ const Warps = () => {
             .body("");
 
         const icon = getIconByName(warp.icon);
+
+        const BUTTON_TELEPORT = buttonIndex++;
         optionsForm.button({
             rawtext: [{translate: "warps:warp_details.options.teleport"}]
         }, icon ? icon.path : "");
@@ -1349,30 +1361,51 @@ const Warps = () => {
             optionsForm.label({rawtext: section.rawtext});
         });
 
+        const BUTTON_LOCATOR = locatorAvailable ? buttonIndex++ : -1;
         if (locatorAvailable) {
             optionsForm.button({
-                rawtext: [{ translate: hasOnLocator ? "warps:warp_details.options.remove_from_locator" : "warps:warp_details.options.show_on_locator" }]
+                rawtext: [{translate: hasOnLocator ? "warps:warp_details.options.remove_from_locator" : "warps:warp_details.options.show_on_locator"}]
             });
         }
 
+        const BUTTON_EDIT_COORDINATES = buttonIndex++;
+        if (canEdit) {
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.edit_coordinates"}]
+            });
+        }
+
+        const BUTTON_EDIT_NAME = buttonIndex++;
         if (canEdit) {
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.edit_name"}]
             });
+        }
+
+        const BUTTON_EDIT_SIGN = buttonIndex++;
+        if (canEdit) {
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.edit_sign"}]
             });
-            optionsForm.button({
-                rawtext: [{translate: "warps:warp_details.options.edit_coordinates"}]
-            });
+        }
+
+        const BUTTON_EDIT_ICON = buttonIndex++;
+        if (canEdit) {
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.edit_icon"}]
             });
-            if (hasVisibilityButton) {
-                optionsForm.button({
-                    rawtext: [{translate: "warps:warp_details.options.change_visibility"}]
-                });
-            }
+        }
+
+        const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
+        const BUTTON_CHANGE_VISIBILITY = hasVisibilityButton ? buttonIndex++ : -1;
+        if (canEdit && hasVisibilityButton) {
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.change_visibility"}]
+            });
+        }
+
+        const BUTTON_DELETE = buttonIndex++;
+        if (canEdit) {
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.delete"}]
             });
@@ -1397,14 +1430,14 @@ const Warps = () => {
             }
             if (canEdit) {
                 switch (res.selection) {
+                    case BUTTON_EDIT_COORDINATES:
+                        editWarpCoordinatesForm(player, warp);
+                        break;
                     case BUTTON_EDIT_NAME:
                         editWarpNameForm(player, warp);
                         break;
                     case BUTTON_EDIT_SIGN:
                         editWarpSignForm(player, warp);
-                        break;
-                    case BUTTON_EDIT_COORDINATES:
-                        editWarpCoordinatesForm(player, warp);
                         break;
                     case BUTTON_EDIT_ICON:
                         editWarpIconFormStep1(player, warp);
@@ -2564,23 +2597,24 @@ const Warps = () => {
     ///=================================================================================================================
     // === Main Menu ===
     const showMainMenu = (player) => {
+        let buttonIndex = 0;
         const menuForm = new MinecraftUi.ActionFormData()
             .title({rawtext: [{translate: "warps:main_menu.title"}]})
             .body("");
 
-        const BUTTON_NEAREST = 0;
+        const BUTTON_NEAREST = buttonIndex++;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.list_nearest"}]
         });
-        const BUTTON_ALL = 1;
+        const BUTTON_ALL = buttonIndex++;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.list_all"}]
         });
-        const BUTTON_FAVORITES = 2;
+        const BUTTON_FAVORITES = buttonIndex++;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.list_favorites"}]
         });
-        const BUTTON_ADD_NEW = 3;
+        const BUTTON_ADD_NEW = buttonIndex++;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.add_new"}]
         });
@@ -2805,7 +2839,6 @@ const Warps = () => {
     }
     const regenerateCommand = (origin) => {
         system.run(() => {
-
 
             const player = getPlayer(origin);
             if (!player) return;
