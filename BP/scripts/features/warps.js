@@ -1323,6 +1323,7 @@ const Warps = () => {
         const BUTTON_TELEPORT = buttonIndex++;
         const BUTTON_LOCATOR = locatorAvailable ? buttonIndex++ : -1;
         const BUTTON_EDIT_NAME = buttonIndex++;
+        const BUTTON_EDIT_SIGN = buttonIndex++;
         const BUTTON_EDIT_COORDINATES = buttonIndex++;
         const BUTTON_EDIT_ICON = buttonIndex++;
         const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
@@ -1357,6 +1358,9 @@ const Warps = () => {
         if (canEdit) {
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.edit_name"}]
+            });
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.edit_sign"}]
             });
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.edit_coordinates"}]
@@ -1395,6 +1399,9 @@ const Warps = () => {
                 switch (res.selection) {
                     case BUTTON_EDIT_NAME:
                         editWarpNameForm(player, warp);
+                        break;
+                    case BUTTON_EDIT_SIGN:
+                        editWarpSignForm(player, warp);
                         break;
                     case BUTTON_EDIT_COORDINATES:
                         editWarpCoordinatesForm(player, warp);
@@ -1754,6 +1761,16 @@ const Warps = () => {
 
     const addWarpItemFormStep3 = (player, warpName, translationPattern, icon, targetLocation, warpDimensionId, visibility = WARP_VISIBILITY.PROTECTED) => {
         // Step 3/3: Name, coordinates and visibility
+        const signPatternValues = Object.values(SIGN_TRANSLATION_PATTERN);
+        let currentTranslationPatternIndex = signPatternValues.indexOf(translationPattern);
+        if (currentTranslationPatternIndex < 0) {
+            const n = Number(translationPattern);
+            if (Number.isFinite(n) && n >= 0 && n < signPatternValues.length) {
+                currentTranslationPatternIndex = n;
+            } else {
+                currentTranslationPatternIndex = 0;
+            }
+        }
         const currentSignModeIndex = (Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z));
 
         new MinecraftUi.ModalFormData()
@@ -1773,6 +1790,13 @@ const Warps = () => {
             .textField({rawtext: [{translate: "warps:field.x.label"}]}, {rawtext: [{translate: "warps:field.x.placeholder"}]}, {defaultValue: targetLocation.x.toString()})
             .textField({rawtext: [{translate: "warps:field.y.label"}]}, {rawtext: [{translate: "warps:field.y.placeholder"}]}, {defaultValue: targetLocation.y.toString()})
             .textField({rawtext: [{translate: "warps:field.z.label"}]}, {rawtext: [{translate: "warps:field.z.placeholder"}]}, {defaultValue: targetLocation.z.toString()})
+            .dropdown(
+                {rawtext: [{translate: "warps:field.translation_pattern.label"}]},
+                signPatternValues.map(type => ({
+                    rawtext: [{translate: `warps:field.translation_pattern.value.${type}`}]
+                })),
+                {defaultValueIndex: currentTranslationPatternIndex}
+            )
             .dropdown(
                 {rawtext: [{translate: "warps:field.sign_mode.label"}]},
                 Object.values(SIGN_MODE).map(type => ({
@@ -1809,12 +1833,14 @@ const Warps = () => {
             const targetLocationXIndex = index++;
             const targetLocationYIndex = index++;
             const targetLocationZIndex = index++;
+            const translationPatternDropdownIndex = index++;
             const signModeIndex = index++;
             const signMaterialIndex = index++;
             const visibilityIndex = index++;
 
             if (!res.formValues || !res.formValues[warpNameIndex]
                 || !res.formValues[targetLocationXIndex] || !res.formValues[targetLocationYIndex] || !res.formValues[targetLocationZIndex]
+                || res.formValues[translationPatternDropdownIndex] === undefined
                 || res.formValues[signModeIndex] === undefined
                 || res.formValues[signMaterialIndex] === undefined
                 || res.formValues[visibilityIndex] === undefined) {
@@ -1823,7 +1849,10 @@ const Warps = () => {
                 const currentVisibility = res.formValues && res.formValues[visibilityIndex] !== undefined
                     ? getVisibilityByIndex(res.formValues[visibilityIndex])
                     : visibility;
-                addWarpItemFormStep3(player, warpName, translationPattern, icon, targetLocation, warpDimensionId, currentVisibility);
+                const currentTranslationPattern = res.formValues && res.formValues[translationPatternDropdownIndex] !== undefined
+                    ? signPatternValues[res.formValues[translationPatternDropdownIndex]] ?? signPatternValues[0]
+                    : signPatternValues[currentTranslationPatternIndex];
+                addWarpItemFormStep3(player, warpName, currentTranslationPattern, icon, targetLocation, warpDimensionId, currentVisibility);
                 return;
             }
 
@@ -1833,10 +1862,11 @@ const Warps = () => {
                 y: parseFloat(res.formValues[targetLocationYIndex].toString()),
                 z: parseFloat(res.formValues[targetLocationZIndex].toString())
             };
+            const selectedTranslationPattern = signPatternValues[res.formValues[translationPatternDropdownIndex]] ?? signPatternValues[0];
             const selectedSignMode = Object.values(SIGN_MODE)[res.formValues[signModeIndex]] || Object.values(SIGN_MODE)[0];
             const selectedSignMaterial = Object.values(SIGN_MATERIAL)[res.formValues[signMaterialIndex]] || Object.values(SIGN_MATERIAL)[0];
             const selectedVisibility = getVisibilityByIndex(res.formValues[visibilityIndex]);
-            addWarpItemSave(player, warpName, translationPattern, icon, finalLocation, warpDimensionId, selectedSignMode, selectedSignMaterial, selectedVisibility);
+            addWarpItemSave(player, warpName, selectedTranslationPattern, icon, finalLocation, warpDimensionId, selectedSignMode, selectedSignMaterial, selectedVisibility);
         });
     }
 
@@ -1938,7 +1968,6 @@ const Warps = () => {
     ///=================================================================================================================
     // === WARP EDIT NAME ===
     const editWarpNameForm = (player, warp) => {
-
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
             return;
@@ -1948,10 +1977,6 @@ const Warps = () => {
             player.sendMessage({translate: "warps:error.warp_name_not_found"});
             return;
         }
-
-        const currentTranslationPatternIndex = Object.values(SIGN_TRANSLATION_PATTERN).indexOf(warp.translationPattern);
-        const currentSignModeIndex = Object.values(SIGN_MODE).indexOf(warp.signMode);
-        const currentSignMaterialIndex = Object.values(SIGN_MATERIAL).indexOf(warp.signMaterial);
 
         new MinecraftUi.ModalFormData()
             .title({
@@ -1965,27 +1990,6 @@ const Warps = () => {
                 {rawtext: [{translate: "warps:field.name.placeholder"}]},
                 {defaultValue: warp.name}
             )
-            .dropdown(
-                {rawtext: [{translate: "warps:field.translation_pattern.label"}]},
-                Object.values(SIGN_TRANSLATION_PATTERN).map(type => ({
-                    rawtext: [{translate: `warps:field.translation_pattern.value.${type}`}]
-                })),
-                {defaultValueIndex: currentTranslationPatternIndex >= 0 ? currentTranslationPatternIndex : 0}
-            )
-            .dropdown(
-                {rawtext: [{translate: "warps:field.sign_mode.label"}]},
-                Object.values(SIGN_MODE).map(type => ({
-                    rawtext: [{translate: `warps:field.sign_mode.value.${type}`}]
-                })),
-                {defaultValueIndex: currentSignModeIndex >= 0 ? currentSignModeIndex : 0}
-            )
-            .dropdown(
-                {rawtext: [{translate: "warps:field.sign_material.label"}]},
-                Object.values(SIGN_MATERIAL).map(type => ({
-                    rawtext: [{translate: `warps:field.sign_material.value.${type}`}]
-                })),
-                {defaultValueIndex: currentSignMaterialIndex >= 0 ? currentSignMaterialIndex : 0}
-            )
             .submitButton({rawtext: [{translate: "warps:add.submit"}]})
             .show(player).then((res) => {
             if (res.canceled) {
@@ -1993,32 +1997,18 @@ const Warps = () => {
                 return;
             }
 
-            if (!res.formValues || res.formValues.length < 3) {
+            if (!res.formValues || res.formValues.length < 1 || res.formValues[0] === undefined) {
                 player.sendMessage({translate: "warps:error.fill_required"});
                 editWarpNameForm(player, warp);
                 return;
             }
 
-            let index = 0;
-            const warpNameIndex = index++;
-            const warpTranslationPattern = index++;
-            const signModeIndex = index++;
-            const signMaterialIndex = index++;
-
-            const newWarpName = res.formValues[warpNameIndex]?.toString().trim();
-            const newTranslationPatternIndex = Number(res.formValues[warpTranslationPattern]);
-            const signPatternValues = Object.values(SIGN_TRANSLATION_PATTERN);
-            const newTranslationPattern = signPatternValues[newTranslationPatternIndex] ?? signPatternValues[0];
-            const newSignModeIndex = res.formValues[signModeIndex];
-            const newSignMode = Object.values(SIGN_MODE)[newSignModeIndex] || Object.values(SIGN_MODE)[0];
-            const newSignMaterialIndex = res.formValues[signMaterialIndex];
-            const newSignMaterial = Object.values(SIGN_MATERIAL)[newSignMaterialIndex] || Object.values(SIGN_MATERIAL)[0];
-
-            editWarpNameSave(player, warp, newWarpName, newTranslationPattern, newSignMode, newSignMaterial);
+            const newWarpName = res.formValues[0]?.toString().trim();
+            editWarpNameSave(player, warp, newWarpName);
         });
     }
 
-    const editWarpNameSave = (player, warp, newWarpName, newTranslationPattern, newSignMode, newSignMaterial) => {
+    const editWarpNameSave = (player, warp, newWarpName) => {
         if (!canPlayerEditWarp(player, warp)) {
             player.sendMessage({translate: "warps:error.no_permission"});
             return;
@@ -2054,18 +2044,126 @@ const Warps = () => {
             return;
         }
 
-        // Remove old sign if name or mode or material changed
-        if (warps[warpIndex].name !== newWarpName || warps[warpIndex].translationPattern !== newTranslationPattern || warps[warpIndex].signMode !== newSignMode || warps[warpIndex].signMaterial !== newSignMaterial) {
+        if (warps[warpIndex].name !== newWarpName) {
             removeWarpSign(warps[warpIndex]);
             warps[warpIndex].name = newWarpName;
-            warps[warpIndex].translationPattern = newTranslationPattern;
-            warps[warpIndex].signMode = newSignMode;
-            warps[warpIndex].signMaterial = newSignMaterial;
             warps[warpIndex].facing = null;
             saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_name.success", [
                 warp.name,
                 newWarpName,
             ]);
+        } else {
+            showWarpDetailsMenu(player, warp);
+        }
+    }
+
+    ///=================================================================================================================
+    // === WARP EDIT SIGN ===
+    const editWarpSignForm = (player, warp) => {
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        if (!warp) {
+            player.sendMessage({translate: "warps:error.warp_name_not_found"});
+            return;
+        }
+
+        const signPatternValues = Object.values(SIGN_TRANSLATION_PATTERN);
+        let currentTranslationPatternIndex = signPatternValues.indexOf(warp.translationPattern);
+        if (currentTranslationPatternIndex < 0) {
+            const n = Number(warp.translationPattern);
+            if (Number.isFinite(n) && n >= 0 && n < signPatternValues.length) {
+                currentTranslationPatternIndex = n;
+            } else {
+                currentTranslationPatternIndex = 0;
+            }
+        }
+        const currentSignModeIndex = Object.values(SIGN_MODE).indexOf(getWarpSignMode(warp));
+        const currentSignMaterialIndex = Object.values(SIGN_MATERIAL).indexOf(getWarpSignMaterial(warp));
+
+        new MinecraftUi.ModalFormData()
+            .title({
+                rawtext: [{
+                    translate: "warps:warp_details.edit_sign.title",
+                    with: {rawtext: [{text: warp.name}]}
+                }]
+            })
+            .dropdown(
+                {rawtext: [{translate: "warps:field.translation_pattern.label"}]},
+                signPatternValues.map(type => ({
+                    rawtext: [{translate: `warps:field.translation_pattern.value.${type}`}]
+                })),
+                {defaultValueIndex: currentTranslationPatternIndex}
+            )
+            .dropdown(
+                {rawtext: [{translate: "warps:field.sign_mode.label"}]},
+                Object.values(SIGN_MODE).map(type => ({
+                    rawtext: [{translate: `warps:field.sign_mode.value.${type}`}]
+                })),
+                {defaultValueIndex: currentSignModeIndex >= 0 ? currentSignModeIndex : 0}
+            )
+            .dropdown(
+                {rawtext: [{translate: "warps:field.sign_material.label"}]},
+                Object.values(SIGN_MATERIAL).map(type => ({
+                    rawtext: [{translate: `warps:field.sign_material.value.${type}`}]
+                })),
+                {defaultValueIndex: currentSignMaterialIndex >= 0 ? currentSignMaterialIndex : 0}
+            )
+            .submitButton({rawtext: [{translate: "warps:add.submit"}]})
+            .show(player).then((res) => {
+            if (res.canceled) {
+                showWarpDetailsMenu(player, warp);
+                return;
+            }
+
+            if (!res.formValues || res.formValues.length < 3
+                || res.formValues[0] === undefined
+                || res.formValues[1] === undefined
+                || res.formValues[2] === undefined) {
+                player.sendMessage({translate: "warps:error.fill_required"});
+                editWarpSignForm(player, warp);
+                return;
+            }
+
+            const newTranslationPatternIndex = Number(res.formValues[0]);
+            const newTranslationPattern = signPatternValues[newTranslationPatternIndex] ?? signPatternValues[0];
+            const newSignMode = Object.values(SIGN_MODE)[res.formValues[1]] || Object.values(SIGN_MODE)[0];
+            const newSignMaterial = Object.values(SIGN_MATERIAL)[res.formValues[2]] || Object.values(SIGN_MATERIAL)[0];
+
+            editWarpSignSave(player, warp, newTranslationPattern, newSignMode, newSignMaterial);
+        });
+    }
+
+    const editWarpSignSave = (player, warp, newTranslationPattern, newSignMode, newSignMaterial) => {
+        if (!canPlayerEditWarp(player, warp)) {
+            player.sendMessage({translate: "warps:error.no_permission"});
+            return;
+        }
+
+        const warps = loadWarps();
+        const warpIndex = warps.findIndex(w => w.name === warp.name);
+
+        if (warpIndex === -1) {
+            player.sendMessage({translate: "warps:error.warp_name_not_found"});
+            return;
+        }
+
+        const w = warps[warpIndex];
+        const tp = String(newTranslationPattern);
+        const sm = String(newSignMode);
+        const mat = String(newSignMaterial);
+
+        if (w.translationPattern !== tp || w.signMode !== sm || w.signMaterial !== mat) {
+            removeWarpSign(w);
+            w.translationPattern = tp;
+            w.signMode = sm;
+            w.signMaterial = mat;
+            w.facing = null;
+            saveWarps(player, SAVE_ACTION.UPDATE, warps, w, "warps:warp_details.edit_sign.success", [warp.name]);
+        } else {
+            showWarpDetailsMenu(player, warp);
         }
     }
 
@@ -2620,11 +2718,11 @@ const Warps = () => {
                         with: [oldWarpName]
                     });
                 }
-                editWarpNameSave(player, warp, newWarpName, warp.signMode, warp.signMaterial);
+                editWarpNameSave(player, warp, newWarpName);
             }
         })
     }
-    const updateSignCommand = (origin, warpName, signMode, signMaterial) => {
+    const updateSignCommand = (origin, warpName, signMode, signMaterial, translationPattern) => {
         system.run(() => {
             const player = getPlayer(origin)
             if (!player) return;
@@ -2636,7 +2734,27 @@ const Warps = () => {
                         with: [warpName]
                     });
                 }
-                editWarpNameSave(player, warp, warpName, signMode, signMaterial);
+                const signPatternValues = Object.values(SIGN_TRANSLATION_PATTERN);
+                let resolvedTranslationPattern;
+                if (translationPattern !== undefined && translationPattern !== null && String(translationPattern).length > 0) {
+                    if (signPatternValues.includes(translationPattern)) {
+                        resolvedTranslationPattern = translationPattern;
+                    } else {
+                        const n = Number(translationPattern);
+                        resolvedTranslationPattern = (Number.isFinite(n) && n >= 0 && n < signPatternValues.length)
+                            ? signPatternValues[n]
+                            : (warp.translationPattern ?? signPatternValues[0]);
+                    }
+                } else {
+                    resolvedTranslationPattern = warp.translationPattern ?? signPatternValues[0];
+                }
+                editWarpSignSave(
+                    player,
+                    warp,
+                    resolvedTranslationPattern,
+                    signMode,
+                    signMaterial
+                );
             }
         })
     }
@@ -2799,7 +2917,7 @@ const Warps = () => {
             );
 
             registerCommandWithAliases(event, ["warp_sign_change", "warp_sign"], {
-                    description: "Change sign for a public Warp",
+                    description: "Change sign for a public Warp (optional translation pattern after material)",
                     permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
@@ -2810,6 +2928,9 @@ const Warps = () => {
                     }, {
                         type: CustomCommandParamType.Enum,
                         name: "warps:sign_material",
+                    }, {
+                        type: CustomCommandParamType.Enum,
+                        name: "warps:translation_pattern",
                     }],
                 },
                 updateSignCommand
