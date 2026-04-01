@@ -34,5 +34,6 @@
     ],
     "url": "https://github.com/Flower7C3/warp-points-minecraft-bedrock-addon",
     "license": "MIT"
-  }
+  },
+  "dependencies": []
 }
