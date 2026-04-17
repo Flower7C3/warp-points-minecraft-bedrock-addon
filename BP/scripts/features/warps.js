@@ -75,7 +75,7 @@ const Warps = () => {
     };
 
     const TRANSLATION_PATTERN = Object.freeze({
-        BODY: "[coordsLabel]: §l[coordsValue]§r\n[dimensionLabel]: §l[dimensionName]§r\n[distanceLabel]: §l[distanceKmValue]§r (§l[distanceMetersLocale]§r)\n[directionLabel]: §l[directionText] [directionSign]§r\n\n[categoryLabel]: §l[categoryName]§r\n[iconLabel]: §l[iconName]§r\n\n[translationPatternLabel]: §l[translationPatternValue]§r\n[signModeLabel]: §l[signModeValue]§r\n[signMaterialLabel]: §l[signMaterialValue]§r\n\n[ownerLabel]: §l[ownerName]§r\n[visibilityLabel]: §l[visibilityName]§r",
+        BODY: "[coordsLabel]: §l[coordsValue]§r\n[dimensionLabel]: §l[dimensionName]§r\n[distanceLabel]: §l[distanceKmValue]§r (§l[distanceMetersLocale]§r)\n[directionLabel]: §l[directionText] [directionSign]§r\n[categoryLabel]: §l[categoryName]§r\n[iconLabel]: §l[iconName]§r\n\n[mapHeader]\n[mapGrid]\n[mapFooter]\n\n[translationPatternLabel]: §l[translationPatternValue]§r\n[signModeLabel]: §l[signModeValue]§r\n[signMaterialLabel]: §l[signMaterialValue]§r\n\n[ownerLabel]: §l[ownerName]§r\n[visibilityLabel]: §l[visibilityName]§r",
         BUTTON_LONG: "[visibilitySymbol] §l[warpName]§r [distanceDirectionValue] [directionSign]",
         BUTTON_SHORT: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName]",
         LIST_ALL: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName] ([categoryName]/[iconName])",
@@ -423,7 +423,7 @@ const Warps = () => {
         DELETE: 'delete'
     })
 
-    const saveWarps = (player, action, warps, warp, translateKey, translateParams = []) => {
+    const persistWarpsListToWorld = (warps) => {
         const json = JSON.stringify(warps);
         if (json.length <= MAX_DYNAMIC_PROP_LENGTH) {
             Minecraft.world.setDynamicProperty(WORLD_PROP, json);
@@ -445,51 +445,70 @@ const Warps = () => {
             Minecraft.world.setDynamicProperty(WORLD_PROP, null);
         }
         cleanupFavoritesStorage();
+    };
+
+    /**
+     * @param {import("@minecraft/server").Player} player
+     * @param {string} action SAVE_ACTION.*
+     * @param {*} warps
+     * @param {*} warp
+     * @param {string|null} translateKey pass null to skip message/sound branch side-effects
+     * @param {Array} translateParams
+     * @param {{silentPersistence?: boolean, skipDetailsMenuOnUpdate?: boolean}} [saveOptions]
+     */
+    const saveWarps = (player, action, warps, warp, translateKey, translateParams = [], saveOptions = {}) => {
+        persistWarpsListToWorld(warps);
 
         const wx = Number(warp.x);
         const wy = Number(warp.y);
         const wz = Number(warp.z);
         let soundId;
-        switch (action) {
-            case SAVE_ACTION.CREATE:
-                soundId = "beacon.activate"
-                player.dimension.runCommand(`summon fireworks_rocket ${wx} ${wy} ${wz}`);
-                updateWarpSigns();
-                break;
-            case SAVE_ACTION.UPDATE:
-                soundId = "beacon.power"
-                player.dimension.runCommand(`particle minecraft:witchspell_emitter ${wx} ${wy} ${wz}`);
-                updateWarpSign(warp);
-                showWarpDetailsMenu(player, warp);
-                break;
-            case SAVE_ACTION.DELETE:
-                soundId = "beacon.deactivate"
-                player.dimension.runCommand(`particle minecraft:critical_hit_emitter ${wx} ${wy} ${wz}`);
-                removeWarpSign(warp);
-                break;
+        if (!saveOptions.silentPersistence) {
+            switch (action) {
+                case SAVE_ACTION.CREATE:
+                    soundId = "beacon.activate"
+                    player.dimension.runCommand(`summon fireworks_rocket ${wx} ${wy} ${wz}`);
+                    updateWarpSigns();
+                    break;
+                case SAVE_ACTION.UPDATE:
+                    soundId = "beacon.power"
+                    player.dimension.runCommand(`particle minecraft:witchspell_emitter ${wx} ${wy} ${wz}`);
+                    updateWarpSign(warp);
+                    if (!saveOptions.skipDetailsMenuOnUpdate) {
+                        showWarpDetailsMenu(player, warp);
+                    }
+                    break;
+                case SAVE_ACTION.DELETE:
+                    soundId = "beacon.deactivate"
+                    player.dimension.runCommand(`particle minecraft:critical_hit_emitter ${wx} ${wy} ${wz}`);
+                    removeWarpSign(warp);
+                    break;
+            }
+
+            if (soundId) {
+                player.playSound(soundId, player.location);
+            }
         }
 
-        if (soundId) {
-            player.playSound(soundId, player.location);
-        }
-
-        // Build message: use only primitive strings so native API does not throw "Native variant type conversion failed".
-        const withStrings = translateParams.map(param => {
-            if (param === null || param === undefined) return '';
-            if (typeof param === 'object' && typeof param.text === 'string') return param.text;
-            return String(param);
-        });
-        const msgKey = String(translateKey);
-        try {
-            player.sendMessage({
-                translate: msgKey,
-                with: withStrings
+        if (translateKey !== null && translateKey !== undefined && String(translateKey).length > 0 && !saveOptions.silentPersistence) {
+            // Build message: use only primitive strings so native API does not throw "Native variant type conversion failed".
+            const withStrings = translateParams.map(param => {
+                if (param === null || param === undefined) return '';
+                if (typeof param === 'object' && typeof param.text === 'string') return param.text;
+                return String(param);
             });
-        } catch (e) {
+            const msgKey = String(translateKey);
             try {
-                player.sendMessage(msgKey + (withStrings.length ? ' ' + withStrings.join(', ') : ''));
-            } catch (_) {
-                player.sendMessage('[Warp] OK');
+                player.sendMessage({
+                    translate: msgKey,
+                    with: withStrings
+                });
+            } catch (e) {
+                try {
+                    player.sendMessage(msgKey + (withStrings.length ? ' ' + withStrings.join(', ') : ''));
+                } catch (_) {
+                    player.sendMessage('[Warp] OK');
+                }
             }
         }
     }
@@ -882,6 +901,25 @@ const Warps = () => {
             keys.directionLabel = {translate: `warps:field.direction.label`};
             keys.directionText = {text: "—"};
             keys.directionSign = {text: ""};
+        }
+
+        if (options && Object.prototype.hasOwnProperty.call(options, "warpDetailsTerrainEncoding")) {
+            keys.mapHeader = {translate: "warps:warp_details.map_header"};
+            const enc = options.warpDetailsTerrainEncoding;
+            if (typeof enc === "string" && enc.length > 0) {
+                keys.mapGrid = {text: terrainMapEncodingToColoredPseudoMap(enc)};
+                keys.mapFooter = {
+                    translate: "warps:warp_details.map_scale_footer",
+                    with: [String(WARP_DETAILS_MAP_BLOCKS_PER_CELL)]
+                };
+            } else {
+                keys.mapGrid = {translate: "warps:warp_details.map_no_data"};
+                keys.mapFooter = {text: ""};
+            }
+        } else {
+            keys.mapHeader = {text: ""};
+            keys.mapGrid = {text: ""};
+            keys.mapFooter = {text: ""};
         }
 
         const buildParts = (patt) => {
@@ -1352,28 +1390,74 @@ const Warps = () => {
     }
 
     const showWarpDetailsMenu = (player, warp) => {
-        const canEdit = canPlayerEditWarp(player, warp);
+        const warpsList = getValidWarps();
+        const warpLive = warpsList.find((w) => w.name === warp.name && w.dimension === warp.dimension)
+            || warpsList.find((w) => w.name === warp.name)
+            || warp;
+
+        const locatorKey = getWarpLocatorKey(warpLive);
+        let terrainEncoding = (typeof warpLive.terrainMap === "string" && warpLive.terrainMap.length > 0)
+            ? warpLive.terrainMap
+            : "";
+
+        if (!terrainEncoding && player) {
+            const cached = getPlayerWarpTerrainMapCache(player, locatorKey);
+            if (cached) terrainEncoding = cached;
+        }
+
+        if (player && isPlayerWithinWarpTerrainRefreshRange(player, warpLive)) {
+            const dim = getDimensionByName(warpLive.dimension);
+            if (dim) {
+                const fresh = generateWarpTerrainMapEncoding(
+                    {x: warpLive.x, y: warpLive.y, z: warpLive.z},
+                    getValidWarps(),
+                    warpLive.dimension,
+                    dim,
+                    WARP_DETAILS_MAP_BLOCKS_PER_CELL
+                );
+                if (fresh) {
+                    setPlayerWarpTerrainMapCache(player, locatorKey, fresh);
+                    terrainEncoding = fresh;
+                    if (!warpLive.terrainMap || String(warpLive.terrainMap).length === 0) {
+                        const all = loadWarps();
+                        const idx = all.findIndex((w) => w.name === warpLive.name);
+                        if (idx >= 0) {
+                            all[idx].terrainMap = fresh;
+                            saveWarps(player, SAVE_ACTION.UPDATE, all, all[idx], null, [], {
+                                silentPersistence: true,
+                                skipDetailsMenuOnUpdate: true
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        const canEdit = canPlayerEditWarp(player, warpLive);
         const locatorAvailable = isLocatorBarAvailable(player);
-        const hasOnLocator = locatorAvailable && hasWarpOnLocatorBar(player, warp);
+        const hasOnLocator = locatorAvailable && hasWarpOnLocatorBar(player, warpLive);
         let buttonIndex = 0;
 
         const optionsForm = new MinecraftUi.ActionFormData()
             .title({
                 rawtext: [{
                     translate: "warps:warp_details.title",
-                    with: {rawtext: [{text: warp.name}]}
+                    with: {rawtext: [{text: warpLive.name}]}
                 }]
             })
             .body("");
 
-        const icon = getIconByName(warp.icon);
+        const icon = getIconByName(warpLive.icon);
 
         const BUTTON_TELEPORT = buttonIndex++;
         optionsForm.button({
             rawtext: [{translate: "warps:warp_details.options.teleport"}]
         }, icon ? icon.path : "");
 
-        const detailsSections = getWarpDetails(warp, player, TRANSLATION_PATTERN.BODY, {asSections: true});
+        const detailsSections = getWarpDetails(warpLive, player, TRANSLATION_PATTERN.BODY, {
+            asSections: true,
+            warpDetailsTerrainEncoding: terrainEncoding
+        });
         detailsSections.forEach((section, i) => {
             optionsForm.label({rawtext: section.rawtext});
         });
@@ -1413,7 +1497,7 @@ const Warps = () => {
             });
         }
 
-        const hasVisibilityButton = warp.visibility !== WARP_VISIBILITY.PUBLIC;
+        const hasVisibilityButton = warpLive.visibility !== WARP_VISIBILITY.PUBLIC;
         const BUTTON_CHANGE_VISIBILITY = hasVisibilityButton ? buttonIndex++ : -1;
         if (canEdit && hasVisibilityButton) {
             optionsForm.button({
@@ -1433,37 +1517,37 @@ const Warps = () => {
             }
 
             if (res.selection === BUTTON_TELEPORT) {
-                teleportToWarp(player, warp);
+                teleportToWarp(player, warpLive);
                 return;
             }
             if (res.selection === BUTTON_LOCATOR) {
                 if (hasOnLocator) {
-                    removeWarpFromLocatorBar(player, warp);
+                    removeWarpFromLocatorBar(player, warpLive);
                 } else {
-                    addWarpToLocatorBar(player, warp);
+                    addWarpToLocatorBar(player, warpLive);
                 }
-                showWarpDetailsMenu(player, warp);
+                showWarpDetailsMenu(player, warpLive);
                 return;
             }
             if (canEdit) {
                 switch (res.selection) {
                     case BUTTON_EDIT_COORDINATES:
-                        editWarpCoordinatesForm(player, warp);
+                        editWarpCoordinatesForm(player, warpLive);
                         break;
                     case BUTTON_EDIT_NAME:
-                        editWarpNameForm(player, warp);
+                        editWarpNameForm(player, warpLive);
                         break;
                     case BUTTON_EDIT_SIGN:
-                        editWarpSignForm(player, warp);
+                        editWarpSignForm(player, warpLive);
                         break;
                     case BUTTON_EDIT_ICON:
-                        editWarpIconFormStep1(player, warp);
+                        editWarpIconFormStep1(player, warpLive);
                         break;
                     case BUTTON_CHANGE_VISIBILITY:
-                        editWarpVisibilityForm(player, warp);
+                        editWarpVisibilityForm(player, warpLive);
                         break;
                     case BUTTON_DELETE:
-                        removeWarpItemForm(player, warp);
+                        removeWarpItemForm(player, warpLive);
                         break;
                 }
             } else {
@@ -2006,6 +2090,23 @@ const Warps = () => {
             signMaterial: String(signMaterial),
         };
 
+        try {
+            const mapDim = getDimensionByName(warpDimensionId);
+            if (mapDim) {
+                const warpsForMap = warps.concat([newWarp]);
+                const enc = generateWarpTerrainMapEncoding(
+                    {x, y, z},
+                    warpsForMap,
+                    warpDimensionId,
+                    mapDim,
+                    WARP_DETAILS_MAP_BLOCKS_PER_CELL
+                );
+                if (enc) newWarp.terrainMap = enc;
+            }
+        } catch (e) {
+            console.error(`[WARP] terrain map on create: ${e}`);
+        }
+
         warps.push(newWarp);
         saveWarps(player, SAVE_ACTION.CREATE, warps, newWarp, "warps:add.success", [
             warpName,
@@ -2013,6 +2114,13 @@ const Warps = () => {
             String(y),
             String(z),
         ]);
+        if (newWarp.terrainMap) {
+            try {
+                setPlayerWarpTerrainMapCache(player, getWarpLocatorKey(newWarp), newWarp.terrainMap);
+            } catch {
+                // ignore
+            }
+        }
     }
 
     ///=================================================================================================================
@@ -2319,6 +2427,29 @@ const Warps = () => {
             warps[warpIndex].y = newY;
             warps[warpIndex].z = newZ;
 
+            try {
+                const mapDim = getDimensionByName(warps[warpIndex].dimension);
+                if (mapDim) {
+                    const enc = generateWarpTerrainMapEncoding(
+                        {x: newX, y: newY, z: newZ},
+                        warps,
+                        warps[warpIndex].dimension,
+                        mapDim,
+                        WARP_DETAILS_MAP_BLOCKS_PER_CELL
+                    );
+                    if (enc) {
+                        warps[warpIndex].terrainMap = enc;
+                        try {
+                            setPlayerWarpTerrainMapCache(player, getWarpLocatorKey(warps[warpIndex]), enc);
+                        } catch {
+                            // ignore
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(`[WARP] terrain map on coords update: ${e}`);
+            }
+
             saveWarps(player, SAVE_ACTION.UPDATE, warps, warps[warpIndex], "warps:warp_details.edit_coordinates.success", [
                 {text: warp.name},
                 {text: `${oldX}, ${oldY}, ${oldZ}`},
@@ -2613,7 +2744,12 @@ const Warps = () => {
 
     ///=================================================================================================================
     // === Main Menu ===
-    const MAP_CHAR_POINT = "§b✖"; //"§bX";
+    /** Main minimap: every warp cell uses ✕ (player center stays MAP_CHAR_PLAYER). */
+    const MAP_CHAR_WARP_MAIN = "§6✖";
+    /** Stored terrain map: this warp (map center). */
+    const MAP_CHAR_WARP_DETAILS_SELF = "§b✖";
+    /** Stored terrain map: other warps in the grid. */
+    const MAP_CHAR_WARP_DETAILS_OTHER = "§6✖";
     const MAP_CHAR_PLAYER = "§b❂"; //"§b@";
     /** Block-drawing chars (similar cell width in Bedrock UI font). */
     const MAP_CHAR_UNLOADED = "§7▓"; //"§7▦";
@@ -2758,13 +2894,6 @@ const Warps = () => {
         (e instanceof LocationInUnloadedChunkError) ||
         (typeof e?.name === "string" && e.name === "LocationInUnloadedChunkError");
 
-    const mapGlyphForBlock = (typeId) => {
-        if (isRoadAsphaltOrMarking(typeId)) return MAP_CHAR_PATH;
-        if (isWaterLike(typeId)) return MAP_CHAR_WATER;
-        if (isForestLike(typeId)) return MAP_CHAR_FOREST;
-        return MAP_CHAR_LAND;
-    };
-
     /**
      * Topmost meaningful block at (bx, bz) near hintY, or null (air column / error),
      * or MAP_SURFACE_UNLOADED when probing hits an unloaded chunk.
@@ -2859,81 +2988,239 @@ const Warps = () => {
         return {col, row};
     };
 
-    const generateMapString = (centerLocation, warps, dimensionId, dimension, mapOptions = {}) => {
-        const mapScale = clampMapScale(mapOptions.mapScale ?? MAP_SCALE_DEFAULT);
+    /** World XZ for the center of pseudo-map cell (col, row); must match {@link projectWorldToPseudoMapCell} inverse. */
+    const pseudoMapWorldXZAtCell = (centerLocation, col, row, mapScale, orient = null) => {
+        if (orient) {
+            return {
+                x: centerLocation.x + orient.rightX * col * mapScale + orient.forwardX * (-row) * mapScale,
+                z: centerLocation.z + orient.rightZ * col * mapScale + orient.forwardZ * (-row) * mapScale
+            };
+        }
+        return {
+            x: centerLocation.x + col * mapScale,
+            z: centerLocation.z + row * mapScale
+        };
+    };
+
+    /** Which warp (if any) occupies each grid cell; same rules as minimap raster. */
+    const buildPseudoMapWarpByCell = (centerLocation, warps, dimensionId, mapScale, orient = null) => {
         const dimNorm = normalizeDimensionIdForWorld(dimensionId);
         const sameDim = warps.filter((w) => normalizeDimensionIdForWorld(w.dimension) === dimNorm);
-        const orient = mapOptions.playerForMapRotation
-            ? getPlayerMapOrientationXZ(mapOptions.playerForMapRotation)
-            : null;
-        const hintY = centerLocation.y;
-        const yAbove = MAP_SURFACE_Y_ABOVE;
-        const yBelow = MAP_SURFACE_Y_BELOW;
-        // Precompute which single cell each warp occupies (prevents one warp painting multiple cells).
         const warpByCell = new Map();
         for (const w of sameDim) {
             const cellPos = projectWorldToPseudoMapCell(centerLocation, w.x, w.z, mapScale, orient);
             if (!cellPos) continue;
-            if (cellPos.col === 0 && cellPos.row === 0) continue; // player cell
+            if (cellPos.col === 0 && cellPos.row === 0) continue;
             const k = getWarpMapCellKey(cellPos.col, cellPos.row);
-            // If multiple warps collide in same cell, keep the first one.
             if (!warpByCell.has(k)) warpByCell.set(k, w);
         }
+        return warpByCell;
+    };
 
-        let map = "";
+    /** Warp details / DB: blocks per pseudo-map cell (north = smaller row index = −Z). */
+    const WARP_DETAILS_MAP_BLOCKS_PER_CELL = 5;
+    const WARP_DETAILS_MAP_PLAYER_CACHE_PREFIX = "warps:warp_terrain_dp";
+
+    const encodeTerrainCellFromSurface = (surface) => {
+        if (surface === MAP_SURFACE_UNLOADED) return "u";
+        if (!surface) return "a";
+        const typeId = surface.typeId;
+        if (isRoadAsphaltOrMarking(typeId)) return "r";
+        if (isWaterLike(typeId)) return "w";
+        if (isForestLike(typeId)) return "f";
+        return "l";
+    };
+
+    /**
+     * Single raster pass: compact ASCII grid (newlines between rows). Terrain: l/w/f/r/a/u.
+     * Focal: {@link PSEUDO_MAP_ENCODING_FOCAL_WARP} = warp-details (persisted, north-up), {@link PSEUDO_MAP_ENCODING_FOCAL_PLAYER} = main menu (player center).
+     * Other warps: {@link PSEUDO_MAP_ENCODING_WARP_OTHER}.
+     */
+    const PSEUDO_MAP_ENCODING_FOCAL_WARP = "c";
+    const PSEUDO_MAP_ENCODING_FOCAL_PLAYER = "p";
+    const PSEUDO_MAP_ENCODING_WARP_OTHER = "m";
+
+    const generatePseudoMapRasterEncoding = (centerLocation, warps, dimensionId, dimension, opts) => {
+        if (!dimension || !centerLocation) return "";
+        const mapScale = opts.mapScale;
+        const orient = opts.orient ?? null;
+        const focalChar = opts.focalChar ?? PSEUDO_MAP_ENCODING_FOCAL_WARP;
+        const hintY = centerLocation.y;
+        const yAbove = MAP_SURFACE_Y_ABOVE;
+        const yBelow = MAP_SURFACE_Y_BELOW;
+        const warpByCell = buildPseudoMapWarpByCell(centerLocation, warps, dimensionId, mapScale, orient);
+        const rows = [];
         for (let row = -MAP_HALF_H; row <= MAP_HALF_H; row++) {
             let rowStr = "";
             for (let col = -MAP_HALF_W; col <= MAP_HALF_W; col++) {
-                let worldX;
-                let worldZ;
-                if (orient) {
-                    worldX = centerLocation.x + orient.rightX * col * mapScale + orient.forwardX * (-row) * mapScale;
-                    worldZ = centerLocation.z + orient.rightZ * col * mapScale + orient.forwardZ * (-row) * mapScale;
-                } else {
-                    worldX = centerLocation.x + col * mapScale;
-                    worldZ = centerLocation.z + row * mapScale;
-                }
-
                 if (row === 0 && col === 0) {
-                    rowStr += MAP_CHAR_PLAYER;
+                    rowStr += focalChar;
                     continue;
                 }
-
                 if (warpByCell.has(getWarpMapCellKey(col, row))) {
-                    rowStr += MAP_CHAR_POINT;
+                    rowStr += PSEUDO_MAP_ENCODING_WARP_OTHER;
                     continue;
                 }
-
-                const bx = Math.floor(worldX);
-                const bz = Math.floor(worldZ);
-                const surface = sampleSurfaceBlock(dimension, bx, bz, hintY, yAbove, yBelow);
-                if (surface === MAP_SURFACE_UNLOADED) {
-                    // Unloaded chunk
-                    rowStr += MAP_CHAR_UNLOADED;
-                } else if (!surface) {
-                    // Air column (or no meaningful surface found within scan range)
-                    rowStr += MAP_CHAR_AIR;
-                } else {
-                    rowStr += mapGlyphForBlock(surface.typeId);
-                }
+                const {x: worldX, z: worldZ} = pseudoMapWorldXZAtCell(centerLocation, col, row, mapScale, orient);
+                const surface = sampleSurfaceBlock(dimension, Math.floor(worldX), Math.floor(worldZ), hintY, yAbove, yBelow);
+                rowStr += encodeTerrainCellFromSurface(surface);
             }
-            map += rowStr + "\n";
+            rows.push(rowStr);
         }
-        return map;
+        return rows.join("\n");
+    };
+
+    const decodeTerrainCategoryEncodingChar = (ch) => {
+        switch (ch) {
+            case "l":
+                return MAP_CHAR_LAND;
+            case "w":
+                return MAP_CHAR_WATER;
+            case "f":
+                return MAP_CHAR_FOREST;
+            case "r":
+                return MAP_CHAR_PATH;
+            case "a":
+                return MAP_CHAR_AIR;
+            case "u":
+                return MAP_CHAR_UNLOADED;
+            default:
+                return MAP_CHAR_LAND;
+        }
+    };
+
+    const decodeTerrainEncodingChar = (ch) => {
+        switch (ch) {
+            case "c":
+                return MAP_CHAR_WARP_DETAILS_SELF;
+            case "m":
+                return MAP_CHAR_WARP_DETAILS_OTHER;
+            default:
+                return decodeTerrainCategoryEncodingChar(ch);
+        }
+    };
+
+    const decodeMainMapEncodingChar = (ch) => {
+        switch (ch) {
+            case "p":
+                return MAP_CHAR_PLAYER;
+            case "m":
+                return MAP_CHAR_WARP_MAIN;
+            default:
+                return decodeTerrainCategoryEncodingChar(ch);
+        }
+    };
+
+    const terrainMapEncodingToColoredPseudoMap = (encoding) => {
+        if (!encoding || typeof encoding !== "string") return "";
+        const lines = encoding.replace(/\r/g, "").split("\n");
+        let out = "";
+        for (const line of lines) {
+            let row = "";
+            for (let i = 0; i < line.length; i++) {
+                row += decodeTerrainEncodingChar(line.charAt(i));
+            }
+            out += row + "\n";
+        }
+        return out.replace(/\n$/, "");
+    };
+
+    const terrainEncodingToMainMapColoredString = (encoding) => {
+        if (!encoding || typeof encoding !== "string") return "";
+        const lines = encoding.replace(/\r/g, "").split("\n");
+        let out = "";
+        for (const line of lines) {
+            let row = "";
+            for (let i = 0; i < line.length; i++) {
+                row += decodeMainMapEncodingChar(line.charAt(i));
+            }
+            out += row + "\n";
+        }
+        return out.replace(/\n$/, "");
+    };
+
+    const isPlayerWithinWarpTerrainRefreshRange = (player, warp) => {
+        if (!player || !warp) return false;
+        if (warp.dimension !== getPlayerDimension(player)) return false;
+        const maxDistance = 64;
+        const maxDistanceSquared = maxDistance * maxDistance;
+        const pl = player.location;
+        const dx = warp.x - pl.x;
+        const dy = warp.y - pl.y;
+        const dz = warp.z - pl.z;
+        return (dx * dx + dy * dy + dz * dz) <= maxDistanceSquared;
+    };
+
+    const getPlayerWarpTerrainCacheKey = (player, warpLocatorKey) => {
+        const name = String(player?.name ?? "unknown").replace(/[^a-zA-Z0-9_\-]/g, "_");
+        return `${WARP_DETAILS_MAP_PLAYER_CACHE_PREFIX}:${name}:${String(warpLocatorKey).replace(/[^a-zA-Z0-9_:,\-]/g, "_")}`;
+    };
+
+    const setPlayerWarpTerrainMapCache = (player, locatorKey, encoding) => {
+        if (!player || !encoding) return;
+        try {
+            Minecraft.world.setDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey), encoding);
+        } catch {
+            try {
+                player.setDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey), encoding);
+            } catch {
+                // ignore
+            }
+        }
+    };
+
+    const getPlayerWarpTerrainMapCache = (player, locatorKey) => {
+        if (!player) return "";
+        try {
+            const w = Minecraft.world.getDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey));
+            if (w !== undefined && w !== null) return String(w);
+        } catch {
+            // ignore
+        }
+        try {
+            const v = player.getDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey));
+            if (v !== undefined && v !== null) return String(v);
+        } catch {
+            // ignore
+        }
+        return "";
+    };
+
+    /**
+     * Compact terrain description (ASCII per cell, newlines between rows). North at top (−Z).
+     * c = this warp center, m = other warp, l/w/f/r/a/u = land/water/forest/road/air/unloaded.
+     */
+    const generateWarpTerrainMapEncoding = (centerLocation, warps, dimensionId, dimension, blocksPerCell = WARP_DETAILS_MAP_BLOCKS_PER_CELL) => {
+        if (!dimension || !centerLocation) return "";
+        const mapScale = Math.max(1, Math.round(Number(blocksPerCell)) || WARP_DETAILS_MAP_BLOCKS_PER_CELL);
+        return generatePseudoMapRasterEncoding(centerLocation, warps, dimensionId, dimension, {
+            mapScale,
+            orient: null,
+            focalChar: PSEUDO_MAP_ENCODING_FOCAL_WARP
+        });
+    };
+
+    const generateMapString = (centerLocation, warps, dimensionId, dimension, mapOptions = {}) => {
+        const mapScale = clampMapScale(mapOptions.mapScale ?? MAP_SCALE_DEFAULT);
+        const orient = mapOptions.playerForMapRotation
+            ? getPlayerMapOrientationXZ(mapOptions.playerForMapRotation)
+            : null;
+        const enc = generatePseudoMapRasterEncoding(centerLocation, warps, dimensionId, dimension, {
+            mapScale,
+            orient,
+            focalChar: PSEUDO_MAP_ENCODING_FOCAL_PLAYER
+        });
+        return terrainEncodingToMainMapColoredString(enc);
     };
 
     /** Warps that would render as the §6 map marker (same dimension + grid as generateMapString). */
     const getWarpsVisibleOnPseudoMap = (centerLocation, warps, dimensionId, playerForViewMap = null, mapScale = MAP_SCALE_DEFAULT) => {
         const cell = clampMapScale(mapScale);
-        const dimN = normalizeDimensionIdForWorld(dimensionId);
-        const sameDim = warps.filter((w) => normalizeDimensionIdForWorld(w.dimension) === dimN);
         const orient = playerForViewMap ? getPlayerMapOrientationXZ(playerForViewMap) : null;
-        const seen = new Set();
+        const warpByCell = buildPseudoMapWarpByCell(centerLocation, warps, dimensionId, cell, orient);
         const out = [];
-        for (const w of sameDim) {
-            const cellPos = projectWorldToPseudoMapCell(centerLocation, w.x, w.z, cell, orient);
-            if (!cellPos) continue;
-            if (cellPos.col === 0 && cellPos.row === 0) continue;
+        const seen = new Set();
+        for (const w of warpByCell.values()) {
             const key = getWarpLocatorKey(w);
             if (seen.has(key)) continue;
             seen.add(key);
@@ -2957,7 +3244,7 @@ const Warps = () => {
     const mapFooterRawWithScale = (mapScale) => {
         // Keep surrounding body text gray (§7) even after colored glyphs.
         const iconYou = `§7${MAP_CHAR_PLAYER}§7`;
-        const iconWarp = `§7${MAP_CHAR_POINT}§7`;
+        const iconWarp = `§7${MAP_CHAR_WARP_MAIN}§7`;
         const iconForest = `§7${MAP_CHAR_FOREST}§7`;
         const iconWater = `§7${MAP_CHAR_WATER}§7`;
         const iconLand = `§7${MAP_CHAR_LAND}§7`;
