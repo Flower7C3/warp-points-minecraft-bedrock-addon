@@ -1,0 +1,12 @@
+{
+  "resource_pack_name": "warp-points",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "warps_warp_menu": {
+      "textures": "textures/items/pearl"
+    },
+    "warps_warp_map": {
+      "textures": "textures/items/map"
+    }
+  }
+}

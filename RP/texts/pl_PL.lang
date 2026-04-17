@@ -2,12 +2,19 @@ pack.name=Punkty warp
 pack.description=Twórz punkty warp i pozwól innym się do nich teleportować!
 
 item.warps:warp_menu=Menu Warpów
+item.warps:warp_map=Mapa warpów
 
 warps:main_menu.title=§r§l§1☰ Menu główne Warpów§r
 warps:main_menu.list_nearest=§r§3⌖ Najbliższe§r
 warps:main_menu.list_all=§r§5☷ Wszystkie (A-Z)§r
 warps:main_menu.list_favorites=§r§e❤ Ulubione§r
 warps:main_menu.add_new=§r§6✚ Dodaj nowego§r
+warps:main_menu.map_open=§r§5⌗ Mapa§r
+warps:main_menu.map_title=§r§l§5⌗ Mapa warpów§r
+warps:main_menu.map_settings=§r⚙ Ustawienia§r
+warps:main_menu.map_scale_slider=§r§7Zoom§r
+warps:main_menu.map_footer_icons=§bLEGENDA§r\n§7%1$s ty  %2$s warp  %3$s las  %4$s woda  %5$s ląd  %6$s droga  %7$s powietrze  %8$s niezaładowany chunk§r
+warps:main_menu.map_footer_metrics=§7Wymiary mapy: %1$s×%2$s komórek (1 komórka = %3$s blok)\n§7Zasięg na obróconej mapie: ~±%4$s lewo-prawo / ~±%5$s przód-tył bloków§r
 
 warps:field.category_icon.label=Kategoria / Ikona
 warps:field.category.label=Kategoria

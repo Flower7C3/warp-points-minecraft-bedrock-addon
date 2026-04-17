@@ -19,7 +19,8 @@ const Warps = () => {
     const WORLD_FAVORITES_PROP = "warps:favorites";
     /** Bedrock dynamic property value max length (chars). Use chunked save when JSON exceeds this. */
     const MAX_DYNAMIC_PROP_LENGTH = 32000;
-    const ITEM_COMPONENT_ID = "warps:warp_menu";
+    const WARP_MENU_ITEM_ID = "warps:warp_menu";
+    const WARP_MAP_ITEM_ID = "warps:warp_map";
 
     let dataLoaded = false;
 
@@ -634,7 +635,11 @@ const Warps = () => {
         return warp || null;
     }
 
-    const getDimensionByName = (dimensionId) => Minecraft.world.getDimension(`minecraft:${dimensionId}`);
+    const normalizeDimensionIdForWorld = (dimensionId) =>
+        String(dimensionId || "overworld").replace(/^minecraft:/, "");
+
+    const getDimensionByName = (dimensionId) =>
+        Minecraft.world.getDimension(`minecraft:${normalizeDimensionIdForWorld(dimensionId)}`);
 
     const notifyLocator = (player, key, withValues = []) => {
         if (!LOCATOR_CONFIG.showMessages) return;
@@ -771,6 +776,19 @@ const Warps = () => {
         }
     };
 
+    /** 16-direction arrow (22.5° steps). 0° = ↑, clockwise. */
+    const getArrow16 = (deg) => {
+        const ARROWS_16 = [
+            "↑ N", "↑↗ NNE ", "↗ NE", "→↗ NEE",
+            "→ E", "→↘ SEE", "↘ SE", "↓↘ SSE",
+            "↓ S", "↙↓ SSW ", "↙ SW", "↙← SWW",
+            "← W", "↖← NWW", "↖ NW ", "↖↑ NNW",
+        ];
+        const d = Number(deg);
+        if (!Number.isFinite(d)) return "↑";
+        return ARROWS_16[Math.round(d / 22.5) % 16];
+    };
+
     const getWarpDetails = (warp, player, pattern, options) => {
         const visibility = (warp.visibility === null || warp.visibility === "" || warp.visibility === undefined)
             ? WARP_VISIBILITY.PUBLIC
@@ -816,7 +834,6 @@ const Warps = () => {
 
         if (player && warp.dimension === getPlayerDimension(player)) {
             const DIRECTION_NAMES = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-            const DIRECTION_ARROWS = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
             const playerLocation = player.location;
             const distance = calculateDistance(playerLocation.x, playerLocation.y, playerLocation.z, warp.x, warp.y, warp.z);
             const suffix = (distance >= 5) ? "5" : ((5 > distance && distance > 1) ? "2" : "1");
@@ -834,7 +851,7 @@ const Warps = () => {
             const relativeDeg = (angleToWarp - playerFacingDeg + 360) % 360;
             const directionSign = playerAtWarpLocation
                 ? "·"
-                : DIRECTION_ARROWS[Math.round(relativeDeg / 45) % 8];
+                : getArrow16(relativeDeg);
 
             keys.distanceLabel = {translate: `warps:field.distance.label`};
             keys.distanceKmValue = {
@@ -2596,6 +2613,489 @@ const Warps = () => {
 
     ///=================================================================================================================
     // === Main Menu ===
+    const MAP_CHAR_POINT = "§b✖"; //"§bX";
+    const MAP_CHAR_PLAYER = "§b❂"; //"§b@";
+    /** Block-drawing chars (similar cell width in Bedrock UI font). */
+    const MAP_CHAR_UNLOADED = "§7▓"; //"§7▦";
+    const MAP_CHAR_PATH = "§8█"; //"§8■";
+    const MAP_CHAR_LAND = "§2█"; //"§2▩";
+    const MAP_CHAR_WATER = "§9▒"; //"§9≈";
+    const MAP_CHAR_AIR = "§7▓"; //"§7^";
+    const MAP_CHAR_FOREST = "§a▒"; //"§a▲";
+    /** Map grid (odd sizes → player centered). */
+    const MAP_WIDTH = 21; //41;
+    const MAP_HEIGHT = 21; //17
+    const MAP_HALF_W = (MAP_WIDTH - 1) / 2;
+    const MAP_HALF_H = (MAP_HEIGHT - 1) / 2;
+    const MAP_SCALE_DEFAULT = 6;
+    const MAP_SCALE_MIN = 1;
+    const MAP_SCALE_MAX = 10;
+    const PLAYER_MAP_SCALE_PROP = "warps:player_map_cell_scale";
+    /** World DP fallback: player entity DP is not always writable in script. */
+    const PLAYER_MAP_SCALE_WORLD_PREFIX = "warps:map_cell_scale";
+    /** Vertical scan above/below hint Y to find a surface block (performance vs tall terrain). */
+    const MAP_SURFACE_Y_ABOVE = 40;
+    const MAP_SURFACE_Y_BELOW = 24;
+
+    const clampMapScale = (n) => {
+        const v = Math.round(Number(n));
+        if (!Number.isFinite(v)) return MAP_SCALE_DEFAULT;
+        return Math.min(MAP_SCALE_MAX, Math.max(MAP_SCALE_MIN, v));
+    };
+
+    // Slider represents "zoom level" (higher = closer). Internally we store "blocks per cell".
+    // Example (min=1,max=10): zoom=10 => 1 block per cell; zoom=1 => 10 blocks per cell.
+    const clampMapZoom = (n) => {
+        const v = Math.round(Number(n));
+        if (!Number.isFinite(v)) return MAP_SCALE_MAX - MAP_SCALE_DEFAULT + MAP_SCALE_MIN;
+        return Math.min(MAP_SCALE_MAX, Math.max(MAP_SCALE_MIN, v));
+    };
+    const blocksPerCellToZoom = (blocksPerCell) =>
+        clampMapZoom(MAP_SCALE_MAX - clampMapScale(blocksPerCell) + MAP_SCALE_MIN);
+    const zoomToBlocksPerCell = (zoom) =>
+        clampMapScale(MAP_SCALE_MAX - clampMapZoom(zoom) + MAP_SCALE_MIN);
+
+    /** ModalForm: `.label()` may occupy `formValues[0]`; slider is often last. */
+    const readModalMapScaleValue = (formValues, fallbackScale) => {
+        if (!formValues || formValues.length === 0) return clampMapScale(fallbackScale);
+        for (let i = formValues.length - 1; i >= 0; i--) {
+            const raw = formValues[i];
+            if (raw === undefined || raw === null || raw === "") continue;
+            const n = Number(raw);
+            if (!Number.isFinite(n)) continue;
+            return clampMapScale(n);
+        }
+        return clampMapScale(fallbackScale);
+    };
+
+    const getPlayerMapScaleWorldKey = (player) => {
+        const name = String(player?.name ?? "unknown").replace(/[^a-zA-Z0-9_\-]/g, "_");
+        return `${PLAYER_MAP_SCALE_WORLD_PREFIX}:${name}`;
+    };
+
+    const getPlayerMapScale = (player) => {
+        try {
+            const w = Minecraft.world.getDynamicProperty(getPlayerMapScaleWorldKey(player));
+            if (w !== undefined && w !== null) return clampMapScale(w);
+        } catch {
+            // ignore
+        }
+        try {
+            const v = player.getDynamicProperty(PLAYER_MAP_SCALE_PROP);
+            if (v === undefined || v === null) return MAP_SCALE_DEFAULT;
+            return clampMapScale(v);
+        } catch {
+            return MAP_SCALE_DEFAULT;
+        }
+    };
+
+    const setPlayerMapScale = (player, scale) => {
+        const s = clampMapScale(scale);
+        try {
+            Minecraft.world.setDynamicProperty(getPlayerMapScaleWorldKey(player), s);
+        } catch {
+            // ignore
+        }
+        try {
+            player.setDynamicProperty(PLAYER_MAP_SCALE_PROP, s);
+        } catch {
+            // ignore: older clients / missing API
+        }
+    };
+
+    const isAirLike = (typeId) =>
+        typeId === "minecraft:air" ||
+        typeId === "minecraft:cave_air" ||
+        typeId === "minecraft:void_air";
+
+    const isRoadAsphaltOrMarking = (typeId) =>
+        typeId === "minecraft:grass_path" ||
+        typeId.startsWith("road_asphalt:") ||
+        typeId.startsWith("road_marking:");
+
+    const isWaterLike = (typeId) =>
+        typeId === "minecraft:water" ||
+        typeId === "minecraft:flowing_water" ||
+        typeId === "minecraft:bubble_column" ||
+        typeId.includes("kelp") ||
+        typeId.includes("seagrass") ||
+        typeId === "minecraft:ice" ||
+        typeId === "minecraft:packed_ice" ||
+        typeId === "minecraft:blue_ice" ||
+        typeId === "minecraft:frosted_ice";
+
+    const isForestLike = (typeId) =>
+        typeId.endsWith("_log") ||
+        typeId.includes("_leaves") ||
+        typeId === "minecraft:vine" ||
+        typeId.includes("mushroom_block") ||
+        typeId === "minecraft:azalea" ||
+        typeId === "minecraft:flowering_azalea" ||
+        typeId === "minecraft:moss_block" ||
+        typeId === "minecraft:moss_carpet" ||
+        typeId.endsWith("_sapling");
+
+    /** Thin blocks to skip when probing for ground/water (monospace map uses one glyph per column). */
+    const isSurfacePassThrough = (typeId) =>
+        typeId === "minecraft:short_grass" ||
+        typeId === "minecraft:tall_grass" ||
+        typeId === "minecraft:grass" ||
+        typeId === "minecraft:dead_bush" ||
+        typeId === "minecraft:snow_layer" ||
+        typeId === "minecraft:vine" ||
+        typeId.endsWith("_carpet") ||
+        typeId.includes("_torch") ||
+        typeId.endsWith("_pressure_plate") ||
+        typeId.includes("rail") ||
+        typeId.includes("sign") ||
+        typeId.includes("_button") ||
+        typeId === "minecraft:ladder" ||
+        typeId === "minecraft:tripwire" ||
+        typeId === "minecraft:tripwire_hook";
+
+    const MAP_SURFACE_UNLOADED = "__warps_surface_unloaded__";
+    const isUnloadedChunkError = (e) =>
+        (e instanceof LocationInUnloadedChunkError) ||
+        (typeof e?.name === "string" && e.name === "LocationInUnloadedChunkError");
+
+    const mapGlyphForBlock = (typeId) => {
+        if (isRoadAsphaltOrMarking(typeId)) return MAP_CHAR_PATH;
+        if (isWaterLike(typeId)) return MAP_CHAR_WATER;
+        if (isForestLike(typeId)) return MAP_CHAR_FOREST;
+        return MAP_CHAR_LAND;
+    };
+
+    /**
+     * Topmost meaningful block at (bx, bz) near hintY, or null (air column / error),
+     * or MAP_SURFACE_UNLOADED when probing hits an unloaded chunk.
+     */
+    const sampleSurfaceBlock = (dimension, bx, bz, hintY, yAbove = MAP_SURFACE_Y_ABOVE, yBelow = MAP_SURFACE_Y_BELOW) => {
+        const yMax = Math.min(319, Math.floor(hintY) + yAbove);
+        const yMin = Math.max(-64, Math.floor(hintY) - yBelow);
+        let y = yMax;
+        while (y >= yMin) {
+            let block;
+            try {
+                block = dimension.getBlock({x: bx, y, z: bz});
+            } catch (e) {
+                if (isUnloadedChunkError(e)) return MAP_SURFACE_UNLOADED;
+                return null;
+            }
+            // In some engine versions, probing unloaded chunks returns undefined instead of throwing.
+            if (!block) return MAP_SURFACE_UNLOADED;
+            let typeId = block.typeId;
+            if (isAirLike(typeId)) {
+                y--;
+                continue;
+            }
+            while (isSurfacePassThrough(typeId) && y > yMin) {
+                y--;
+                try {
+                    block = dimension.getBlock({x: bx, y, z: bz});
+                } catch (e) {
+                    if (isUnloadedChunkError(e)) return MAP_SURFACE_UNLOADED;
+                    return null;
+                }
+                if (!block) return MAP_SURFACE_UNLOADED;
+                typeId = block.typeId;
+                if (isAirLike(typeId)) break;
+            }
+            if (isAirLike(typeId)) {
+                y--;
+                continue;
+            }
+            return block;
+        }
+        return null;
+    };
+
+    /** Facing angle (°) consistent with getWarpDetails / atan2(dx,-dz), 0° = world north (−Z). */
+    const getPlayerFacingDegrees = (player) => {
+        try {
+            const rotation = player.getRotation();
+            const playerYaw = (typeof rotation.y === "number") ? rotation.y : 0;
+            return (180 + playerYaw + 360) % 360;
+        } catch {
+            return 0;
+        }
+    };
+
+    /** Unit forward (where the player looks) and right on XZ for view-aligned minimap; top row = forward. */
+    const getPlayerMapOrientationXZ = (player) => {
+        const F = getPlayerFacingDegrees(player) * Math.PI / 180;
+        return {
+            forwardX: Math.sin(F),
+            forwardZ: -Math.cos(F),
+            rightX: Math.cos(F),
+            rightZ: Math.sin(F)
+        };
+    };
+
+    const getWarpMapCellKey = (col, row) => `${col},${row}`;
+
+    /**
+     * Project a world point into pseudo-map grid coordinates.
+     * Returns {col,row} integers, or null if outside map bounds.
+     */
+    const projectWorldToPseudoMapCell = (centerLocation, worldX, worldZ, cell, orient = null) => {
+        const dx = worldX - centerLocation.x;
+        const dz = worldZ - centerLocation.z;
+
+        let colF;
+        let rowF;
+        if (orient) {
+            // col axis = right, row axis = down (top row is forward)
+            colF = (dx * orient.rightX + dz * orient.rightZ) / cell;
+            const forward = (dx * orient.forwardX + dz * orient.forwardZ) / cell;
+            rowF = -forward;
+        } else {
+            colF = dx / cell;
+            rowF = dz / cell;
+        }
+
+        const col = Math.round(colF);
+        const row = Math.round(rowF);
+        if (Math.abs(col) > MAP_HALF_W || Math.abs(row) > MAP_HALF_H) return null;
+        return {col, row};
+    };
+
+    const generateMapString = (centerLocation, warps, dimensionId, dimension, mapOptions = {}) => {
+        const mapScale = clampMapScale(mapOptions.mapScale ?? MAP_SCALE_DEFAULT);
+        const dimNorm = normalizeDimensionIdForWorld(dimensionId);
+        const sameDim = warps.filter((w) => normalizeDimensionIdForWorld(w.dimension) === dimNorm);
+        const orient = mapOptions.playerForMapRotation
+            ? getPlayerMapOrientationXZ(mapOptions.playerForMapRotation)
+            : null;
+        const hintY = centerLocation.y;
+        const yAbove = MAP_SURFACE_Y_ABOVE;
+        const yBelow = MAP_SURFACE_Y_BELOW;
+        // Precompute which single cell each warp occupies (prevents one warp painting multiple cells).
+        const warpByCell = new Map();
+        for (const w of sameDim) {
+            const cellPos = projectWorldToPseudoMapCell(centerLocation, w.x, w.z, mapScale, orient);
+            if (!cellPos) continue;
+            if (cellPos.col === 0 && cellPos.row === 0) continue; // player cell
+            const k = getWarpMapCellKey(cellPos.col, cellPos.row);
+            // If multiple warps collide in same cell, keep the first one.
+            if (!warpByCell.has(k)) warpByCell.set(k, w);
+        }
+
+        let map = "";
+        for (let row = -MAP_HALF_H; row <= MAP_HALF_H; row++) {
+            let rowStr = "";
+            for (let col = -MAP_HALF_W; col <= MAP_HALF_W; col++) {
+                let worldX;
+                let worldZ;
+                if (orient) {
+                    worldX = centerLocation.x + orient.rightX * col * mapScale + orient.forwardX * (-row) * mapScale;
+                    worldZ = centerLocation.z + orient.rightZ * col * mapScale + orient.forwardZ * (-row) * mapScale;
+                } else {
+                    worldX = centerLocation.x + col * mapScale;
+                    worldZ = centerLocation.z + row * mapScale;
+                }
+
+                if (row === 0 && col === 0) {
+                    rowStr += MAP_CHAR_PLAYER;
+                    continue;
+                }
+
+                if (warpByCell.has(getWarpMapCellKey(col, row))) {
+                    rowStr += MAP_CHAR_POINT;
+                    continue;
+                }
+
+                const bx = Math.floor(worldX);
+                const bz = Math.floor(worldZ);
+                const surface = sampleSurfaceBlock(dimension, bx, bz, hintY, yAbove, yBelow);
+                if (surface === MAP_SURFACE_UNLOADED) {
+                    // Unloaded chunk
+                    rowStr += MAP_CHAR_UNLOADED;
+                } else if (!surface) {
+                    // Air column (or no meaningful surface found within scan range)
+                    rowStr += MAP_CHAR_AIR;
+                } else {
+                    rowStr += mapGlyphForBlock(surface.typeId);
+                }
+            }
+            map += rowStr + "\n";
+        }
+        return map;
+    };
+
+    /** Warps that would render as the §6 map marker (same dimension + grid as generateMapString). */
+    const getWarpsVisibleOnPseudoMap = (centerLocation, warps, dimensionId, playerForViewMap = null, mapScale = MAP_SCALE_DEFAULT) => {
+        const cell = clampMapScale(mapScale);
+        const dimN = normalizeDimensionIdForWorld(dimensionId);
+        const sameDim = warps.filter((w) => normalizeDimensionIdForWorld(w.dimension) === dimN);
+        const orient = playerForViewMap ? getPlayerMapOrientationXZ(playerForViewMap) : null;
+        const seen = new Set();
+        const out = [];
+        for (const w of sameDim) {
+            const cellPos = projectWorldToPseudoMapCell(centerLocation, w.x, w.z, cell, orient);
+            if (!cellPos) continue;
+            if (cellPos.col === 0 && cellPos.row === 0) continue;
+            const key = getWarpLocatorKey(w);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            out.push(w);
+        }
+        return out;
+    };
+
+    /** World north (0° = −Z) vs player view; on view-aligned map, top = forward so this is north on the printed grid. */
+    const getMainMapNorthArrowForPlayer = (player) => {
+        try {
+            const playerFacingDeg = getPlayerFacingDegrees(player);
+            const worldNorthDeg = 0;
+            const relativeDeg = (worldNorthDeg - playerFacingDeg + 360) % 360;
+            return getArrow16(relativeDeg);
+        } catch {
+            return "↑";
+        }
+    };
+
+    const mapFooterRawWithScale = (mapScale) => {
+        // Keep surrounding body text gray (§7) even after colored glyphs.
+        const iconYou = `§7${MAP_CHAR_PLAYER}§7`;
+        const iconWarp = `§7${MAP_CHAR_POINT}§7`;
+        const iconForest = `§7${MAP_CHAR_FOREST}§7`;
+        const iconWater = `§7${MAP_CHAR_WATER}§7`;
+        const iconLand = `§7${MAP_CHAR_LAND}§7`;
+        const iconRoad = `§7${MAP_CHAR_PATH}§7`;
+        const iconAir = `§7${MAP_CHAR_AIR}§7`;
+        const iconUnloaded = `§7${MAP_CHAR_UNLOADED}§7`;
+
+        return {
+            rawtext: [
+                {
+                    translate: "warps:main_menu.map_footer_icons",
+                    with: [
+                        iconYou,
+                        iconWarp,
+                        iconForest,
+                        iconWater,
+                        iconLand,
+                        iconRoad,
+                        iconAir,
+                        iconUnloaded
+                    ]
+                },
+                {text: "\n"},
+                {
+                    translate: "warps:main_menu.map_footer_metrics",
+                    with: [
+                        String(MAP_WIDTH),
+                        String(MAP_HEIGHT),
+                        String(mapScale),
+                        String(Math.round(MAP_HALF_W * mapScale)),
+                        String(Math.round(MAP_HALF_H * mapScale))
+                    ]
+                }
+            ]
+        };
+    };
+
+    /**
+     * One map function (single entry point).
+     * - Shows modal with map + slider
+     * - If slider changed → reopen itself with new scale
+     * - Otherwise shows ActionForm with warp buttons
+     */
+    const showMainMenuMap = (player, options = {}) => {
+        const returnToMainMenuOnCancel = options.returnToMainMenuOnCancel !== false;
+
+        // Allow passing an explicit scale to re-render immediately even if persistence fails.
+        // Internal value = blocks per cell (1 = closest, 10 = farthest).
+        const scale = clampMapScale(options.scaleOverride ?? getPlayerMapScale(player));
+        const visibleWarps = filterWarpsByVisibility(getValidWarps(), player);
+        const dimensionId = getPlayerDimension(player);
+        const northArrow = getMainMapNorthArrowForPlayer(player);
+        const titleString = {
+            rawtext: [
+                {translate: "warps:main_menu.map_title"},
+                {text: ` §f${northArrow}§r`}
+            ]
+        };
+        const mapString = generateMapString(
+            player.location,
+            visibleWarps,
+            dimensionId,
+            player.dimension,
+            {playerForMapRotation: player, mapScale: scale}
+        );
+        const footerString = mapFooterRawWithScale(scale);
+
+        const form = new MinecraftUi.ActionFormData();
+        form
+            .title(titleString)
+            .body(mapString)
+            .label(footerString);
+
+        let buttonIndex = 0;
+        const BUTTON_SETTINGS = buttonIndex++;
+        form.button({rawtext: [{translate: "warps:main_menu.map_settings"}]});
+
+        const warpsOnMap = sortWarps(
+            getWarpsVisibleOnPseudoMap(player.location, visibleWarps, dimensionId, player, scale),
+            SORT_BY.DISTANCE,
+            player
+        );
+        if (warpsOnMap.length > 0) {
+            form.divider();
+        }
+        warpsOnMap.forEach((warp) => {
+            try {
+                const icon = getIconByName(warp.icon);
+                form.button(
+                    getWarpDetails(warp, player, TRANSLATION_PATTERN.BUTTON_LONG),
+                    icon && icon.path ? icon.path : ""
+                );
+            } catch (error) {
+                console.error(`[WARP] Map list button error for ${warp.name}:`, error);
+            }
+        });
+
+        form.show(player).then((res) => {
+            if (res.canceled) {
+                if (returnToMainMenuOnCancel) showMainMenu(player);
+                return;
+            }
+
+            if (res.selection === BUTTON_SETTINGS) {
+                const zoomDefault = blocksPerCellToZoom(scale);
+                const settingsForm = new MinecraftUi.ModalFormData();
+                settingsForm
+                    .title({rawtext: [{translate: "warps:main_menu.map_title"}]})
+                    .slider(
+                        {rawtext: [{translate: "warps:main_menu.map_scale_slider"}]},
+                        MAP_SCALE_MIN,
+                        MAP_SCALE_MAX,
+                        {defaultValue: zoomDefault}
+                    );
+
+                settingsForm.show(player).then((settingsRes) => {
+                    if (settingsRes.canceled) {
+                        showMainMenuMap(player, {returnToMainMenuOnCancel, scaleOverride: scale});
+                        return;
+                    }
+                    const newZoom = clampMapZoom(readModalMapScaleValue(settingsRes.formValues, zoomDefault));
+                    const newScale = zoomToBlocksPerCell(newZoom);
+                    if (newScale !== scale) setPlayerMapScale(player, newScale);
+                    showMainMenuMap(player, {returnToMainMenuOnCancel, scaleOverride: newScale});
+                });
+                return;
+            }
+
+            const warpIndex = res.selection - 1; // account for Settings button
+            const warp = warpsOnMap[warpIndex];
+            if (warp) {
+                showWarpDetailsMenu(player, warp);
+                return;
+            }
+            showMainMenuMap(player, {returnToMainMenuOnCancel, scaleOverride: scale});
+        });
+    };
+
     const showMainMenu = (player) => {
         let buttonIndex = 0;
         const menuForm = new MinecraftUi.ActionFormData()
@@ -2613,6 +3113,10 @@ const Warps = () => {
         const BUTTON_FAVORITES = buttonIndex++;
         menuForm.button({
             rawtext: [{translate: "warps:main_menu.list_favorites"}]
+        });
+        const BUTTON_MAP = buttonIndex++;
+        menuForm.button({
+            rawtext: [{translate: "warps:main_menu.map_open"}]
         });
         const BUTTON_ADD_NEW = buttonIndex++;
         menuForm.button({
@@ -2653,6 +3157,9 @@ const Warps = () => {
                     }
                     break;
                 }
+                case BUTTON_MAP:
+                    showMainMenuMap(player, {listWarps: false});
+                    break;
                 case BUTTON_ADD_NEW:
                     addWarpItemFormStep1(player, {
                         targetLocation: roundLocation(player.location),
@@ -2712,6 +3219,15 @@ const Warps = () => {
             sortedWarps.forEach(warp => player.sendMessage(
                 getWarpDetails(warp, player, TRANSLATION_PATTERN.LIST_ALL)
             ))
+        });
+        return {
+            status: CustomCommandStatus.Success,
+        };
+    }
+    const mapCommand = (origin) => {
+        system.run(() => {
+            const player = getPlayer(origin)
+            showMainMenuMap(player, {returnToMainMenuOnCancel: false});
         });
         return {
             status: CustomCommandStatus.Success,
@@ -2909,6 +3425,14 @@ const Warps = () => {
                 listCommand
             );
 
+            registerCommandWithAliases(event, ["warps_map", "wm"], {
+                    description: "Show nearest Warps on map",
+                    permissionLevel: Minecraft.CommandPermissionLevel.Any,
+                    optionalParameters: [],
+                },
+                mapCommand
+            );
+
             registerCommandWithAliases(event, ["warp_add", "wa"], {
                     description: "Add a new public Warp",
                     permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
@@ -3003,7 +3527,7 @@ const Warps = () => {
 
             ///=================================================================================================================
             // === Item Component Registration ===
-            event.itemComponentRegistry.registerCustomComponent(ITEM_COMPONENT_ID, {
+            event.itemComponentRegistry.registerCustomComponent(WARP_MENU_ITEM_ID, {
                 // Shift + right click on block = adding warp
                 onUseOn: (event) => {
                     system.run(() => {
@@ -3048,6 +3572,16 @@ const Warps = () => {
                         const player = event.source && event.source.typeId === "minecraft:player" ? event.source : null;
                         if (!player || player.isSneaking) return;
                         showMainMenu(player);
+                    });
+                }
+            });
+
+            event.itemComponentRegistry.registerCustomComponent(WARP_MAP_ITEM_ID, {
+                onUse: (event) => {
+                    system.run(() => {
+                        const player = event.source && event.source.typeId === "minecraft:player" ? event.source : null;
+                        if (!player || player.isSneaking) return;
+                        showMainMenuMap(player, {listWarps: false, returnToMainMenuOnCancel: false});
                     });
                 }
             });

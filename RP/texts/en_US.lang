@@ -1,13 +1,20 @@
 pack.name=Warp Points
 pack.description=Create Warp Points and let others to teleport there!
 
-item.warps:warp_menu=WARPs menu
+item.warps:warp_menu=Warps menu
+item.warps:warp_map=Warps map
 
 warps:main_menu.title=§r§l§1☰ Warps main menu§r
 warps:main_menu.list_nearest=§r§3⌖ Nearest§r
 warps:main_menu.list_all=§r§5☷ All (A-Z)§r
 warps:main_menu.list_favorites=§r§e❤ Favorites§r
 warps:main_menu.add_new=§r§6✚ Add New§r
+warps:main_menu.map_open=§r§5⌗ Map§r
+warps:main_menu.map_title=§r§l§5⌗ Warps map§r
+warps:main_menu.map_settings=§r⚙ Settings§r
+warps:main_menu.map_scale_slider=§r§7Zoom§r
+warps:main_menu.map_footer_icons=§bLEGEND§r\n§7%1$s you  %2$s warp  %3$s forest  %4$s water  %5$s land  %6$s road  %7$s air  %8$s unloaded chunk§r
+warps:main_menu.map_footer_metrics=§7Map size: %1$s×%2$s cells (1 cell = %3$s block)\n§7Range on rotated map: ~±%4$s left-right / ~±%5$s forward-back blocks§r
 
 warps:field.category_icon.label=Category / Icon
 warps:field.category.label=Category
