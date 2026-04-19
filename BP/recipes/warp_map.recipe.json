@@ -1,0 +1,30 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "warps:warp_map"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "ingredients": [
+      {
+        "item": "warps:warp_menu",
+        "count": 1
+      },
+      {
+        "item": "minecraft:empty_map",
+        "count": 1
+      }
+    ],
+    "result": {
+      "item": "warps:warp_map",
+      "count": 1
+    },
+    "unlock": [
+      {
+        "item": "warps:warp_menu"
+      }
+    ]
+  }
+}
