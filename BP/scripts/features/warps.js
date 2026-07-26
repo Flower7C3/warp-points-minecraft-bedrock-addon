@@ -1905,7 +1905,8 @@ const Warps = () => {
                 currentTranslationPatternIndex = 0;
             }
         }
-        const currentSignModeIndex = (Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z));
+        // Prefer AUTOMATIC_EAST_WEST (1) when |dx| dominates, else AUTOMATIC_NORTH_SOUTH (0)
+        const currentSignModeIndex = Math.abs(targetLocation.x - player.location.x) > Math.abs(targetLocation.z - player.location.z) ? 1 : 0;
 
         new MinecraftUi.ModalFormData()
             .title({rawtext: [{translate: "warps:add.step3.title"}]})
