@@ -12,7 +12,7 @@
     "@minecraft/core-build-tasks": "^5.2.0"
   },
   "dependencies": {
-    "@minecraft/server": "^2.8.0-beta",
+    "@minecraft/server": "^2.8.0",
     "@minecraft/server-ui": "^2.0.0"
   }
 }
