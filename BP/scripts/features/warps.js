@@ -1,16 +1,19 @@
-import * as Minecraft from "@minecraft/server"
-import * as MinecraftUi from "@minecraft/server-ui"
 import {
     BlockPermutation,
+    CommandPermissionLevel,
     CustomCommandParamType,
+    CustomCommandSource,
     CustomCommandStatus,
+    Direction,
     DyeColor,
     LocationInUnloadedChunkError,
     LocationWaypoint,
     SignSide,
     WaypointTexture,
-    system
-} from "@minecraft/server"
+    system,
+    world
+} from "@minecraft/server";
+import * as MinecraftUi from "@minecraft/server-ui";
 
 const Warps = () => {
     ///=================================================================================================================
@@ -76,6 +79,11 @@ const Warps = () => {
 
     const TRANSLATION_PATTERN = Object.freeze({
         BODY: "[coordsLabel]: §l[coordsValue]§r\n[dimensionLabel]: §l[dimensionName]§r\n[distanceLabel]: §l[distanceKmValue]§r (§l[distanceMetersLocale]§r)\n[directionLabel]: §l[directionText] [directionSign]§r\n[categoryLabel]: §l[categoryName]§r\n[iconLabel]: §l[iconName]§r\n\n[mapHeader]\n[mapGrid]\n[mapFooter]\n\n[translationPatternLabel]: §l[translationPatternValue]§r\n[signModeLabel]: §l[signModeValue]§r\n[signMaterialLabel]: §l[signMaterialValue]§r\n\n[ownerLabel]: §l[ownerName]§r\n[visibilityLabel]: §l[visibilityName]§r",
+        BODY_COORDS: "[coordsLabel]: §l[coordsValue]§r\n[dimensionLabel]: §l[dimensionName]§r\n[distanceLabel]: §l[distanceKmValue]§r (§l[distanceMetersLocale]§r)\n[directionLabel]: §l[directionText] [directionSign]§r",
+        BODY_CAT: "[categoryLabel]: §l[categoryName]§r\n[iconLabel]: §l[iconName]§r",
+        BODY_MAP: "[mapHeader]\n[mapGrid]\n[mapFooter]",
+        BODY_SIGN: "[translationPatternLabel]: §l[translationPatternValue]§r\n[signModeLabel]: §l[signModeValue]§r\n[signMaterialLabel]: §l[signMaterialValue]§r",
+        BODY_META: "[ownerLabel]: §l[ownerName]§r\n[visibilityLabel]: §l[visibilityName]§r",
         BUTTON_LONG: "[visibilitySymbol] §l[warpName]§r [distanceDirectionValue] [directionSign]",
         BUTTON_SHORT: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName]",
         LIST_ALL: "[visibilitySymbol] §l[warpName]§r [coordsValue] [dimensionName] ([categoryName]/[iconName])",
@@ -254,10 +262,29 @@ const Warps = () => {
         matchExactY: true
     });
 
+    const TAXI_CONFIG = Object.freeze({
+        enabled: true,
+        /** Command executed when the player picks the taxi button. */
+        command: "vehicles:taxi",
+        /**
+         * Append warp coordinates to the command.
+         *
+         * Musi byc true: bez wspolrzednych taksowka przyjechalaby
+         * "na zadanie" i gracz musialby w wpisac cel jeszcze raz.
+         * vehicles:taxi przyjmuje opcjonalny Location i podpowiada
+         * go w formularzu.
+         */
+        passCoordinates: true,
+        /** Set false to always show the button (e.g. pack may load after first check). */
+        hideWhenUnavailable: false,
+    });
+    /** Command availability cache (null = not checked yet). */
+    let taxiCommandAvailable = null;
+
     ///=================================================================================================================
     // === Data Management Functions ===
     const loadWarps = () => {
-        const chunkCount = Minecraft.world.getDynamicProperty(WORLD_PROP + "_n");
+        const chunkCount = world.getDynamicProperty(WORLD_PROP + "_n");
         let saved;
         if (chunkCount !== undefined && chunkCount !== null) {
             const n = Number(chunkCount);
@@ -267,12 +294,12 @@ const Warps = () => {
             }
             const parts = [];
             for (let i = 0; i < n; i++) {
-                const part = Minecraft.world.getDynamicProperty(WORLD_PROP + "_" + i)?.toString();
+                const part = world.getDynamicProperty(WORLD_PROP + "_" + i)?.toString();
                 if (part) parts.push(part);
             }
             saved = parts.join("");
         } else {
-            saved = Minecraft.world.getDynamicProperty(WORLD_PROP)?.toString();
+            saved = world.getDynamicProperty(WORLD_PROP)?.toString();
         }
         if (!saved) {
             if (!isDataLoaded()) {
@@ -314,7 +341,7 @@ const Warps = () => {
     }
 
     const loadFavorites = () => {
-        const saved = Minecraft.world.getDynamicProperty(WORLD_FAVORITES_PROP)?.toString();
+        const saved = world.getDynamicProperty(WORLD_FAVORITES_PROP)?.toString();
         if (!saved) return {};
         try {
             const parsed = JSON.parse(saved);
@@ -326,7 +353,7 @@ const Warps = () => {
     };
 
     const saveFavorites = (favorites) => {
-        Minecraft.world.setDynamicProperty(WORLD_FAVORITES_PROP, JSON.stringify(favorites));
+        world.setDynamicProperty(WORLD_FAVORITES_PROP, JSON.stringify(favorites));
     };
 
     const cleanupFavoritesData = (favorites) => {
@@ -426,23 +453,23 @@ const Warps = () => {
     const persistWarpsListToWorld = (warps) => {
         const json = JSON.stringify(warps);
         if (json.length <= MAX_DYNAMIC_PROP_LENGTH) {
-            Minecraft.world.setDynamicProperty(WORLD_PROP, json);
-            const oldN = Minecraft.world.getDynamicProperty(WORLD_PROP + "_n");
+            world.setDynamicProperty(WORLD_PROP, json);
+            const oldN = world.getDynamicProperty(WORLD_PROP + "_n");
             if (oldN !== undefined && oldN !== null) {
                 for (let i = 0; i < Number(oldN); i++) {
-                    Minecraft.world.setDynamicProperty(WORLD_PROP + "_" + i, null);
+                    world.setDynamicProperty(WORLD_PROP + "_" + i, null);
                 }
-                Minecraft.world.setDynamicProperty(WORLD_PROP + "_n", null);
+                world.setDynamicProperty(WORLD_PROP + "_n", null);
             }
         } else {
             const numChunks = Math.ceil(json.length / MAX_DYNAMIC_PROP_LENGTH);
             for (let i = 0; i < numChunks; i++) {
                 const start = i * MAX_DYNAMIC_PROP_LENGTH;
                 const chunk = json.slice(start, start + MAX_DYNAMIC_PROP_LENGTH);
-                Minecraft.world.setDynamicProperty(WORLD_PROP + "_" + i, chunk);
+                world.setDynamicProperty(WORLD_PROP + "_" + i, chunk);
             }
-            Minecraft.world.setDynamicProperty(WORLD_PROP + "_n", String(numChunks));
-            Minecraft.world.setDynamicProperty(WORLD_PROP, null);
+            world.setDynamicProperty(WORLD_PROP + "_n", String(numChunks));
+            world.setDynamicProperty(WORLD_PROP, null);
         }
         cleanupFavoritesStorage();
     };
@@ -513,14 +540,13 @@ const Warps = () => {
         }
     }
 
-
     ///=================================================================================================================
     // === Player Functions ===
     const getPlayer = (origin) => {
-        if (origin.sourceType === Minecraft.CustomCommandSource.Entity && origin.sourceEntity.typeId === "minecraft:player") {
+        if (origin.sourceType === CustomCommandSource.Entity && origin.sourceEntity.typeId === "minecraft:player") {
             return origin.sourceEntity;
         }
-        if (origin.sourceType === Minecraft.CustomCommandSource.NPCDialogue && origin.initiator.typeId === "minecraft:player") {
+        if (origin.sourceType === CustomCommandSource.NPCDialogue && origin.initiator.typeId === "minecraft:player") {
             return origin.initiator;
         }
         return null;
@@ -580,7 +606,6 @@ const Warps = () => {
             })
         );
 
-
     const getIconsWithWarps = (warps) => getIcons()
         .filter(icon =>
             warps.some(warp => warp.icon === icon.name)
@@ -604,12 +629,12 @@ const Warps = () => {
     const filterWarpsByVisibility = (warps, player) => {
         return warps.filter(warp => canPlayerSeeWarp(player, warp));
     }
+
     const filterWarpsByLocatorBar = (warps, player) => {
         const favoriteKeys = getPlayerFavoriteWarpKeys(player);
         if (favoriteKeys.size === 0) return [];
         return warps.filter(warp => favoriteKeys.has(getWarpLocatorKey(warp)));
     }
-
 
     const sortWarps = (warps, sortBy, player) => {
         const sorted = [...warps];
@@ -658,12 +683,43 @@ const Warps = () => {
         String(dimensionId || "overworld").replace(/^minecraft:/, "");
 
     const getDimensionByName = (dimensionId) =>
-        Minecraft.world.getDimension(`minecraft:${normalizeDimensionIdForWorld(dimensionId)}`);
+        world.getDimension(`minecraft:${normalizeDimensionIdForWorld(dimensionId)}`);
 
     const notifyLocator = (player, key, withValues = []) => {
         if (!LOCATOR_CONFIG.showMessages) return;
         player.sendMessage({translate: key, with: withValues});
     };
+
+    /**
+     * Calls an external pack command (e.g. /taxi from the road-infrastructure pack).
+     * Unknown commands throw when run, so the first call also detects availability.
+     */
+    const runExternalWarpCommand = (player, warp) => {
+        if (!TAXI_CONFIG.enabled || !warp) return false;
+        const command = TAXI_CONFIG.passCoordinates
+            ? `${TAXI_CONFIG.command} ${Math.floor(Number(warp.x))} ${Math.floor(Number(warp.y))} ${Math.floor(Number(warp.z))} "${warp.name}"`
+            : TAXI_CONFIG.command;
+        const reportUnavailable = (reason) => {
+            if (taxiCommandAvailable !== false) {
+                taxiCommandAvailable = false;
+                console.warn(`[WARP] Command "/${TAXI_CONFIG.command}" is not available:`, reason);
+            }
+            player.sendMessage({translate: "warps:taxi.not_available"});
+            return false;
+        };
+        try {
+            const result = player.runCommand(command);
+            if (result && result.success === false) {
+                return reportUnavailable(result.errorMessage ?? "command failed");
+            }
+            taxiCommandAvailable = true;
+            return true;
+        } catch (error) {
+            return reportUnavailable(error?.message ?? error);
+        }
+    };
+
+    const isExternalWarpCommandAvailable = () => TAXI_CONFIG.enabled && taxiCommandAvailable !== false;
 
     const getLocatorTexture = (warp) => {
         const visibility = String(warp?.visibility || WARP_VISIBILITY.PUBLIC);
@@ -815,12 +871,9 @@ const Warps = () => {
 
         const iconKey = (warp && typeof warp.icon === "string") ? warp.icon : null;
         const icon = getIconByName(iconKey);
-
-
         const dim = (warp.dimension != null && String(warp.dimension)) ? String(warp.dimension) : "overworld";
 
         const keys = {
-            nameLabel: {translate: `warps:field.name.label`},
             warpName: {text: (warp.name != null ? String(warp.name) : "?")},
             coordsLabel: {translate: `warps:field.coords.label`},
             coordsValue: {text: `${warp.x ?? "?"}, ${warp.y ?? "?"}, ${warp.z ?? "?"}`},
@@ -877,10 +930,6 @@ const Warps = () => {
                 translate: `warps:distance.value_km`,
                 with: {rawtext: [{text: (distance / 1000).toFixed(2).toString()}]}
             };
-            keys.distanceMetersValue = {
-                translate: `warps:distance.value_m`,
-                with: {rawtext: [{text: Math.round(distance).toString()}]}
-            };
             keys.distanceMetersLocale = {
                 translate: `warps:distance.value_${suffix}`,
                 with: {rawtext: [{text: Math.round(distance).toString()}]}
@@ -895,7 +944,6 @@ const Warps = () => {
         } else {
             keys.distanceLabel = {translate: `warps:field.distance.label`};
             keys.distanceKmValue = {text: "—"};
-            keys.distanceMetersValue = {text: "—"};
             keys.distanceMetersLocale = {text: "—"};
             keys.distanceDirectionValue = {text: "—"};
             keys.directionLabel = {translate: `warps:field.direction.label`};
@@ -1015,7 +1063,6 @@ const Warps = () => {
         }
         return warp.owner === player.name; // Only owner can edit protected and private
     }
-
 
     ///=================================================================================================================
     // === Search & Teleport Functions ===
@@ -1454,13 +1501,28 @@ const Warps = () => {
             rawtext: [{translate: "warps:warp_details.options.teleport"}]
         }, icon ? icon.path : "");
 
-        const detailsSections = getWarpDetails(warpLive, player, TRANSLATION_PATTERN.BODY, {
+        const showTaxiButton = TAXI_CONFIG.enabled && (TAXI_CONFIG.hideWhenUnavailable ? isExternalWarpCommandAvailable() : true);
+        const BUTTON_TAXI = showTaxiButton ? buttonIndex++ : -1;
+        if (showTaxiButton) {
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.taxi"}]
+            });
+        }
+
+        // getWarpDetails(warpLive, player, TRANSLATION_PATTERN.BODY, {
+        //     asSections: true,
+        //     warpDetailsTerrainEncoding: terrainEncoding
+        // }).forEach((section, i) => {
+        //     optionsForm.label({rawtext: section.rawtext});
+        // });
+
+        getWarpDetails(warpLive, player, TRANSLATION_PATTERN.BODY_MAP, {
             asSections: true,
             warpDetailsTerrainEncoding: terrainEncoding
-        });
-        detailsSections.forEach((section, i) => {
+        }).forEach((section, i) => {
             optionsForm.label({rawtext: section.rawtext});
         });
+
 
         const BUTTON_LOCATOR = locatorAvailable ? buttonIndex++ : -1;
         if (locatorAvailable) {
@@ -1469,6 +1531,13 @@ const Warps = () => {
             });
         }
 
+        getWarpDetails(warpLive, player, TRANSLATION_PATTERN.BODY_COORDS, {
+            asSections: true,
+            warpDetailsTerrainEncoding: terrainEncoding
+        }).forEach((section, i) => {
+            optionsForm.label({rawtext: section.rawtext});
+        });
+
         const BUTTON_EDIT_COORDINATES = buttonIndex++;
         if (canEdit) {
             optionsForm.button({
@@ -1476,12 +1545,12 @@ const Warps = () => {
             });
         }
 
-        const BUTTON_EDIT_NAME = buttonIndex++;
-        if (canEdit) {
-            optionsForm.button({
-                rawtext: [{translate: "warps:warp_details.options.edit_name"}]
-            });
-        }
+        getWarpDetails(warpLive, player, TRANSLATION_PATTERN.BODY_SIGN, {
+            asSections: true,
+            warpDetailsTerrainEncoding: terrainEncoding
+        }).forEach((section, i) => {
+            optionsForm.label({rawtext: section.rawtext});
+        });
 
         const BUTTON_EDIT_SIGN = buttonIndex++;
         if (canEdit) {
@@ -1490,6 +1559,13 @@ const Warps = () => {
             });
         }
 
+        getWarpDetails(warpLive, player, TRANSLATION_PATTERN.BODY_CAT, {
+            asSections: true,
+            warpDetailsTerrainEncoding: terrainEncoding
+        }).forEach((section, i) => {
+            optionsForm.label({rawtext: section.rawtext});
+        });
+
         const BUTTON_EDIT_ICON = buttonIndex++;
         if (canEdit) {
             optionsForm.button({
@@ -1497,11 +1573,25 @@ const Warps = () => {
             });
         }
 
+        getWarpDetails(warpLive, player, TRANSLATION_PATTERN.BODY_META, {
+            asSections: true,
+            warpDetailsTerrainEncoding: terrainEncoding
+        }).forEach((section, i) => {
+            optionsForm.label({rawtext: section.rawtext});
+        });
+
         const hasVisibilityButton = warpLive.visibility !== WARP_VISIBILITY.PUBLIC;
         const BUTTON_CHANGE_VISIBILITY = hasVisibilityButton ? buttonIndex++ : -1;
         if (canEdit && hasVisibilityButton) {
             optionsForm.button({
                 rawtext: [{translate: "warps:warp_details.options.change_visibility"}]
+            });
+        }
+
+        const BUTTON_EDIT_NAME = buttonIndex++;
+        if (canEdit) {
+            optionsForm.button({
+                rawtext: [{translate: "warps:warp_details.options.edit_name"}]
             });
         }
 
@@ -1518,6 +1608,10 @@ const Warps = () => {
 
             if (res.selection === BUTTON_TELEPORT) {
                 teleportToWarp(player, warpLive);
+                return;
+            }
+            if (res.selection === BUTTON_TAXI) {
+                runExternalWarpCommand(player, warpLive);
                 return;
             }
             if (res.selection === BUTTON_LOCATOR) {
@@ -1555,7 +1649,6 @@ const Warps = () => {
             }
         });
     }
-
 
     ///=================================================================================================================
     // === Standing Sign Functions ===
@@ -1598,7 +1691,7 @@ const Warps = () => {
         const signMaterial = getWarpSignMaterial(warp);
 
         const getSignBlockId = (signMaterial, signType) => {
-            // WTF MInecraft?
+            // Bedrock uses "darkoak" in standing/wall sign ids.
             if (signMaterial === SIGN_MATERIAL.DARK_OAK && (signType === SIGN_TYPE.STANDING || signType === SIGN_TYPE.WALL)) {
                 signMaterial = 'darkoak';
             }
@@ -1716,7 +1809,7 @@ const Warps = () => {
     const updateWarpSigns = () => {
         if (!isDataLoaded()) return;
 
-        const players = Minecraft.world.getPlayers();
+        const players = world.getPlayers();
         if (players.length === 0) return;
 
         const warps = getValidWarps();
@@ -2812,7 +2905,7 @@ const Warps = () => {
 
     const getPlayerMapScale = (player) => {
         try {
-            const w = Minecraft.world.getDynamicProperty(getPlayerMapScaleWorldKey(player));
+            const w = world.getDynamicProperty(getPlayerMapScaleWorldKey(player));
             if (w !== undefined && w !== null) return clampMapScale(w);
         } catch {
             // ignore
@@ -2829,7 +2922,7 @@ const Warps = () => {
     const setPlayerMapScale = (player, scale) => {
         const s = clampMapScale(scale);
         try {
-            Minecraft.world.setDynamicProperty(getPlayerMapScaleWorldKey(player), s);
+            world.setDynamicProperty(getPlayerMapScaleWorldKey(player), s);
         } catch {
             // ignore
         }
@@ -3160,7 +3253,7 @@ const Warps = () => {
     const setPlayerWarpTerrainMapCache = (player, locatorKey, encoding) => {
         if (!player || !encoding) return;
         try {
-            Minecraft.world.setDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey), encoding);
+            world.setDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey), encoding);
         } catch {
             try {
                 player.setDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey), encoding);
@@ -3173,7 +3266,7 @@ const Warps = () => {
     const getPlayerWarpTerrainMapCache = (player, locatorKey) => {
         if (!player) return "";
         try {
-            const w = Minecraft.world.getDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey));
+            const w = world.getDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey));
             if (w !== undefined && w !== null) return String(w);
         } catch {
             // ignore
@@ -3672,7 +3765,7 @@ const Warps = () => {
     const init = () => {
         ///=================================================================================================================
         // === Command Registration ===
-        Minecraft.system.beforeEvents.startup.subscribe((event) => {
+        system.beforeEvents.startup.subscribe((event) => {
             console.info("[WARP] Loaded Script")
 
             event.customCommandRegistry.registerEnum("warps:translation_pattern", Object.values(SIGN_TRANSLATION_PATTERN));
@@ -3682,7 +3775,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warp_tp", "wtp"], {
                     description: "Warp to a specific location (public Warps)",
-                    permissionLevel: Minecraft.CommandPermissionLevel.Any,
+                    permissionLevel: CommandPermissionLevel.Any,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
                         name: "warps:name"
@@ -3693,7 +3786,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warp_details", "wd"], {
                     description: "See Warp details",
-                    permissionLevel: Minecraft.CommandPermissionLevel.Any,
+                    permissionLevel: CommandPermissionLevel.Any,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
                         name: "warps:name"
@@ -3704,7 +3797,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warps_list", "wl"], {
                     description: "List all Warps",
-                    permissionLevel: Minecraft.CommandPermissionLevel.Any,
+                    permissionLevel: CommandPermissionLevel.Any,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
                         name: "warps:name",
@@ -3715,7 +3808,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warps_map", "wm"], {
                     description: "Show nearest Warps on map",
-                    permissionLevel: Minecraft.CommandPermissionLevel.Any,
+                    permissionLevel: CommandPermissionLevel.Any,
                     optionalParameters: [],
                 },
                 mapCommand
@@ -3723,7 +3816,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warp_add", "wa"], {
                     description: "Add a new public Warp",
-                    permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
+                    permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
                         name: "warps:name",
@@ -3749,7 +3842,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warp_rename"], {
                     description: "Rename a public Warp",
-                    permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
+                    permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
                         name: "warps:name",
@@ -3763,7 +3856,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warp_sign_change", "warp_sign"], {
                     description: "Change sign for a public Warp (optional translation pattern after material)",
-                    permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
+                    permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
                         name: "warps:name",
@@ -3783,7 +3876,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warp_icon_change", "warp_icon"], {
                     description: "Change icon for a public Warp",
-                    permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
+                    permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
                         name: "warps:name",
@@ -3797,7 +3890,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warp_remove"], {
                     description: "Remove a public Warp",
-                    permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
+                    permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
                         name: "warps:name",
@@ -3808,7 +3901,7 @@ const Warps = () => {
 
             registerCommandWithAliases(event, ["warps_signs_regenerate", "warps_reload"], {
                     description: "Regenerate all warp signs",
-                    permissionLevel: Minecraft.CommandPermissionLevel.GameDirectors,
+                    permissionLevel: CommandPermissionLevel.GameDirectors,
                 },
                 regenerateCommand
             );
@@ -3828,22 +3921,22 @@ const Warps = () => {
                         let targetLocation = roundLocation({x: blockLoc.x, y: blockLoc.y, z: blockLoc.z});
 
                         switch (event.blockFace) {
-                            case Minecraft.Direction.Up:
+                            case Direction.Up:
                                 targetLocation.y += 1;
                                 break;
-                            case Minecraft.Direction.Down:
+                            case Direction.Down:
                                 targetLocation.y -= 1;
                                 break;
-                            case Minecraft.Direction.North:
+                            case Direction.North:
                                 targetLocation.z -= 1;
                                 break;
-                            case Minecraft.Direction.South:
+                            case Direction.South:
                                 targetLocation.z += 1;
                                 break;
-                            case Minecraft.Direction.East:
+                            case Direction.East:
                                 targetLocation.x += 1;
                                 break;
-                            case Minecraft.Direction.West:
+                            case Direction.West:
                                 targetLocation.x -= 1;
                                 break;
                         }
@@ -3877,17 +3970,17 @@ const Warps = () => {
         });
     }
 
-    Minecraft.world.afterEvents.worldLoad.subscribe(() => {
+    world.afterEvents.worldLoad.subscribe(() => {
         system.runTimeout(() => {
             loadWarps();
             cleanupFavoritesStorage();
-            Minecraft.world.getAllPlayers().forEach((player) => {
+            world.getAllPlayers().forEach((player) => {
                 syncPlayerLocatorFromFavorites(player);
             });
         }, 60);
     });
 
-    Minecraft.world.afterEvents.playerSpawn.subscribe((event) => {
+    world.afterEvents.playerSpawn.subscribe((event) => {
         system.runTimeout(() => {
             const player = event.player;
             if (!player) return;
@@ -3895,7 +3988,7 @@ const Warps = () => {
         }, 20);
     });
 
-    Minecraft.world.afterEvents.playerInteractWithBlock.subscribe((event) => {
+    world.afterEvents.playerInteractWithBlock.subscribe((event) => {
         system.run(() => {
             const player = event.player;
             const block = event.block;
@@ -3930,9 +4023,7 @@ const Warps = () => {
         }, 600);
     }, 20);
 
-    return {
-        init: init
-    }
+    return {init}
 }
 export const WarpsModule = {
     init() {
