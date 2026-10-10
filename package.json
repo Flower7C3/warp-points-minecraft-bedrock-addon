@@ -7,12 +7,16 @@
     "build": "npm run build -ws",
     "mcaddon": "npm run mcaddon -ws"
   },
-  "overrides": {},
+  "overrides": {
+    "@minecraft/server": "2.10.0",
+    "vitest": "4.1.11",
+    "@vitest/mocker": "4.1.11"
+  },
   "devDependencies": {
-    "@minecraft/core-build-tasks": "^5.2.0"
+    "@minecraft/core-build-tasks": "^5.7.0"
   },
   "dependencies": {
-    "@minecraft/server": "^2.8.0",
-    "@minecraft/server-ui": "^2.0.0"
+    "@minecraft/server": "2.10.0",
+    "@minecraft/server-ui": "2.2.0"
   }
 }
