@@ -25,7 +25,12 @@ const Warps = () => {
     const WARP_MENU_ITEM_ID = "warps:warp_menu";
     const WARP_MAP_ITEM_ID = "warps:warp_map";
 
+    /** Session-only terrain map cache (avoid world dynamic property churn). */
+    const playerWarpTerrainMemoryCache = new Map();
+
     let dataLoaded = false;
+    let lastPersistedWarpJson = null;
+    let cachedFavorites = null;
 
     const isDataLoaded = () => dataLoaded;
 
@@ -326,10 +331,22 @@ const Warps = () => {
                 if (!warp.translationPattern) {
                     warp.translationPattern = Object.values(SIGN_TRANSLATION_PATTERN)[0];
                 }
+                if (warp.terrainMap) {
+                    delete warp.terrainMap;
+                }
                 return warp;
             });
             if (!isDataLoaded()) {
                 dataLoaded = true;
+            }
+            try {
+                const slim = mapped.map((warp) => {
+                    if (!warp || typeof warp !== "object") return warp;
+                    const {terrainMap, ...rest} = warp;
+                    return rest;
+                });
+                lastPersistedWarpJson = JSON.stringify(slim);
+            } catch {
             }
             return mapped;
         } catch {
@@ -352,8 +369,23 @@ const Warps = () => {
         }
     };
 
+    const getFavoritesSnapshot = () => {
+        if (cachedFavorites === null) {
+            cachedFavorites = loadFavorites();
+        }
+        return cachedFavorites;
+    };
+
     const saveFavorites = (favorites) => {
-        world.setDynamicProperty(WORLD_FAVORITES_PROP, JSON.stringify(favorites));
+        const json = JSON.stringify(favorites);
+        if (cachedFavorites !== null) {
+            const prev = JSON.stringify(cachedFavorites);
+            if (prev === json) {
+                return;
+            }
+        }
+        cachedFavorites = favorites;
+        world.setDynamicProperty(WORLD_FAVORITES_PROP, json);
     };
 
     const cleanupFavoritesData = (favorites) => {
@@ -386,21 +418,23 @@ const Warps = () => {
     };
 
     const cleanupFavoritesStorage = () => {
-        const favorites = loadFavorites();
+        const favorites = getFavoritesSnapshot();
         const {cleaned, changed} = cleanupFavoritesData(favorites);
-        if (changed) saveFavorites(cleaned);
+        if (changed) {
+            saveFavorites(cleaned);
+        }
         return cleaned;
     };
 
     const getPlayerFavoriteWarpKeys = (player) => {
-        const allFavorites = cleanupFavoritesStorage();
+        const allFavorites = getFavoritesSnapshot();
         const list = allFavorites?.[String(player?.name || "")];
         if (!Array.isArray(list)) return new Set();
         return new Set(list.map(v => String(v)));
     };
 
     const setPlayerFavoriteWarpKeys = (player, keysSet) => {
-        const allFavorites = cleanupFavoritesStorage();
+        const allFavorites = getFavoritesSnapshot();
         const playerName = String(player?.name || "");
         if (!playerName) return;
         const validKeys = new Set(getValidWarps().map((warp) => getWarpLocatorKey(warp)));
@@ -450,13 +484,25 @@ const Warps = () => {
         DELETE: 'delete'
     })
 
-    const persistWarpsListToWorld = (warps) => {
-        const json = JSON.stringify(warps);
+    const persistWarpsListToWorld = (warps, force = false) => {
+        /** terrainMap is large and regenerated on demand — do not persist to world storage. */
+        const slimWarps = warps.map((warp) => {
+            if (!warp || typeof warp !== "object") {
+                return warp;
+            }
+            const {terrainMap, ...rest} = warp;
+            return rest;
+        });
+        const json = JSON.stringify(slimWarps);
+        if (!force && json === lastPersistedWarpJson) {
+            return;
+        }
+        lastPersistedWarpJson = json;
+        const oldChunkCount = Number(world.getDynamicProperty(WORLD_PROP + "_n") || 0);
         if (json.length <= MAX_DYNAMIC_PROP_LENGTH) {
             world.setDynamicProperty(WORLD_PROP, json);
-            const oldN = world.getDynamicProperty(WORLD_PROP + "_n");
-            if (oldN !== undefined && oldN !== null) {
-                for (let i = 0; i < Number(oldN); i++) {
+            if (oldChunkCount > 0) {
+                for (let i = 0; i < oldChunkCount; i++) {
                     world.setDynamicProperty(WORLD_PROP + "_" + i, null);
                 }
                 world.setDynamicProperty(WORLD_PROP + "_n", null);
@@ -470,8 +516,36 @@ const Warps = () => {
             }
             world.setDynamicProperty(WORLD_PROP + "_n", String(numChunks));
             world.setDynamicProperty(WORLD_PROP, null);
+            if (oldChunkCount > numChunks) {
+                for (let i = numChunks; i < oldChunkCount; i++) {
+                    world.setDynamicProperty(WORLD_PROP + "_" + i, null);
+                }
+            }
         }
-        cleanupFavoritesStorage();
+    };
+
+    const migrateWarpStorageIfNeeded = () => {
+        let needsSlim = false;
+        try {
+            const single = world.getDynamicProperty(WORLD_PROP)?.toString();
+            if (single && single.includes("terrainMap")) {
+                needsSlim = true;
+            }
+            if (!needsSlim) {
+                const chunkCount = Number(world.getDynamicProperty(WORLD_PROP + "_n") || 0);
+                for (let i = 0; i < chunkCount; i++) {
+                    const part = world.getDynamicProperty(WORLD_PROP + "_" + i)?.toString();
+                    if (part && part.includes("terrainMap")) {
+                        needsSlim = true;
+                        break;
+                    }
+                }
+            }
+        } catch {
+        }
+        if (needsSlim) {
+            persistWarpsListToWorld(loadWarps(), true);
+        }
     };
 
     /**
@@ -484,7 +558,7 @@ const Warps = () => {
      * @param {{silentPersistence?: boolean, skipDetailsMenuOnUpdate?: boolean}} [saveOptions]
      */
     const saveWarps = (player, action, warps, warp, translateKey, translateParams = [], saveOptions = {}) => {
-        persistWarpsListToWorld(warps);
+        persistWarpsListToWorld(warps, false);
 
         const wx = Number(warp.x);
         const wy = Number(warp.y);
@@ -690,15 +764,32 @@ const Warps = () => {
         player.sendMessage({translate: key, with: withValues});
     };
 
+    /** Bezpieczny literał tekstowy w /runCommand (cudzysłowy, backslash). */
+    const escapeMcCommandString = (value) => {
+        const text = String(value ?? "");
+        return `"${text.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+    };
+
     /**
-     * Calls an external pack command (e.g. /taxi from the road-infrastructure pack).
+     * Calls an external pack command (e.g. /vehicles:taxi from the vehicles pack).
      * Unknown commands throw when run, so the first call also detects availability.
      */
     const runExternalWarpCommand = (player, warp) => {
         if (!TAXI_CONFIG.enabled || !warp) return false;
-        const command = TAXI_CONFIG.passCoordinates
-            ? `${TAXI_CONFIG.command} ${Math.floor(Number(warp.x))} ${Math.floor(Number(warp.y))} ${Math.floor(Number(warp.z))} "${warp.name}"`
-            : TAXI_CONFIG.command;
+        const base = TAXI_CONFIG.command.startsWith("/")
+            ? TAXI_CONFIG.command
+            : `/${TAXI_CONFIG.command}`;
+        let command = base;
+        if (TAXI_CONFIG.passCoordinates) {
+            const x = Math.floor(Number(warp.x));
+            const y = Math.floor(Number(warp.y));
+            const z = Math.floor(Number(warp.z));
+            command = `${base} ${x} ${y} ${z}`;
+            const warpName = String(warp.name ?? "").trim();
+            if (warpName.length > 0) {
+                command += ` ${escapeMcCommandString(warpName)}`;
+            }
+        }
         const reportUnavailable = (reason) => {
             if (taxiCommandAvailable !== false) {
                 taxiCommandAvailable = false;
@@ -1452,7 +1543,7 @@ const Warps = () => {
             if (cached) terrainEncoding = cached;
         }
 
-        if (player && isPlayerWithinWarpTerrainRefreshRange(player, warpLive)) {
+        if (player && isPlayerWithinWarpTerrainRefreshRange(player, warpLive) && !terrainEncoding) {
             const dim = getDimensionByName(warpLive.dimension);
             if (dim) {
                 const fresh = generateWarpTerrainMapEncoding(
@@ -1465,17 +1556,6 @@ const Warps = () => {
                 if (fresh) {
                     setPlayerWarpTerrainMapCache(player, locatorKey, fresh);
                     terrainEncoding = fresh;
-                    if (!warpLive.terrainMap || String(warpLive.terrainMap).length === 0) {
-                        const all = loadWarps();
-                        const idx = all.findIndex((w) => w.name === warpLive.name);
-                        if (idx >= 0) {
-                            all[idx].terrainMap = fresh;
-                            saveWarps(player, SAVE_ACTION.UPDATE, all, all[idx], null, [], {
-                                silentPersistence: true,
-                                skipDetailsMenuOnUpdate: true
-                            });
-                        }
-                    }
                 }
             }
         }
@@ -2921,6 +3001,9 @@ const Warps = () => {
 
     const setPlayerMapScale = (player, scale) => {
         const s = clampMapScale(scale);
+        if (getPlayerMapScale(player) === s) {
+            return;
+        }
         try {
             world.setDynamicProperty(getPlayerMapScaleWorldKey(player), s);
         } catch {
@@ -3113,7 +3196,6 @@ const Warps = () => {
 
     /** Warp details / DB: blocks per pseudo-map cell (north = smaller row index = −Z). */
     const WARP_DETAILS_MAP_BLOCKS_PER_CELL = 5;
-    const WARP_DETAILS_MAP_PLAYER_CACHE_PREFIX = "warps:warp_terrain_dp";
 
     const encodeTerrainCellFromSurface = (surface) => {
         if (surface === MAP_SURFACE_UNLOADED) return "u";
@@ -3245,39 +3327,21 @@ const Warps = () => {
         return (dx * dx + dy * dy + dz * dz) <= maxDistanceSquared;
     };
 
-    const getPlayerWarpTerrainCacheKey = (player, warpLocatorKey) => {
-        const name = String(player?.name ?? "unknown").replace(/[^a-zA-Z0-9_\-]/g, "_");
-        return `${WARP_DETAILS_MAP_PLAYER_CACHE_PREFIX}:${name}:${String(warpLocatorKey).replace(/[^a-zA-Z0-9_:,\-]/g, "_")}`;
-    };
-
     const setPlayerWarpTerrainMapCache = (player, locatorKey, encoding) => {
-        if (!player || !encoding) return;
-        try {
-            world.setDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey), encoding);
-        } catch {
-            try {
-                player.setDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey), encoding);
-            } catch {
-                // ignore
-            }
+        if (!player || !encoding) {
+            return;
         }
+        const key = `${String(player.id)}|${String(locatorKey)}`;
+        playerWarpTerrainMemoryCache.set(key, encoding);
     };
 
     const getPlayerWarpTerrainMapCache = (player, locatorKey) => {
-        if (!player) return "";
-        try {
-            const w = world.getDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey));
-            if (w !== undefined && w !== null) return String(w);
-        } catch {
-            // ignore
+        if (!player) {
+            return "";
         }
-        try {
-            const v = player.getDynamicProperty(getPlayerWarpTerrainCacheKey(player, locatorKey));
-            if (v !== undefined && v !== null) return String(v);
-        } catch {
-            // ignore
-        }
-        return "";
+        const key = `${String(player.id)}|${String(locatorKey)}`;
+        const cached = playerWarpTerrainMemoryCache.get(key);
+        return cached ? String(cached) : "";
     };
 
     /**
@@ -3972,7 +4036,9 @@ const Warps = () => {
 
     world.afterEvents.worldLoad.subscribe(() => {
         system.runTimeout(() => {
+            cachedFavorites = null;
             loadWarps();
+            migrateWarpStorageIfNeeded();
             cleanupFavoritesStorage();
             world.getAllPlayers().forEach((player) => {
                 syncPlayerLocatorFromFavorites(player);
