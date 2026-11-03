@@ -17,7 +17,8 @@ assuming `warps.js` is the entry.
 ```
 warps:warp_add     (alias wa)  name, translation_pattern, sign_mode,
                                  sign_material, icon, location
-warps:warp_remove
+warps:warp_details  (alias wd, warp)
+warps:warp_remove   (alias wrm)
 warps:warp_tp      (alias wtp)
 ```
 `warp_add` takes **six** parameters, not five — `icon` is fifth and the

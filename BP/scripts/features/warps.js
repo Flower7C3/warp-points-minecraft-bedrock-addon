@@ -3848,7 +3848,7 @@ const Warps = () => {
                 teleportCommand
             );
 
-            registerCommandWithAliases(event, ["warp_details", "wd"], {
+            registerCommandWithAliases(event, ["warp_details", "wd", "warp"], {
                     description: "See Warp details",
                     permissionLevel: CommandPermissionLevel.Any,
                     optionalParameters: [{
@@ -3904,7 +3904,7 @@ const Warps = () => {
                 addCommand
             );
 
-            registerCommandWithAliases(event, ["warp_rename"], {
+            registerCommandWithAliases(event, ["warp_rename", "wmv"], {
                     description: "Rename a public Warp",
                     permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
@@ -3918,7 +3918,7 @@ const Warps = () => {
                 renameCommand
             );
 
-            registerCommandWithAliases(event, ["warp_sign_change", "warp_sign"], {
+            registerCommandWithAliases(event, ["warp_sign_change", "warp_sign", "wsc"], {
                     description: "Change sign for a public Warp (optional translation pattern after material)",
                     permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
@@ -3938,7 +3938,7 @@ const Warps = () => {
                 updateSignCommand
             );
 
-            registerCommandWithAliases(event, ["warp_icon_change", "warp_icon"], {
+            registerCommandWithAliases(event, ["warp_icon_change", "warp_icon", "wic"], {
                     description: "Change icon for a public Warp",
                     permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
@@ -3952,8 +3952,8 @@ const Warps = () => {
                 updateIconCommand
             );
 
-            registerCommandWithAliases(event, ["warp_remove"], {
-                    description: "Remove a public Warp",
+            registerCommandWithAliases(event, ["warp_remove", "wrm"], {
+                    description: "Delete a public Warp",
                     permissionLevel: CommandPermissionLevel.GameDirectors,
                     optionalParameters: [{
                         type: CustomCommandParamType.String,
